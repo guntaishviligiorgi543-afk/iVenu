@@ -1,0 +1,201 @@
+@import url("https://fonts.googleapis.com/css2?family=Cabin:wght@400;500;600;700&family=Fjalla+One&display=swap");
+
+.auth-page {
+  min-height: 100vh;
+  padding: 150px 24px 70px;
+  background:
+    linear-gradient(135deg, rgba(255, 148, 117, 0.12), transparent 45%), #000;
+  color: #fff;
+  font-family: "Cabin", sans-serif;
+}
+
+.auth-shell {
+  width: min(460px, 100%);
+  margin: 0 auto;
+  padding: 42px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(20, 20, 20, 0.9);
+  box-shadow: 12px 12px 0 rgba(255, 148, 117, 0.72);
+}
+
+.auth-shell h1 {
+  margin-bottom: 10px;
+  color: #ff9475;
+  font-family: Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
+  font-size: clamp(2.8rem, 8vw, 5rem);
+  font-weight: 400;
+  line-height: 0.95;
+  text-transform: uppercase;
+}
+
+.auth-intro,
+.auth-message,
+.auth-link {
+  color: rgba(255, 255, 255, 0.76);
+  line-height: 1.5;
+}
+
+header nav .authNavLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 8px 11px;
+  border: 1px solid rgba(255, 148, 117, 0.7);
+  color: #ff9475;
+  font-family: "Cabin", sans-serif;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  transition: 0.2s ease;
+}
+
+header nav .authNavLink:hover {
+  color: #000;
+  background: #ff9475;
+}
+
+header nav .authNavLink[hidden] {
+  display: none;
+}
+
+.auth-form {
+  display: grid;
+  gap: 18px;
+  margin-top: 30px;
+}
+
+.auth-form label {
+  display: grid;
+  gap: 7px;
+  color: #ff9475;
+  font-size: 0.84rem;
+  text-transform: uppercase;
+}
+
+.auth-form input {
+  width: 100%;
+  padding: 13px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #fff;
+  background: #0a0a0a;
+  font: inherit;
+}
+
+.auth-form input:focus {
+  outline: 2px solid #ff9475;
+  outline-offset: 2px;
+}
+
+.auth-submit {
+  padding: 14px 18px;
+  color: #000;
+  background: #ff9475;
+  font: inherit;
+  font-weight: 700;
+  text-transform: uppercase;
+  transition: 0.2s ease;
+}
+
+.auth-submit:hover,
+.auth-submit:disabled {
+  background: #fff;
+}
+
+.auth-message {
+  min-height: 24px;
+  margin-top: 18px;
+}
+
+.auth-message.error {
+  color: #ffb2a0;
+}
+
+.auth-message.success {
+  color: #b8f0c3;
+}
+
+.auth-link {
+  display: inline-block;
+  margin-top: 24px;
+  color: #ff9475;
+  text-decoration: underline;
+}
+
+@media (max-width: 650px) {
+  .auth-page {
+    padding: 120px 18px 50px;
+  }
+
+  .auth-shell {
+    padding: 28px 22px;
+    box-shadow: 7px 7px 0 rgba(255, 148, 117, 0.72);
+  }
+}
+
+.auth-gate {
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+  display: grid;
+  place-items: center;
+  padding: 22px;
+  background: rgba(0, 0, 0, 0.78);
+}
+
+.auth-gate[hidden] {
+  display: none;
+}
+
+.auth-gate__dialog {
+  width: min(430px, 100%);
+  padding: 32px;
+  border: 1px solid rgba(255, 148, 117, 0.75);
+  background: #171717;
+  box-shadow: 10px 10px 0 rgba(255, 148, 117, 0.75);
+  color: #fff;
+  font-family: "Cabin", sans-serif;
+}
+
+.auth-gate__dialog h2 {
+  margin-bottom: 12px;
+  color: #ff9475;
+  font-family: Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
+  font-size: 2.4rem;
+  font-weight: 400;
+  text-transform: uppercase;
+}
+
+.auth-gate__actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.auth-gate__actions a,
+.auth-gate__actions button {
+  flex: 1;
+  padding: 12px;
+  border: 1px solid #ff9475;
+  color: #ff9475;
+  background: transparent;
+  font: inherit;
+  text-align: center;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.auth-gate__actions a:hover,
+.auth-gate__actions button:hover {
+  color: #000;
+  background: #ff9475;
+}
+
+@media (max-width: 650px) {
+  .auth-gate__dialog {
+    padding: 25px;
+  }
+
+  .auth-gate__actions {
+    flex-direction: column;
+  }
+}

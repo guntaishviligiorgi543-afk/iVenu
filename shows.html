@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Launch</title>
     <link rel="stylesheet" href="main.css" />
+    <link rel="stylesheet" href="auth.css" />
   </head>
   <style>
     section {
@@ -82,6 +83,35 @@
       gap: 20px;
       padding-top: 50px;
       height: fit-content;
+    }
+
+    .pagination {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 12px;
+      padding: 42px 0 20px;
+    }
+
+    .pagination button {
+      min-width: 42px;
+      min-height: 38px;
+      padding: 8px 12px;
+      border: 1px solid #ff9475;
+      color: #ff9475;
+      font: inherit;
+      cursor: pointer;
+    }
+
+    .pagination button:hover,
+    .pagination button.active {
+      color: #000;
+      background: #ff9475;
+    }
+
+    .pagination button:disabled {
+      cursor: not-allowed;
+      opacity: 0.35;
     }
     .vntCrd {
       position: relative;
@@ -291,7 +321,6 @@
             </svg>
           </a>
         </div>
-
         <a class="heroTitle" href="index.html">
           <p>
             <span>the</span> <br />
@@ -335,6 +364,7 @@
             </h2>
           </div>
           <div class="eventCards"></div>
+          <div class="pagination" aria-label="Event pages"></div>
         </div>
       </section>
       <section class="sec4" aria-labelledby="newsletter-title">
@@ -369,11 +399,28 @@
         </p>
       </section>
     </main>
-    <script src="arr.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <script src="supabase-data.js"></script>
+    <script src="auth.js"></script>
+    <script src="auth-ui.js"></script>
     <script>
       const eventCards = document.querySelector(".eventCards");
+      const pagination = document.querySelector(".pagination");
+      const EVENTS_PER_PAGE = 9;
+      let loadedEvents = [];
+      let currentPage = 1;
 
-      bands.forEach((band) => {
+      function showEventsMessage(message, isError = false) {
+        eventCards.innerHTML = `<p class="eventsMessage${isError ? " error" : ""}">${message}</p>`;
+      }
+
+      function formatEventTime(value) {
+        return value ? value.slice(0, 5) : "Time TBA";
+      }
+
+      function renderEventCard(event) {
+        const band = event.bands || {};
         const card = document.createElement("div");
 
         card.classList.add("vntCrd");
@@ -381,15 +428,15 @@
         card.innerHTML = `
     <div class="cardContent">
 
-      <img src="${band.bandImage}" alt="${band.bandName}" />
+      <img src="${event.image_url || band.image_url || ""}" alt="${band.name || event.title}" />
 
       <div>
-        <p  class="bandNam">${band.bandName}</p>
-        <p  class="concertDate">${band.event.date}</p>
+        <p class="bandNam">${band.name || event.title}</p>
+        <p class="concertDate">${event.event_date}</p>
       </div>
 
       <button class="moreInfoBtn">more info</button>
- <button class="getTicketBtn" data-id="${band.id}">
+ <button class="getTicketBtn" data-id="${event.id}">
   get tickets
 </button>
  
@@ -402,22 +449,22 @@
   <div class="infoScroll">
 
     <div>
-      <h2>${band.event.title}</h2>
-      <p>${band.event.date} — ${band.event.time}</p>
+      <h2>${event.title}</h2>
+      <p>${event.event_date} — ${formatEventTime(event.event_time)}</p>
     </div>
 
-    <p>${band.event.description}</p>
+    <p>${event.description || "Event details coming soon."}</p>
 
     <p>
-      Doors open: ${band.event.doorsOpen}
+      Doors open: ${formatEventTime(event.doors_open)}
     </p>
 
     <p>
-      ${band.location.venue}<br>
-      ${band.location.address}
+      ${event.venue}<br>
+      ${event.city}, ${event.country || ""}
     </p>
 
- <button class="getTicketBtn" data-id="${band.id}">
+ <button class="getTicketBtn" data-id="${event.id}">
   get tickets
 </button>
  
@@ -425,51 +472,120 @@
    `;
 
         eventCards.appendChild(card);
-      });
+      }
+
+      function renderPagination() {
+        if (!pagination) return;
+        const pageCount = Math.ceil(loadedEvents.length / EVENTS_PER_PAGE);
+        pagination.innerHTML = "";
+        if (pageCount <= 1) return;
+
+        const previous = document.createElement("button");
+        previous.type = "button";
+        previous.textContent = "prev";
+        previous.disabled = currentPage === 1;
+        previous.addEventListener("click", () => {
+          currentPage -= 1;
+          renderPage();
+        });
+        pagination.appendChild(previous);
+
+        for (let page = 1; page <= pageCount; page += 1) {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.textContent = page;
+          button.classList.toggle("active", page === currentPage);
+          button.setAttribute("aria-label", `Page ${page}`);
+          button.addEventListener("click", () => {
+            currentPage = page;
+            renderPage();
+          });
+          pagination.appendChild(button);
+        }
+
+        const next = document.createElement("button");
+        next.type = "button";
+        next.textContent = "next";
+        next.disabled = currentPage === pageCount;
+        next.addEventListener("click", () => {
+          currentPage += 1;
+          renderPage();
+        });
+        pagination.appendChild(next);
+      }
+
+      function renderPage() {
+        const start = (currentPage - 1) * EVENTS_PER_PAGE;
+        eventCards.innerHTML = "";
+        loadedEvents
+          .slice(start, start + EVENTS_PER_PAGE)
+          .forEach(renderEventCard);
+        bindEventCardInteractions();
+        renderPagination();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+
+      async function loadEvents() {
+        showEventsMessage("Loading events...");
+
+        try {
+          const events = await window.supabaseData.getEvents();
+
+          if (!events.length) {
+            showEventsMessage("No events are available right now.");
+            return;
+          }
+
+          loadedEvents = events;
+          currentPage = 1;
+          renderPage();
+        } catch (error) {
+          console.error(error);
+          showEventsMessage("Events are temporarily unavailable.", true);
+        }
+      }
     </script>
 
     <script>
-      const moreInfoBtns = document.querySelectorAll(".moreInfoBtn");
+      function bindEventCardInteractions() {
+        document.querySelectorAll(".moreInfoBtn").forEach((btn) => {
+          btn.addEventListener("click", (e) => {
+            e.stopPropagation();
 
-      moreInfoBtns.forEach((btn) => {
-        btn.addEventListener("click", (e) => {
-          e.stopPropagation();
+            const card = btn.closest(".vntCrd");
 
-          const card = btn.closest(".vntCrd");
-
-          card.classList.add("showInfo");
+            card.classList.add("showInfo");
+          });
         });
-      });
 
-      document.querySelectorAll(".closeInf").forEach((closeBtn) => {
-        closeBtn.addEventListener("click", (e) => {
-          e.stopPropagation();
+        document.querySelectorAll(".closeInf").forEach((closeBtn) => {
+          closeBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
 
-          const card = closeBtn.closest(".vntCrd");
+            const card = closeBtn.closest(".vntCrd");
 
-          card.classList.remove("showInfo");
+            card.classList.remove("showInfo");
+          });
         });
-      });
+
+        document.querySelectorAll(".getTicketBtn").forEach((button) => {
+          button.addEventListener("click", () => {
+            window.location.href = `getTickets.html?id=${button.dataset.id}`;
+          });
+        });
+      }
 
       document.addEventListener("click", (e) => {
         const openCard = document.querySelector(".vntCrd.showInfo");
-
         if (!openCard) return;
 
         const infoCont = openCard.querySelector(".infoCont");
-
-        // infoCont-ის გარეთ ნებისმიერი click → დახურვა
         if (!infoCont.contains(e.target)) {
           openCard.classList.remove("showInfo");
         }
       });
-      document.querySelectorAll(".getTicketBtn").forEach((button) => {
-        button.addEventListener("click", () => {
-          const bandId = button.dataset.id;
 
-          window.location.href = `getTickets.html?id=${bandId}`;
-        });
-      });
+      loadEvents();
     </script>
   </body>
 </html>

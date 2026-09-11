@@ -1,6 +1,8 @@
 const eventsAccordion = document.querySelector("#eventsAccordion");
 
-eventsAccordion.innerHTML = "";
+if (!eventsAccordion) {
+  throw new Error("Events accordion container is missing.");
+}
 
 // =====================================================
 // DATE
@@ -19,27 +21,15 @@ function formatDate(date) {
 }
 
 // =====================================================
-// NEXT 4 MONTHS OF 2026
+// UPCOMING ACTIVE EVENTS
 // =====================================================
 
-// წარმოვიდგინოთ, რომ ახლა 2026 წლის დასაწყისია
-const startDate = new Date("2026-01-01");
-
-// 4 თვის შემდეგ — 2026 წლის 1 ივნისამდე
-const endDate = new Date("2026-06-01");
+const startDate = new Date();
+startDate.setHours(0, 0, 0, 0);
 
 // მხოლოდ მომდევნო 4 თვის კონცერტები
-const upcomingBands = bands.filter((band) => {
-  const eventDate = new Date(band.event.date);
-
-  return eventDate >= startDate && eventDate < endDate;
-});
-
-// =====================================================
-// CREATE ACCORDIONS
-// =====================================================
-
-upcomingBands.forEach((band) => {
+function renderAccordion(event) {
+  const band = event.bands || {};
   const accordion = document.createElement("div");
 
   accordion.classList.add("eventAcordion");
@@ -51,11 +41,11 @@ upcomingBands.forEach((band) => {
       <div>
 
         <p class="event-date">
-          ${formatDate(band.event.date)}
+          ${formatDate(event.event_date)}
         </p>
 
         <h2 class="artistNAm">
-          ${band.bandName}
+          ${band.name || event.title}
         </h2>
 
         <svg
@@ -73,7 +63,7 @@ upcomingBands.forEach((band) => {
 
       </div>
 
- <button class="getTicketBtn" data-id="${band.id}">
+ <button class="getTicketBtn" data-id="${event.id}">
   <span>get tickets</span>
 </button>
     </div>
@@ -83,20 +73,20 @@ upcomingBands.forEach((band) => {
       <div>
 
         <p class="vnt-dt-tm-drt">
-          ${formatDate(band.event.date)}
+          ${formatDate(event.event_date)}
           ·
-          ${band.event.time}
+          ${event.event_time?.slice(0, 5) || "Time TBA"}
         </p>
 
         <p class="adress">
-          ${band.location.venue},
-          ${band.location.address}
+          ${event.venue},
+          ${event.city}, ${event.country || ""}
         </p>
 
       </div>
 
       <p class="vntDscrp">
-        ${band.event.description}
+        ${event.description || "Event details coming soon."}
       </p>
 
       <div class="share">
@@ -137,14 +127,38 @@ upcomingBands.forEach((band) => {
     }
   });
 
-  // accordion-ის დამატება
   eventsAccordion.appendChild(accordion);
-});
+}
+
+async function loadUpcomingEvents() {
+  eventsAccordion.innerHTML = "<p>Loading events...</p>";
+
+  try {
+    const events = await window.supabaseData.getEvents();
+    const upcomingEvents = events.filter((event) => {
+      const eventDate = new Date(event.event_date);
+      return event.status === "active" && eventDate >= startDate;
+    });
+
+    eventsAccordion.innerHTML = "";
+
+    if (!upcomingEvents.length) {
+      eventsAccordion.innerHTML = "<p>No upcoming events are available.</p>";
+      return;
+    }
+
+    upcomingEvents.slice(0, 4).forEach(renderAccordion);
+  } catch (error) {
+    console.error(error);
+    eventsAccordion.innerHTML =
+      "<p>Events are temporarily unavailable. Please try again later.</p>";
+  }
+}
+
+loadUpcomingEvents();
 
 // =====================================================
 // CHECK
 // =====================================================
 
-console.log("TOTAL BANDS:", bands.length);
-console.log("UPCOMING BANDS:", upcomingBands.length);
-console.log("ACCORDIONS:", eventsAccordion.children.length);
+console.log("EVENT SOURCE: Supabase");

@@ -1,0 +1,14 @@
+{
+  "name": "venue",
+  "version": "1.0.0",
+  "private": true,
+  "description": "The Launch venue site with a local SQLite API",
+  "scripts": {
+    "start": "node server.js",
+    "seed": "node server.js --seed"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "sql.js": "^1.13.0"
+  }
+}

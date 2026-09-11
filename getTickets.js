@@ -1,6 +1,68 @@
 const params = new URLSearchParams(window.location.search);
-const bandId = Number(params.get("id"));
-const selectedBand = bands.find((band) => band.id === bandId);
+const bandId = params.get("id");
+let selectedBand = null;
+
+function createTicketAdapter(ticketTypes) {
+  const ticketByName = new Map(
+    ticketTypes.map((ticket) => [ticket.name.toLowerCase(), ticket]),
+  );
+  const getTicket = (names) =>
+    names.map((name) => ticketByName.get(name)).find(Boolean) || null;
+  const toTicket = (ticket) =>
+    ticket
+      ? {
+          id: ticket.id,
+          name: ticket.name,
+          price: Number(ticket.price),
+          currency: "₾",
+          availableQuantity: Number(ticket.available_quantity),
+          description: ticket.description || "",
+        }
+      : null;
+
+  return {
+    cheap: toTicket(getTicket(["cheap / standard"])),
+    medium: toTicket(getTicket(["medium / premium"])),
+    vip: toTicket(getTicket(["vip", "expensive"])),
+  };
+}
+
+async function loadSelectedEvent() {
+  if (!bandId) return;
+
+  const [event, ticketTypes] = await Promise.all([
+    window.supabaseData.getEvent(bandId),
+    window.supabaseData.getTicketTypes(bandId),
+  ]);
+
+  if (!event) return;
+
+  const band = event.bands || {};
+  selectedBand = {
+    id: event.id,
+    bandName: band.name || event.title,
+    bandDescription: band.description || event.description || "",
+    bandImg2: event.image_url || band.image_url || "",
+    event: {
+      title: event.title,
+      description: event.description || "",
+      date: event.event_date,
+      time: event.event_time,
+      doorsOpen: event.doors_open,
+    },
+    tickets: createTicketAdapter(ticketTypes),
+    location: {
+      city: event.city,
+      venue: event.venue,
+      address: event.country || "",
+      coordinates: { lat: 0, lng: 0 },
+    },
+  };
+
+  renderSelectedEvent();
+  initializeBasket();
+  renderBasket();
+}
 
 function getEventState() {
   const stateByBand = window.__ticketState || (window.__ticketState = {});
@@ -34,6 +96,7 @@ function getTicketMetaForSeat(sectionId, row, seatNumber) {
     price: Number(ticket.price),
     currency: ticket.currency,
     serviceFee: Number(ticket.serviceFee || Math.round(ticket.price * 0.05)),
+    ticketTypeId: ticket.id,
   };
 }
 
@@ -82,6 +145,7 @@ function getVisibleAvailableTickets() {
           serviceFee: Number(
             ticket.serviceFee || Math.round(ticket.price * 0.05),
           ),
+          ticketTypeId: ticket.id,
         });
       }
     }
@@ -395,6 +459,15 @@ function addTicketToBasket(ticket) {
   const isFirstTicket = basketTickets.length === 0;
   basketTickets.push(ticket);
 
+  if (window.cartSync) {
+    const quantity = basketTickets.filter(
+      (item) => item.ticketTypeId === ticket.ticketTypeId,
+    ).length;
+    window.cartSync
+      .syncTicket(ticket.ticketTypeId, quantity)
+      .catch(console.error);
+  }
+
   if (typeof persistBasketState === "function") {
     persistBasketState();
   }
@@ -417,6 +490,14 @@ function removeTicketFromBasket(ticket) {
   if (index === -1) return;
 
   const [removedItem] = basketTickets.splice(index, 1);
+  if (window.cartSync) {
+    const quantity = basketTickets.filter(
+      (item) => item.ticketTypeId === removedItem.ticketTypeId,
+    ).length;
+    window.cartSync
+      .syncTicket(removedItem.ticketTypeId, quantity)
+      .catch(console.error);
+  }
   const seatElement = getSeatElement(
     removedItem.section,
     removedItem.row,
@@ -493,25 +574,21 @@ function initializeBasket() {
   renderBasket();
 }
 
-initializeBasket();
+function renderSelectedEvent() {
+  if (!selectedBand) return;
 
-const band = bands.find((band) => band.id === bandId);
-
-if (!band) {
-  console.log("Band not found");
-} else {
   const firstSectionDate = document.querySelector(".tittle-date-dcrp-btn p");
-  if (firstSectionDate) firstSectionDate.textContent = band.event.date;
+  if (firstSectionDate) firstSectionDate.textContent = selectedBand.event.date;
 
   const description = document.querySelector(
     ".tittle-date-dcrp-btn p:nth-of-type(2)",
   );
-  if (description) description.textContent = band.event.description;
+  if (description) description.textContent = selectedBand.event.description;
 
   const bandImage = document.querySelector(".bandImg2");
   if (bandImage) {
-    bandImage.src = band.bandImg2;
-    bandImage.alt = band.bandName;
+    bandImage.src = selectedBand.bandImg2;
+    bandImage.alt = selectedBand.bandName;
   }
 
   const timeLocation = document.querySelector(".timeLocation");
@@ -519,26 +596,30 @@ if (!band) {
     const time = timeLocation.querySelector("p:nth-of-type(1)");
     const location = timeLocation.querySelector("p:nth-of-type(2)");
     if (time)
-      time.textContent = `${band.event.time} — Doors open ${band.event.doorsOpen}`;
+      time.textContent = `${selectedBand.event.time} — Doors open ${selectedBand.event.doorsOpen}`;
     if (location)
-      location.textContent = `${band.location.venue}, ${band.location.city}`;
+      location.textContent = `${selectedBand.location.venue}, ${selectedBand.location.city}`;
   }
 
   const ticketInfo = document.querySelector(".ticketInfo");
   if (ticketInfo) {
     const priceRange = ticketInfo.querySelector("p:nth-of-type(2)");
-    if (priceRange) {
-      priceRange.innerHTML = `from ${band.tickets.cheap.price}${band.tickets.cheap.currency}
+    if (priceRange && selectedBand.tickets.cheap && selectedBand.tickets.vip) {
+      priceRange.innerHTML = `from ${selectedBand.tickets.cheap.price}${selectedBand.tickets.cheap.currency}
         <span>to</span>
-        ${band.tickets.vip.price}${band.tickets.vip.currency}`;
+        ${selectedBand.tickets.vip.price}${selectedBand.tickets.vip.currency}`;
     }
   }
 
   const map = document.querySelector(".map");
   if (map) {
+    const mapQuery = encodeURIComponent(
+      `${selectedBand.location.venue}, ${selectedBand.location.city}`,
+    );
     map.innerHTML = `
       <iframe
-        src="https://www.google.com/maps?q=${band.location.coordinates.lat},${band.location.coordinates.lng}&output=embed"
+        src="https://www.google.com/maps?q=${mapQuery}&output=embed"
+        title="${selectedBand.location.venue} map"
         width="100%"
         height="100%"
         style="border:0;"
@@ -547,9 +628,7 @@ if (!band) {
       </iframe>
     `;
   }
-}
 
-if (selectedBand) {
   const container = document.querySelector(".selectTktContainer");
   if (container) {
     container.querySelector(".bandNam").textContent = selectedBand.bandName;
@@ -587,4 +666,14 @@ if (selectedBand) {
   if (vipPrice && tickets.vip) {
     vipPrice.textContent = `${tickets.vip.name}: ${tickets.vip.price}${tickets.vip.currency}`;
   }
+
+  if (typeof renderTicketLegend === "function") {
+    renderTicketLegend();
+  }
 }
+
+loadSelectedEvent().catch((error) => {
+  console.error(error);
+  const title = document.querySelector(".tittle-date-dcrp-btn h2");
+  if (title) title.textContent = "Event unavailable";
+});

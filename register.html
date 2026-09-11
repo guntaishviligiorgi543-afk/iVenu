@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Register | The Launch</title>
+    <link rel="stylesheet" href="main.css" />
+    <link rel="stylesheet" href="auth.css" />
+  </head>
+  <body>
+    <header>
+      <nav>
+        <a href="index.html"><span>home</span></a>
+        <a href="shows.html"><span>shows</span></a>
+        <a href="venue.html"><span>venue</span></a>
+        <a href="contact.html"><span>contact</span></a>
+      </nav>
+      <a class="contact" href="contact.html"><span>the launch</span></a>
+    </header>
+
+    <main class="auth-page">
+      <section class="auth-shell" aria-labelledby="register-title">
+        <h1 id="register-title">register</h1>
+        <p class="auth-intro">Create your account for faster checkout.</p>
+
+        <form class="auth-form" id="registerForm">
+          <label>
+            First name
+            <input
+              type="text"
+              name="firstName"
+              autocomplete="given-name"
+              required
+            />
+          </label>
+          <label>
+            Last name
+            <input
+              type="text"
+              name="lastName"
+              autocomplete="family-name"
+              required
+            />
+          </label>
+          <label>
+            Email
+            <input type="email" name="email" autocomplete="email" required />
+          </label>
+          <label>
+            Phone
+            <input
+              type="tel"
+              name="phone"
+              autocomplete="tel"
+              pattern="[+0-9 ()-]{7,}"
+              required
+            />
+          </label>
+          <label>
+            Password
+            <input
+              type="password"
+              name="password"
+              minlength="8"
+              autocomplete="new-password"
+              required
+            />
+          </label>
+          <label>
+            Confirm password
+            <input
+              type="password"
+              name="confirmPassword"
+              minlength="8"
+              autocomplete="new-password"
+              required
+            />
+          </label>
+          <button class="auth-submit" type="submit">Create account</button>
+        </form>
+
+        <p class="auth-message" id="authMessage" role="status"></p>
+        <a class="auth-link" href="login.html">Already have an account?</a>
+      </section>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <script src="auth.js"></script>
+    <script>
+      const form = document.querySelector("#registerForm");
+      const message = document.querySelector("#authMessage");
+      const submit = form.querySelector("button");
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const formData = new FormData(form);
+        const password = formData.get("password");
+        const confirmPassword = formData.get("confirmPassword");
+
+        if (password !== confirmPassword) {
+          message.className = "auth-message error";
+          message.textContent = "Passwords must match.";
+          return;
+        }
+
+        message.className = "auth-message";
+        message.textContent = "Creating account...";
+        submit.disabled = true;
+
+        try {
+          const result = await window.authApi.signUp({
+            firstName: formData.get("firstName").trim(),
+            lastName: formData.get("lastName").trim(),
+            email: formData.get("email").trim(),
+            phone: formData.get("phone").trim(),
+            password,
+          });
+
+          message.className = "auth-message success";
+          message.textContent = result.session
+            ? "Account created. Profile details will be available once the project permits profile inserts. Redirecting..."
+            : "Account created. Check your email to confirm it before signing in.";
+          if (result.session) window.location.href = "index.html";
+          else submit.disabled = false;
+        } catch (error) {
+          message.className = "auth-message error";
+          message.textContent =
+            error.message || "Unable to create your account.";
+          submit.disabled = false;
+        }
+      });
+    </script>
+  </body>
+</html>

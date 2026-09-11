@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login | The Launch</title>
+    <link rel="stylesheet" href="main.css" />
+    <link rel="stylesheet" href="auth.css" />
+  </head>
+  <body>
+    <header>
+      <nav>
+        <a href="index.html"><span>home</span></a>
+        <a href="shows.html"><span>shows</span></a>
+        <a href="venue.html"><span>venue</span></a>
+        <a href="contact.html"><span>contact</span></a>
+      </nav>
+      <a class="contact" href="contact.html"><span>the launch</span></a>
+    </header>
+
+    <main class="auth-page">
+      <section class="auth-shell" aria-labelledby="login-title">
+        <h1 id="login-title">login</h1>
+        <p class="auth-intro">Sign in to manage your tickets and orders.</p>
+
+        <form class="auth-form" id="loginForm">
+          <label>
+            Email
+            <input type="email" name="email" autocomplete="email" required />
+          </label>
+          <label>
+            Password
+            <input
+              type="password"
+              name="password"
+              autocomplete="current-password"
+              required
+            />
+          </label>
+          <button class="auth-submit" type="submit">Sign in</button>
+        </form>
+
+        <p class="auth-message" id="authMessage" role="status"></p>
+        <a class="auth-link" href="register.html">Create an account</a>
+      </section>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <script src="auth.js"></script>
+    <script>
+      const form = document.querySelector("#loginForm");
+      const message = document.querySelector("#authMessage");
+      const submit = form.querySelector("button");
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        message.className = "auth-message";
+        message.textContent = "Signing in...";
+        submit.disabled = true;
+
+        try {
+          const formData = new FormData(form);
+          await window.authApi.signIn(
+            formData.get("email").trim(),
+            formData.get("password"),
+          );
+          window.location.href = "index.html";
+        } catch (error) {
+          message.className = "auth-message error";
+          message.textContent = error.message || "Unable to sign in.";
+          submit.disabled = false;
+        }
+      });
+    </script>
+  </body>
+</html>

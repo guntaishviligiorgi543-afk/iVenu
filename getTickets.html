@@ -6,6 +6,7 @@
     <title>Document</title>
     <link rel="stylesheet" href="main.css" />
     <link rel="stylesheet" href="getTicket.css" />
+    <link rel="stylesheet" href="auth.css" />
   </head>
 
   <body>
@@ -602,7 +603,12 @@
       </div>
     </main>
 
-    <script src="arr.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <script src="supabase-data.js"></script>
+    <script src="auth.js"></script>
+    <script src="auth-ui.js"></script>
+    <script src="cart-sync.js"></script>
     <script>
       const hallMap = {
         sections: [
@@ -841,7 +847,14 @@
       }
 
       selectTktBtns.forEach((btn) => {
-        btn.addEventListener("click", () => {
+        btn.addEventListener("click", async (event) => {
+          event.preventDefault();
+          if (
+            window.requireAuthForTickets &&
+            !(await window.requireAuthForTickets())
+          ) {
+            return;
+          }
           document.body.classList.add("ticket-open");
 
           if (!eventState.countdownId) {
@@ -1088,7 +1101,8 @@
 
       const legendItems = document.querySelector("#legendItems");
 
-      if (selectedBand && legendItems) {
+      function renderTicketLegend() {
+        if (!selectedBand || !legendItems) return;
         legendItems.innerHTML = "";
 
         ticketTypes.forEach((item) => {
@@ -1118,6 +1132,8 @@
           legendItems.appendChild(legendItem);
         });
       }
+
+      renderTicketLegend();
     </script>
     <script>
       //confirm dialog//

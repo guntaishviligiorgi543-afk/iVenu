@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Account | The Launch</title>
+    <link rel="stylesheet" href="main.css" />
+    <link rel="stylesheet" href="auth.css" />
+  </head>
+  <body>
+    <header>
+      <nav>
+        <a href="index.html"><span>home</span></a>
+        <a href="shows.html"><span>shows</span></a>
+        <a href="venue.html"><span>venue</span></a>
+        <a href="contact.html"><span>contact</span></a>
+      </nav>
+      <a class="contact" href="contact.html"><span>the launch</span></a>
+    </header>
+
+    <main class="auth-page">
+      <section class="auth-shell" aria-labelledby="account-title">
+        <h1 id="account-title">account</h1>
+        <p class="auth-intro" id="accountStatus">Loading your account...</p>
+
+        <form class="auth-form" id="profileForm" hidden>
+          <label>First name <input name="firstName" required /></label>
+          <label>Last name <input name="lastName" required /></label>
+          <label>Email <input name="email" type="email" readonly /></label>
+          <label>Phone <input name="phone" type="tel" /></label>
+          <button class="auth-submit" type="submit">Save profile</button>
+        </form>
+
+        <p class="auth-message" id="profileMessage" role="status"></p>
+        <div class="auth-link" id="ordersHeading">Recent orders</div>
+        <div id="ordersList" class="auth-intro">Loading orders...</div>
+      </section>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <script src="auth.js"></script>
+    <script src="auth-ui.js"></script>
+    <script src="account.js"></script>
+  </body>
+</html>
