@@ -46,6 +46,18 @@
     if (error) throw error;
   }
 
+  async function updateEmail(email) {
+    const { data, error } = await client.auth.updateUser({ email });
+    if (error) throw error;
+    return data;
+  }
+
+  async function updatePassword(password) {
+    const { data, error } = await client.auth.updateUser({ password });
+    if (error) throw error;
+    return data;
+  }
+
   function subscribeToAuthChanges(callback) {
     return client.auth.onAuthStateChange(callback);
   }
@@ -55,6 +67,8 @@
     signIn,
     signUp,
     signOut,
+    updateEmail,
+    updatePassword,
     subscribeToAuthChanges,
   };
 })();

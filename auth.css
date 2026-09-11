@@ -64,6 +64,10 @@ header nav .authNavLink[hidden] {
   margin-top: 30px;
 }
 
+.auth-form[hidden] {
+  display: none;
+}
+
 .auth-form label {
   display: grid;
   gap: 7px;
@@ -99,6 +103,22 @@ header nav .authNavLink[hidden] {
 .auth-submit:hover,
 .auth-submit:disabled {
   background: #fff;
+}
+
+.auth-danger {
+  width: 100%;
+  margin-top: 20px;
+  padding: 12px;
+  border: 1px solid #ff6b6b;
+  color: #ff9a9a;
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+}
+
+.auth-danger:hover {
+  color: #000;
+  background: #ff6b6b;
 }
 
 .auth-message {
