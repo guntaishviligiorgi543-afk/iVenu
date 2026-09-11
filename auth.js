@@ -13,7 +13,7 @@
 
   async function signIn(email, password) {
     const { data, error } = await client.auth.signInWithPassword({
-      email,
+      email: normalizeEmail(email),
       password,
     });
     if (error) throw error;
@@ -21,8 +21,9 @@
   }
 
   async function signUp({ firstName, lastName, email, phone, password }) {
+    const normalizedEmail = normalizeEmail(email);
     const { data, error } = await client.auth.signUp({
-      email,
+      email: normalizedEmail,
       password,
       options: {
         data: {
@@ -37,8 +38,44 @@
 
     return {
       ...data,
-      profile: { first_name: firstName, last_name: lastName, email, phone },
+      profile: {
+        first_name: firstName,
+        last_name: lastName,
+        email: normalizedEmail,
+        phone,
+      },
     };
+  }
+
+  function normalizeEmail(email) {
+    return String(email || "")
+      .trim()
+      .toLowerCase();
+  }
+
+  function validatePassword(password) {
+    if (typeof password !== "string" || password.length < 8) {
+      return "Password must be at least 8 characters.";
+    }
+    if (
+      !/[A-Z]/.test(password) ||
+      !/[a-z]/.test(password) ||
+      !/\d/.test(password)
+    ) {
+      return "Password must include uppercase, lowercase, and a number.";
+    }
+    return "";
+  }
+
+  async function requestPasswordReset(email) {
+    const redirectTo = window.location.protocol.startsWith("http")
+      ? `${window.location.origin}/reset-password.html`
+      : "http://localhost:8000/reset-password.html";
+    const { error } = await client.auth.resetPasswordForEmail(
+      normalizeEmail(email),
+      { redirectTo },
+    );
+    if (error) throw error;
   }
 
   async function signOut() {
@@ -69,6 +106,9 @@
     signOut,
     updateEmail,
     updatePassword,
+    requestPasswordReset,
+    normalizeEmail,
+    validatePassword,
     subscribeToAuthChanges,
   };
 })();

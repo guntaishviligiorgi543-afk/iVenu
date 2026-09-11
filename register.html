@@ -98,6 +98,13 @@
         const password = formData.get("password");
         const confirmPassword = formData.get("confirmPassword");
 
+        const passwordError = window.authApi.validatePassword(password);
+        if (passwordError) {
+          message.className = "auth-message error";
+          message.textContent = passwordError;
+          return;
+        }
+
         if (password !== confirmPassword) {
           message.className = "auth-message error";
           message.textContent = "Passwords must match.";
@@ -125,8 +132,12 @@
           else submit.disabled = false;
         } catch (error) {
           message.className = "auth-message error";
+          const errorText = String(error.message || "").toLowerCase();
           message.textContent =
-            error.message || "Unable to create your account.";
+            errorText.includes("already registered") ||
+            errorText.includes("already exists")
+              ? "An account with this email already exists."
+              : error.message || "Unable to create your account.";
           submit.disabled = false;
         }
       });

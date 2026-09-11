@@ -132,7 +132,9 @@
 
   emailForm.addEventListener("submit", async (event) => {
     event.preventDefault();
-    const email = new FormData(emailForm).get("email").trim();
+    const email = window.authApi.normalizeEmail(
+      new FormData(emailForm).get("email"),
+    );
     setMessage("Updating authentication email...");
 
     try {
@@ -164,6 +166,11 @@
   securityForm.addEventListener("submit", async (event) => {
     event.preventDefault();
     const password = new FormData(securityForm).get("password");
+    const passwordError = window.authApi.validatePassword(password);
+    if (passwordError) {
+      setMessage(passwordError, "error");
+      return;
+    }
     try {
       await window.authApi.updatePassword(password);
       securityForm.reset();
