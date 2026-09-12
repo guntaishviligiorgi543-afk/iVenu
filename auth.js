@@ -94,9 +94,13 @@
     if (error) throw error;
   }
 
-  async function signOut() {
+  async function signOut({ redirectTo = null } = {}) {
     const { error } = await client.auth.signOut();
     if (error) throw error;
+
+    if (redirectTo) {
+      window.location.href = redirectTo;
+    }
   }
 
   async function updateEmail(email) {

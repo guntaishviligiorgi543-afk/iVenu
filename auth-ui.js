@@ -12,13 +12,14 @@
   accountLink.hidden = true;
   nav.appendChild(accountLink);
 
+  const isAccountPage = document.body.classList.contains("account-page");
   let currentSession = null;
 
   async function render(session) {
     currentSession = session;
     authLink.textContent = session ? "logout" : "login";
     authLink.href = session ? "#" : "login.html";
-    accountLink.hidden = !session;
+    accountLink.hidden = isAccountPage || !session;
 
     if (!session) return;
     if (authLink.dataset.bound === "true") return;
@@ -29,8 +30,7 @@
       event.preventDefault();
       authLink.textContent = "...";
       try {
-        await window.authApi.signOut();
-        window.location.reload();
+        await window.authApi.signOut({ redirectTo: "index.html" });
       } catch (error) {
         console.error(error);
         authLink.textContent = "logout";
