@@ -69,7 +69,17 @@
           window.location.href = "index.html";
         } catch (error) {
           message.className = "auth-message error";
-          message.textContent = error.message || "Unable to sign in.";
+          const errorText = String(error.message || "").toLowerCase();
+          message.textContent = errorText.includes("email not confirmed")
+            ? "Please verify your email before signing in."
+            : error.message || "Unable to sign in.";
+          if (errorText.includes("email not confirmed")) {
+            const verifyLink = document.createElement("a");
+            verifyLink.className = "auth-link";
+            verifyLink.href = `verify-email.html?email=${encodeURIComponent(window.authApi.normalizeEmail(formData.get("email")))}`;
+            verifyLink.textContent = "Enter verification code";
+            message.append(" ", verifyLink);
+          }
           submit.disabled = false;
         }
       });

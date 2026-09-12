@@ -124,20 +124,31 @@
             password,
           });
 
+          if (result.duplicateEmail) {
+            throw new Error(
+              "An account with this email already exists. Please log in or reset your password.",
+            );
+          }
+
           message.className = "auth-message success";
           message.textContent = result.session
             ? "Account created. Profile details will be available once the project permits profile inserts. Redirecting..."
-            : "Account created. Check your email to confirm it before signing in.";
-          if (result.session) window.location.href = "index.html";
-          else submit.disabled = false;
+            : "Account created. Enter the verification code sent to your email.";
+          if (result.session) {
+            window.location.href = "index.html";
+          } else {
+            window.location.href = `verify-email.html?email=${encodeURIComponent(result.profile.email)}`;
+          }
         } catch (error) {
           message.className = "auth-message error";
           const errorText = String(error.message || "").toLowerCase();
           message.textContent =
             errorText.includes("already registered") ||
             errorText.includes("already exists")
-              ? "An account with this email already exists."
-              : error.message || "Unable to create your account.";
+              ? "An account with this email already exists. Please log in or reset your password."
+              : errorText.includes("email rate limit")
+                ? "Too many email requests. Please wait and try again."
+                : error.message || "Unable to create your account.";
           submit.disabled = false;
         }
       });

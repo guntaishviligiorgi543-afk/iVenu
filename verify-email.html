@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Verify Email | The Launch</title>
+    <link rel="stylesheet" href="main.css" />
+    <link rel="stylesheet" href="auth.css" />
+  </head>
+  <body>
+    <header>
+      <nav>
+        <a href="index.html"><span>home</span></a>
+        <a href="shows.html"><span>shows</span></a>
+        <a href="venue.html"><span>venue</span></a>
+        <a href="contact.html"><span>contact</span></a>
+      </nav>
+      <a class="contact" href="contact.html"><span>the launch</span></a>
+    </header>
+
+    <main class="auth-page">
+      <section
+        class="auth-shell auth-verification"
+        aria-labelledby="verify-title"
+      >
+        <h1 id="verify-title">verify email</h1>
+        <p class="auth-intro" id="verifyIntro">
+          Enter the eight-digit code sent to your email.
+        </p>
+
+        <form class="auth-form" id="verifyForm" hidden>
+          <label>
+            Verification code
+            <input
+              id="verificationCode"
+              name="code"
+              inputmode="numeric"
+              autocomplete="one-time-code"
+              pattern="[0-9]{8}"
+              minlength="8"
+              maxlength="8"
+              placeholder="00000000"
+              required
+            />
+          </label>
+          <button class="auth-submit" type="submit">Verify email</button>
+        </form>
+
+        <p class="auth-message" id="verifyMessage" role="status"></p>
+        <button
+          class="auth-link auth-link-button"
+          id="resendCode"
+          type="button"
+          disabled
+        >
+          Resend code <span id="resendCountdown"></span>
+        </button>
+        <a class="auth-link" href="login.html">Back to login</a>
+      </section>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <script src="auth.js"></script>
+    <script>
+      const params = new URLSearchParams(window.location.search);
+      const email = window.authApi.normalizeEmail(params.get("email"));
+      const form = document.querySelector("#verifyForm");
+      const codeInput = document.querySelector("#verificationCode");
+      const message = document.querySelector("#verifyMessage");
+      const intro = document.querySelector("#verifyIntro");
+      const submit = form.querySelector("button");
+      const resend = document.querySelector("#resendCode");
+      const countdown = document.querySelector("#resendCountdown");
+      let resendSeconds = 60;
+      let resendTimer;
+      let failedAttempts = 0;
+      let verifying = false;
+
+      function setMessage(text, type = "") {
+        message.className = `auth-message ${type}`;
+        message.textContent = text;
+      }
+
+      function startResendCooldown() {
+        clearInterval(resendTimer);
+        resendSeconds = 60;
+        resend.disabled = true;
+        countdown.textContent = `(${resendSeconds}s)`;
+        resendTimer = setInterval(() => {
+          resendSeconds -= 1;
+          countdown.textContent = resendSeconds ? `(${resendSeconds}s)` : "";
+          if (!resendSeconds) {
+            clearInterval(resendTimer);
+            resend.disabled = false;
+          }
+        }, 1000);
+      }
+
+      async function redirectIfAlreadyVerified() {
+        try {
+          const user = await window.authApi.getUser();
+          if (user?.email_confirmed_at) {
+            window.location.href = "index.html";
+            return true;
+          }
+        } catch (_error) {
+          // A pending signup may not have an authenticated session yet.
+        }
+        return false;
+      }
+
+      if (!email) {
+        intro.textContent =
+          "This verification request is missing an email address.";
+        setMessage("Return to registration and try again.", "error");
+      } else {
+        intro.textContent = `Enter the eight-digit code sent to ${email}.`;
+        form.hidden = false;
+        startResendCooldown();
+        codeInput.focus();
+        redirectIfAlreadyVerified();
+      }
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        if (!email || failedAttempts >= 5) return;
+
+        const code = codeInput.value;
+        if (!/^\d{8}$/.test(code)) {
+          setMessage("Enter the eight-digit verification code.", "error");
+          return;
+        }
+
+        if (verifying) return;
+        verifying = true;
+        submit.disabled = true;
+        setMessage("Verifying email...");
+        try {
+          await window.authApi.verifyEmailOtp(email, code);
+          await window.authApi.refreshSession();
+          const verifiedUser = await window.authApi.getUser();
+          if (!verifiedUser?.email_confirmed_at) {
+            throw new Error("Email verification has not completed yet.");
+          }
+          setMessage("Email verified. Redirecting...", "success");
+          window.location.href = "index.html";
+        } catch (error) {
+          failedAttempts += 1;
+          submit.disabled = failedAttempts >= 5;
+          const errorText = String(error.message || "").toLowerCase();
+          setMessage(
+            errorText.includes("expired")
+              ? "This code has expired. Request a new code."
+              : failedAttempts >= 5
+                ? "Too many incorrect attempts. Request a new code later."
+                : "That code is incorrect or has already been used.",
+            "error",
+          );
+          verifying = false;
+        }
+      });
+
+      resend.addEventListener("click", async () => {
+        if (!email || resend.disabled) return;
+        resend.disabled = true;
+        setMessage("Sending a new code...");
+        try {
+          await window.authApi.resendSignupConfirmation(email);
+          failedAttempts = 0;
+          submit.disabled = false;
+          codeInput.value = "";
+          setMessage("A new verification code has been sent.", "success");
+          startResendCooldown();
+        } catch (error) {
+          console.error(error);
+          resend.disabled = false;
+          setMessage(
+            String(error.message || "")
+              .toLowerCase()
+              .includes("rate")
+              ? "Please wait before requesting another code."
+              : "Unable to resend the verification code.",
+            "error",
+          );
+        }
+      });
+    </script>
+  </body>
+</html>

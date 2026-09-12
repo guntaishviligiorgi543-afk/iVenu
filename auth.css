@@ -141,6 +141,25 @@ header nav .authNavLink[hidden] {
   text-decoration: underline;
 }
 
+.auth-link-button {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+}
+
+.auth-link-button:disabled {
+  color: rgba(255, 255, 255, 0.45);
+  cursor: not-allowed;
+}
+
+.auth-verification .auth-form input {
+  font-size: 1.4rem;
+  letter-spacing: 0.3em;
+  text-align: center;
+}
+
 @media (max-width: 650px) {
   .auth-page {
     padding: 120px 18px 50px;
