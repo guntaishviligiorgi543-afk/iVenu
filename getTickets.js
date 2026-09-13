@@ -577,6 +577,45 @@ function initializeBasket() {
 function renderSelectedEvent() {
   if (!selectedBand) return;
 
+  const addToCartButton = document.querySelector(".addEventToCartBtn");
+  if (addToCartButton) {
+    const syncCartButton = async () => {
+      const isAdded = await window.eventCart.hasEvent(selectedBand.id);
+      addToCartButton.textContent = isAdded ? "Added to Cart" : "Add to Cart";
+      addToCartButton.classList.toggle("is-added", isAdded);
+    };
+
+    addToCartButton.onclick = async () => {
+      addToCartButton.disabled = true;
+      try {
+        if (addToCartButton.classList.contains("is-added")) {
+          await window.eventCart.removeEvent(selectedBand.id);
+        } else {
+          await window.eventCart.addEvent(selectedBand.id);
+        }
+        addToCartButton.textContent = addToCartButton.classList.contains(
+          "is-added",
+        )
+          ? "Add to Cart"
+          : "Added to Cart";
+        addToCartButton.classList.toggle("is-added");
+      } catch (error) {
+        console.error(error);
+        await syncCartButton();
+        console.error(error.message || "Unable to update cart");
+      } finally {
+        addToCartButton.disabled = false;
+      }
+    };
+
+    syncCartButton().catch((error) => console.error(error));
+    window.addEventListener("eventCartChanged", (event) => {
+      const isAdded = event.detail.eventIds.includes(String(selectedBand.id));
+      addToCartButton.textContent = isAdded ? "Added to Cart" : "Add to Cart";
+      addToCartButton.classList.toggle("is-added", isAdded);
+    });
+  }
+
   const firstSectionDate = document.querySelector(".tittle-date-dcrp-btn p");
   if (firstSectionDate) firstSectionDate.textContent = selectedBand.event.date;
 

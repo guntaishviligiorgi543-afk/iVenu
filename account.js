@@ -234,6 +234,7 @@
       : { data: [] };
     if (ticketResult.error) throw ticketResult.error;
     renderCart(cartItems, ticketResult.data || []);
+    window.eventCart?.render().catch((error) => console.error(error));
   }
 
   document
@@ -259,6 +260,12 @@
           });
       });
     });
+
+  if (window.location.hash === "#cart") {
+    document
+      .querySelector('.account-sidebar-item[data-section="cart"]')
+      ?.click();
+  }
 
   logoutButton.addEventListener("click", async () => {
     logoutButton.disabled = true;

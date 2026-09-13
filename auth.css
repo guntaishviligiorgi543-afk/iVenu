@@ -1538,6 +1538,197 @@ header nav .authNavLink[hidden] {
   color: #ff9475;
 }
 
+.event-cart-toggle {
+  position: fixed;
+  right: 22px;
+  bottom: 22px;
+  z-index: 1000001;
+  display: inline-grid;
+  width: 48px;
+  height: 48px;
+  place-items: center;
+  border: 1px solid #ff9475;
+  border-radius: 50%;
+  color: #ff9475;
+  background: #111;
+  cursor: pointer;
+}
+
+.event-cart-toggle svg {
+  width: 22px;
+  height: 22px;
+  fill: currentColor;
+}
+.event-cart-toggle span {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  min-width: 18px;
+  padding: 2px 5px;
+  border-radius: 99px;
+  color: #000;
+  background: #ff9475;
+  font-size: 0.68rem;
+}
+.event-cart-panel {
+  position: fixed;
+  inset: 0 0 0 auto;
+  z-index: 1000000;
+  display: flex;
+  width: min(40vw, 560px);
+  flex-direction: column;
+  padding: 28px;
+  border-left: 1px solid rgba(255, 148, 117, 0.4);
+  color: #fff;
+  background: #121212;
+  box-shadow: -12px 0 36px rgba(0, 0, 0, 0.3);
+  transform: translateX(100%);
+  transition: transform 0.22s ease;
+  font-family: "Cabin", sans-serif;
+}
+.event-cart-panel.is-open {
+  transform: translateX(0);
+}
+.event-cart-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.event-cart-panel-head h2 {
+  color: #ff9475;
+  font-family: "Fjalla One", Impact, sans-serif;
+  font-weight: 400;
+}
+.event-cart-panel-head button {
+  color: #fff;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+.event-cart-summary {
+  margin: 8px 0 18px;
+  color: rgba(255, 255, 255, 0.6);
+}
+.event-cart-list {
+  display: grid;
+  gap: 10px;
+  overflow: auto;
+}
+.event-cart-row {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: center;
+  padding: 14px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+.event-cart-row img {
+  width: 96px;
+  height: 78px;
+  object-fit: cover;
+  border-radius: 6px;
+}
+.event-cart-row strong,
+.event-cart-row span {
+  display: block;
+}
+.event-cart-row span {
+  margin-top: 4px;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.75rem;
+}
+.event-cart-tickets {
+  grid-column: 3;
+  width: max-content;
+  min-width: 116px;
+  padding: 11px 16px;
+  border: 1px solid #ff9475;
+  color: #ff9475;
+  font-family: "Cabin", sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  text-align: center;
+}
+.event-cart-go {
+  margin-top: auto;
+  padding: 13px;
+  color: #000;
+  background: #ff9475;
+  font-weight: 700;
+  text-align: center;
+  text-transform: uppercase;
+}
+.event-cart-empty {
+  color: rgba(255, 255, 255, 0.55);
+}
+.dashboard-event-cart {
+  display: grid;
+  gap: 10px;
+}
+
+.addEventToCartBtn,
+.event-cart-remove {
+  border: 1px solid #ff9475;
+  color: #ff9475;
+  background: transparent;
+  font-family: "Cabin", sans-serif;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  cursor: pointer;
+  width: fit-content;
+  align-self: center;
+}
+.addEventToCartBtn {
+  padding: 10px 13px;
+  font-size: 1.1rem;
+  text-decoration: underline;
+}
+
+.addEventToCartBtn:hover,
+.addEventToCartBtn:disabled,
+.event-cart-remove:hover,
+.event-cart-remove:disabled {
+  color: #000;
+  background: #ff9475;
+}
+
+.addEventToCartBtn.is-added {
+  color: #000;
+  background: #ff9475;
+}
+
+.event-cart-remove {
+  grid-column: 3;
+  justify-self: end;
+  padding: 10px 14px;
+  border-color: rgba(255, 255, 255, 0.35);
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.68rem;
+}
+
+@media (max-width: 560px) {
+  .event-cart-panel {
+    width: min(92vw, 420px);
+    padding: 22px;
+  }
+  .event-cart-row {
+    grid-template-columns: 82px minmax(0, 1fr);
+  }
+  .event-cart-row img {
+    width: 82px;
+    height: 70px;
+  }
+  .event-cart-tickets,
+  .event-cart-remove {
+    grid-column: 2;
+    justify-self: start;
+  }
+  .event-cart-toggle {
+    right: 14px;
+    bottom: 14px;
+  }
+}
+
 @media (max-width: 560px) {
   .account-page .security-otp {
     padding: 18px;
