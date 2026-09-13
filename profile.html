@@ -8,22 +8,13 @@
     <link rel="stylesheet" href="auth.css" />
   </head>
   <body class="account-page">
-    <header>
-      <nav>
-        <a href="index.html"><span>home</span></a>
-        <a href="shows.html"><span>shows</span></a>
-        <a href="venue.html"><span>venue</span></a>
-        <a href="contact.html"><span>contact</span></a>
-      </nav>
-      <a class="contact" href="contact.html"><span>the launch</span></a>
-    </header>
-
     <main class="account-page-main">
       <section class="account-dashboard" aria-labelledby="account-title">
+        <a class="account-home-link" href="index.html">← Home</a>
         <header class="account-header">
           <div>
             <p class="account-eyebrow">Member area</p>
-            <h1 id="account-title">Account</h1>
+            <h1 id="account-title">Dashboard</h1>
             <p class="account-welcome" id="accountWelcome">Welcome back</p>
           </div>
           <p class="account-status" id="accountStatus">
@@ -77,11 +68,19 @@
                 data-section="cart"
                 type="button"
               >
-                <svg viewBox="0 0 24 24" aria-hidden="true">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="1.5em"
+                  height="1.5em"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M0 0h24v24H0z" fill="none" />
                   <path
-                    d="M7 18a2 2 0 1 1 0 4a2 2 0 0 1 0-4zm10 0a2 2 0 1 1 0 4a2 2 0 0 1 0-4zM6.2 6h14.25l-1.3 7.25H8.02L6.2 6zm-.72-2L4.1 4.5A1 1 0 0 0 3.2 5.5L4.7 9h13.9a1 1 0 0 1 .97 1.24l-1.6 8.1A2 2 0 0 1 15.97 19H8.02a2 2 0 0 1-1.95-1.52L4.82 7.5H3.5a1 1 0 0 1-.9-1.43L4.1 3.5z"
+                    fill="currentColor"
+                    d="M19.148 5.25H5.335l-1.18-2.115A.75.75 0 0 0 3.5 2.75H2a.75.75 0 0 0 0 1.5h1.06l1.164 2.088L6.91 12.28l.003.006l.237.523l-2.697 2.877a.75.75 0 0 0 .462 1.258l2.458.281a40.7 40.7 0 0 0 9.254 0l2.458-.28a.75.75 0 0 0-.17-1.491l-2.458.28a39.3 39.3 0 0 1-8.914 0l-.975-.11l1.98-2.112l.053-.064l.752.098c1.055.138 2.122.165 3.182.08a9.3 9.3 0 0 0 6.366-3.268l.579-.685l.053-.072l1.078-1.642c.764-1.164-.071-2.71-1.463-2.71M6.5 18.5a1.5 1.5 0 1 0 0 3a1.5 1.5 0 0 0 0-3M16 20a1.5 1.5 0 1 1 3 0a1.5 1.5 0 0 1-3 0"
                   />
                 </svg>
+
                 <span>Cart</span>
               </button>
             </nav>
@@ -91,9 +90,20 @@
               id="dashboardLogout"
               type="button"
             >
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M10 17v-2h7V9h-7V7l-5 5 5 5zm-7-7h8v2H3z" />
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="1.5em"
+                height="1.5em"
+                viewBox="0 0 24 24"
+              >
+                <path d="M0 0h24v24H0z" fill="none" />
+                <path fill="currentColor" d="M16 13v-2H7V8l-5 4l5 4v-3z" />
+                <path
+                  fill="currentColor"
+                  d="M20 3h-9c-1.103 0-2 .897-2 2v4h2V5h9v14h-9v-4H9v4c0 1.103.897 2 2 2h9c1.103 0 2-.897 2-2V5c0-1.103-.897-2-2-2"
+                />
               </svg>
+
               <span>Logout</span>
             </button>
           </aside>
@@ -179,48 +189,45 @@
               <form class="auth-form dashboard-form" id="securityForm">
                 <div class="form-grid">
                   <label
-                    >New password
-                    <span class="password-field"
+                    >Current password
+                    <span class="password-input-wrapper"
                       ><input
-                        name="password"
+                        name="currentPassword"
                         type="password"
-                        minlength="8"
-                        autocomplete="new-password"
-                        required
-                      /><button
-                        class="password-toggle"
-                        type="button"
-                        data-target="password"
-                      >
-                        Show
-                      </button></span
-                    ></label
-                  >
-                  <label
-                    >Confirm new password
-                    <span class="password-field"
-                      ><input
-                        name="confirmPassword"
-                        type="password"
-                        minlength="8"
-                        autocomplete="new-password"
-                        required
-                      /><button
-                        class="password-toggle"
-                        type="button"
-                        data-target="confirmPassword"
-                      >
-                        Show
-                      </button></span
-                    ></label
-                  >
+                        autocomplete="current-password"
+                        required /></span
+                  ></label>
                 </div>
-                <p class="password-hint">
-                  Use at least 8 characters with uppercase, lowercase, and a
-                  number.
-                </p>
+                <div id="securityNewPasswordFields">
+                  <div class="form-grid">
+                    <label
+                      >New password
+                      <span class="password-input-wrapper"
+                        ><input
+                          name="password"
+                          type="password"
+                          minlength="8"
+                          autocomplete="new-password"
+                          required /></span
+                    ></label>
+                    <label
+                      >Confirm new password
+                      <span class="password-input-wrapper"
+                        ><input
+                          name="confirmPassword"
+                          type="password"
+                          minlength="8"
+                          autocomplete="new-password"
+                          required /></span
+                    ></label>
+                  </div>
+                  <p class="password-hint">
+                    Use at least 8 characters with uppercase, lowercase, and a
+                    number.
+                  </p>
+                </div>
                 <button class="auth-submit" type="submit">
-                  Update password
+                  Change password
                 </button>
               </form>
               <form
@@ -240,6 +247,41 @@
                 </button>
               </form>
               <p class="auth-message" id="securityMessage" role="status"></p>
+              <div
+                class="account-result-dialog"
+                id="passwordResultDialog"
+                hidden
+              >
+                <div
+                  class="account-result-dialog__panel"
+                  role="dialog"
+                  aria-modal="true"
+                  aria-labelledby="passwordResultTitle"
+                >
+                  <button
+                    class="account-result-dialog__close"
+                    id="closePasswordResult"
+                    type="button"
+                    aria-label="Close"
+                  >
+                    ×
+                  </button>
+                  <p class="account-eyebrow" id="passwordResultLabel">
+                    Password change
+                  </p>
+                  <h3 id="passwordResultTitle">Password updated</h3>
+                  <p id="passwordResultText">
+                    Your password was changed successfully.
+                  </p>
+                  <button
+                    class="auth-submit"
+                    id="passwordResultAction"
+                    type="button"
+                  >
+                    Done
+                  </button>
+                </div>
+              </div>
             </section>
 
             <section
@@ -293,6 +335,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-config.js"></script>
     <script src="auth.js"></script>
+    <script src="password-toggle.js"></script>
     <script src="auth-ui.js"></script>
     <script src="cart-sync.js"></script>
     <script src="account.js"></script>

@@ -6,10 +6,19 @@
   const ordersList = document.querySelector("#ordersList");
   const cartList = document.querySelector("#cartList");
   const securityForm = document.querySelector("#securityForm");
+  const securityNewPasswordFields = document.querySelector(
+    "#securityNewPasswordFields",
+  );
   const emailForm = document.querySelector("#emailForm");
   const deleteButton = document.querySelector("#deleteAccount");
   const deleteMessage = document.querySelector("#deleteMessage");
   const securityMessage = document.querySelector("#securityMessage");
+  const passwordResultDialog = document.querySelector("#passwordResultDialog");
+  const passwordResultTitle = document.querySelector("#passwordResultTitle");
+  const passwordResultText = document.querySelector("#passwordResultText");
+  const passwordResultLabel = document.querySelector("#passwordResultLabel");
+  const closePasswordResult = document.querySelector("#closePasswordResult");
+  const passwordResultAction = document.querySelector("#passwordResultAction");
   const editProfileButton = document.querySelector("#editProfile");
   const cancelProfileButton = document.querySelector("#cancelProfile");
   const profileDisplayName = document.querySelector("#profileDisplayName");
@@ -26,6 +35,24 @@
     target.textContent = text;
   }
 
+  function showPasswordResult(success, text) {
+    passwordResultLabel.textContent = success
+      ? "Password change"
+      : "Password not changed";
+    passwordResultTitle.textContent = success
+      ? "Password updated"
+      : "Password change failed";
+    passwordResultText.textContent = text;
+    passwordResultDialog.hidden = false;
+  }
+
+  function hidePasswordResult() {
+    passwordResultDialog.hidden = true;
+  }
+
+  closePasswordResult.addEventListener("click", hidePasswordResult);
+  passwordResultAction.addEventListener("click", hidePasswordResult);
+
   function escapeHtml(value) {
     return String(value ?? "")
       .replaceAll("&", "&amp;")
@@ -33,6 +60,38 @@
       .replaceAll(">", "&gt;")
       .replaceAll('"', "&quot;")
       .replaceAll("'", "&#039;");
+  }
+
+  function getSecurityErrorMessage(error, fallback) {
+    const errorText = String(error?.message || "").toLowerCase();
+    if (errorText.includes("rate limit") || errorText.includes("too many")) {
+      return "Too many requests. Please wait before trying again.";
+    }
+    if (errorText.includes("expired")) {
+      return "This code has expired. Request a new code.";
+    }
+    if (errorText.includes("invalid") || errorText.includes("otp")) {
+      return "Invalid verification code.";
+    }
+    return fallback;
+  }
+
+  function startResendCooldown() {
+    let remaining = 60;
+    window.clearInterval(resendTimer);
+    securityOtpResend.disabled = true;
+    securityOtpResend.textContent = `Resend code (${remaining}s)`;
+    resendTimer = window.setInterval(() => {
+      remaining -= 1;
+      if (remaining <= 0) {
+        window.clearInterval(resendTimer);
+        resendTimer = null;
+        securityOtpResend.disabled = false;
+        securityOtpResend.textContent = "Resend code";
+        return;
+      }
+      securityOtpResend.textContent = `Resend code (${remaining}s)`;
+    }, 1000);
   }
 
   function renderOrders(orders) {
@@ -97,11 +156,23 @@
   }
 
   async function loadAccount() {
-    const session = await window.authApi.getSession();
+    let session;
+    try {
+      session = await window.authApi.getSession();
+    } catch (error) {
+      console.error(error);
+      setMessage(
+        "Your session could not be verified. Please try again.",
+        "error",
+        securityMessage,
+      );
+      return;
+    }
     if (!session?.user) {
       status.textContent = "Please sign in to view your account.";
       form.hidden = true;
       securityForm.hidden = true;
+      securityNewPasswordFields.hidden = true;
       emailForm.hidden = true;
       deleteButton.hidden = true;
       editProfileButton.disabled = true;
@@ -201,15 +272,6 @@
     }
   });
 
-  document.querySelectorAll(".password-toggle").forEach((button) => {
-    button.addEventListener("click", () => {
-      const input = securityForm.elements[button.dataset.target];
-      const visible = input.type === "text";
-      input.type = visible ? "password" : "text";
-      button.textContent = visible ? "Show" : "Hide";
-    });
-  });
-
   editProfileButton.addEventListener("click", () => {
     form.hidden = false;
     editProfileButton.hidden = true;
@@ -295,27 +357,50 @@
 
   securityForm.addEventListener("submit", async (event) => {
     event.preventDefault();
-    const password = new FormData(securityForm).get("password");
-    const passwordError = window.authApi.validatePassword(password);
+    const values = new FormData(securityForm);
+    const currentPassword = values.get("currentPassword");
+    const newPassword = values.get("password");
+    const confirmPassword = values.get("confirmPassword");
+    const submitButton = securityForm.querySelector('button[type="submit"]');
+
+    if (!currentPassword) {
+      showPasswordResult(false, "Enter your current password.");
+      return;
+    }
+    const passwordError = window.authApi.validatePassword(newPassword);
     if (passwordError) {
-      setMessage(passwordError, "error", securityMessage);
+      showPasswordResult(false, passwordError);
       return;
     }
-    if (password !== new FormData(securityForm).get("confirmPassword")) {
-      setMessage("Passwords do not match.", "error", securityMessage);
+    if (newPassword !== confirmPassword) {
+      showPasswordResult(false, "New password and confirmation do not match.");
       return;
     }
+
+    submitButton.disabled = true;
     try {
-      await window.authApi.updatePassword(password);
-      securityForm.reset();
-      setMessage(
-        "Password changed securely through Supabase Auth.",
-        "success",
-        securityMessage,
+      const session = await window.authApi.getSession();
+      const email = session?.user?.email;
+      if (!email) throw new Error("Please sign in again.");
+      await window.authApi.verifyCurrentPassword(email, currentPassword);
+      await window.authApi.updatePasswordWithCurrentPassword(
+        newPassword,
+        currentPassword,
       );
+      securityForm.reset();
+      setMessage("Password updated successfully.", "success", securityMessage);
+      showPasswordResult(true, "Your password was changed successfully.");
     } catch (error) {
       console.error(error);
-      setMessage("Password could not be changed.", "error", securityMessage);
+      const errorText = String(error?.message || "").toLowerCase();
+      const text =
+        errorText.includes("invalid") || errorText.includes("credential")
+          ? "Current password is incorrect."
+          : "Password was not changed. Please try again.";
+      setMessage(text, "error", securityMessage);
+      showPasswordResult(false, text);
+    } finally {
+      submitButton.disabled = false;
     }
   });
 
@@ -328,14 +413,12 @@
 
     try {
       const session = await window.authApi.getSession();
-      if (!session?.user) {
+      if (!session?.user)
         throw new Error("You must be signed in to delete your account.");
-      }
 
       const { data, error } = await client.functions.invoke("delete-account", {
         body: {},
       });
-
       if (error) throw error;
       if (!data?.deleted)
         throw new Error("Account deletion was not completed.");

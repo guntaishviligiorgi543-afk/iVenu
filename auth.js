@@ -26,6 +26,26 @@
     return data;
   }
 
+  async function verifyCurrentPassword(email, password) {
+    const isolatedClient = window.supabase.createClient(
+      window.supabaseConfig.url,
+      window.supabaseConfig.publishableKey,
+      {
+        auth: {
+          persistSession: false,
+          autoRefreshToken: false,
+          detectSessionInUrl: false,
+        },
+      },
+    );
+    const { error } = await isolatedClient.auth.signInWithPassword({
+      email: normalizeEmail(email),
+      password,
+    });
+    await isolatedClient.auth.signOut({ scope: "local" });
+    if (error) throw error;
+  }
+
   async function signUp({ firstName, lastName, email, phone, password }) {
     const normalizedEmail = normalizeEmail(email);
     const { data, error } = await client.auth.signUp({
@@ -112,7 +132,29 @@
   }
 
   async function updatePassword(password) {
+    const { data: userData, error: userError } = await client.auth.getUser();
+    if (userError || !userData?.user) {
+      throw (
+        userError || new Error("A valid authenticated session is required.")
+      );
+    }
+
     const { data, error } = await client.auth.updateUser({ password });
+    if (error) throw error;
+    return data;
+  }
+
+  async function updatePasswordWithCurrentPassword(password, currentPassword) {
+    const { data: userData, error: userError } = await client.auth.getUser();
+    if (userError || !userData?.user) {
+      throw (
+        userError || new Error("A valid authenticated session is required.")
+      );
+    }
+    const { data, error } = await client.auth.updateUser({
+      password,
+      current_password: currentPassword,
+    });
     if (error) throw error;
     return data;
   }
@@ -147,6 +189,14 @@
     }
   }
 
+  async function requestEmailOtp(email) {
+    const { error } = await client.auth.signInWithOtp({
+      email: normalizeEmail(email),
+      options: { shouldCreateUser: false },
+    });
+    if (error) throw error;
+  }
+
   async function resendSignupConfirmation(email) {
     console.debug("[auth] resend signup confirmation", {
       email: normalizeEmail(email),
@@ -172,11 +222,14 @@
     getSession,
     getUser,
     signIn,
+    verifyCurrentPassword,
     signUp,
     signOut,
     updateEmail,
     updatePassword,
+    updatePasswordWithCurrentPassword,
     verifyEmailOtp,
+    requestEmailOtp,
     resendSignupConfirmation,
     refreshSession,
     requestPasswordReset,
