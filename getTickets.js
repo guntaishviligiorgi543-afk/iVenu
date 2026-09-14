@@ -579,40 +579,35 @@ function renderSelectedEvent() {
 
   const addToCartButton = document.querySelector(".addEventToCartBtn");
   if (addToCartButton) {
-    const syncCartButton = async () => {
+    const updateAddToCartButton = async () => {
       const isAdded = await window.eventCart.hasEvent(selectedBand.id);
       addToCartButton.textContent = isAdded ? "Added to Cart" : "Add to Cart";
       addToCartButton.classList.toggle("is-added", isAdded);
+      addToCartButton.setAttribute("aria-pressed", String(isAdded));
     };
 
     addToCartButton.onclick = async () => {
       addToCartButton.disabled = true;
       try {
-        if (addToCartButton.classList.contains("is-added")) {
+        const isAdded = await window.eventCart.hasEvent(selectedBand.id);
+        if (isAdded) {
           await window.eventCart.removeEvent(selectedBand.id);
         } else {
           await window.eventCart.addEvent(selectedBand.id);
         }
-        addToCartButton.textContent = addToCartButton.classList.contains(
-          "is-added",
-        )
-          ? "Add to Cart"
-          : "Added to Cart";
-        addToCartButton.classList.toggle("is-added");
+        await updateAddToCartButton();
       } catch (error) {
         console.error(error);
-        await syncCartButton();
+        await updateAddToCartButton();
         console.error(error.message || "Unable to update cart");
       } finally {
         addToCartButton.disabled = false;
       }
     };
 
-    syncCartButton().catch((error) => console.error(error));
-    window.addEventListener("eventCartChanged", (event) => {
-      const isAdded = event.detail.eventIds.includes(String(selectedBand.id));
-      addToCartButton.textContent = isAdded ? "Added to Cart" : "Add to Cart";
-      addToCartButton.classList.toggle("is-added", isAdded);
+    updateAddToCartButton().catch((error) => console.error(error));
+    window.addEventListener("eventCartChanged", () => {
+      updateAddToCartButton().catch((error) => console.error(error));
     });
   }
 

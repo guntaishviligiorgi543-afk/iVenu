@@ -76,24 +76,6 @@
     return fallback;
   }
 
-  function startResendCooldown() {
-    let remaining = 60;
-    window.clearInterval(resendTimer);
-    securityOtpResend.disabled = true;
-    securityOtpResend.textContent = `Resend code (${remaining}s)`;
-    resendTimer = window.setInterval(() => {
-      remaining -= 1;
-      if (remaining <= 0) {
-        window.clearInterval(resendTimer);
-        resendTimer = null;
-        securityOtpResend.disabled = false;
-        securityOtpResend.textContent = "Resend code";
-        return;
-      }
-      securityOtpResend.textContent = `Resend code (${remaining}s)`;
-    }, 1000);
-  }
-
   function renderOrders(orders) {
     ordersCount.textContent = `${orders.length} ${orders.length === 1 ? "order" : "orders"}`;
     if (!orders.length) {

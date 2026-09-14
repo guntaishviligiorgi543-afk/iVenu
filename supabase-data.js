@@ -23,7 +23,7 @@
     const { data, error } = await client
       .from("events")
       .select(
-        "id, performer, band_id, title, description, event_date, event_time, doors_open, venue, city, country, image_url, status, created_at, bands(id, name, description, genre, country, image_url)",
+        "id, performer, band_id, category_id, title, description, event_date, event_time, doors_open, venue, city, country, image_url, status, created_at, categories(id, name), bands(id, name, description, genre, country, image_url)",
       )
       .order("event_date", { ascending: true })
       .order("event_time", { ascending: true });
@@ -36,7 +36,7 @@
     const { data, error } = await client
       .from("events")
       .select(
-        "id, performer, band_id, title, description, event_date, event_time, doors_open, venue, city, country, image_url, status, created_at, bands(id, name, description, genre, country, image_url)",
+        "id, performer, band_id, category_id, title, description, event_date, event_time, doors_open, venue, city, country, image_url, status, created_at, categories(id, name), bands(id, name, description, genre, country, image_url)",
       )
       .eq("id", eventId)
       .maybeSingle();

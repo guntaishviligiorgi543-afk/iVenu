@@ -9,6 +9,10 @@ body {
   overflow-x: hidden;
 }
 
+.adminFloatingLink {
+  display: none !important;
+}
+
 main {
   position: relative;
   isolation: isolate;
@@ -31,7 +35,7 @@ section {
 
 .tittle-date-dcrp-btn h2 {
   max-width: 100%;
- font-size: clamp(1.4rem, 4vw, 2.5rem);
+  font-size: clamp(1.4rem, 4vw, 2.5rem);
   line-height: 1;
   color: var(--text);
   font-family: Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
@@ -1250,4 +1254,147 @@ body.ticket-open .socIcons {
 .addToBskt:hover {
   background: #000;
   color: #fff;
+}
+
+/* =========================================================
+   BASKET LAYOUT OVERRIDES
+========================================================= */
+
+.selectTktAside {
+  display: flex;
+  flex-direction: column;
+  width: min(390px, 100%);
+  max-width: 100%;
+  height: 100%;
+  max-height: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.basket {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.emptyBskt,
+.nonEmptyBskt {
+  flex: 1 1 auto;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  min-height: 0;
+  height: auto;
+  overflow: hidden;
+}
+
+.nonEmptyBskt {
+  justify-content: initial;
+}
+
+.tktContainer {
+  flex: 1 1 auto;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.basketTicketsList,
+.tktListContainer,
+.tktsInList {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  min-height: 0;
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+.basketTicketsList {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #aaa #f5f5f5;
+}
+
+.tktListContainer {
+  flex: 1 1 0;
+}
+
+.tktListContainer.active {
+  display: flex;
+  flex: 1 1 0;
+  min-height: 0;
+}
+
+.tktListContainer .freeTkts {
+  flex: 0 0 auto;
+}
+
+.tktsInList {
+  flex: 1 1 0;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #aaa #f5f5f5;
+}
+
+.basketTicketsList::-webkit-scrollbar,
+.tktsInList::-webkit-scrollbar {
+  width: 5px;
+}
+
+.basketTicketsList::-webkit-scrollbar-track,
+.tktsInList::-webkit-scrollbar-track {
+  border-radius: 999px;
+  background: #f5f5f5;
+}
+
+.basketTicketsList::-webkit-scrollbar-thumb,
+.tktsInList::-webkit-scrollbar-thumb {
+  border: 1px solid #f5f5f5;
+  border-radius: 999px;
+  background: #aaa;
+}
+
+.basketFooter {
+  flex: 0 0 auto;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  margin-top: auto;
+  padding-top: 20px;
+  border-top: 1px solid #dedede;
+  background: #fff;
+}
+
+@media (max-width: 700px) {
+  .selectTktContainer {
+    top: 0;
+    width: 100vw;
+    height: 100dvh;
+  }
+
+  .selectTktAside {
+    flex: 1 1 100%;
+    width: 100%;
+    border-right: 0;
+  }
+
+  .selectTktMap {
+    display: none;
+  }
+
+  .emptyBskt,
+  .nonEmptyBskt {
+    padding: 20px;
+  }
 }

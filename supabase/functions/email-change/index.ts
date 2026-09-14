@@ -54,6 +54,10 @@ const json = (body: unknown, status = 200) => {
         success: false,
         code: payload.code || "EMAIL_CHANGE_ERROR",
         error: payload.error,
+        ...(payload.code === "RESEND_ERROR" &&
+        typeof payload.status === "number"
+          ? { status: payload.status, message: payload.message }
+          : {}),
       }
     : { success: true, ...payload };
   return new Response(JSON.stringify(responseBody), {
@@ -70,6 +74,16 @@ const diagnostic = (
 ) => {
   const { providerBody: _providerBody, ...logDetails } = details;
   logStep("Diagnostic error", { code, status, error, ...logDetails });
+  if (code === "RESEND_ERROR" && typeof details.providerStatus === "number")
+    return json(
+      {
+        error,
+        code,
+        status: details.providerStatus,
+        message: error,
+      },
+      status,
+    );
   return json({ error, code, details }, status);
 };
 
@@ -116,23 +130,33 @@ async function sendEmail(
     }),
   });
   const responseText = await response.text();
-  let responseBody: unknown = null;
+  let safeMessage = responseText.trim();
   try {
-    responseBody = responseText ? JSON.parse(responseText) : null;
+    const parsed = responseText ? JSON.parse(responseText) : null;
+    if (parsed && typeof parsed === "object") {
+      const parsedRecord = parsed as Record<string, unknown>;
+      safeMessage = String(
+        parsedRecord.message || parsedRecord.error || responseText,
+      ).trim();
+    } else if (typeof parsed === "string") {
+      safeMessage = parsed.trim();
+    }
   } catch {
-    responseBody = responseText.slice(0, 1000);
+    // Keep the provider's plain-text response when it is not JSON.
   }
+  safeMessage =
+    safeMessage.slice(0, 2000) || "Resend returned an empty response.";
   logStep("Email provider response", {
     ok: response.ok,
     status: response.status,
-    hasBody: responseBody !== null,
+    hasBody: Boolean(responseText.trim()),
   });
   if (!response.ok) {
     throw new DiagnosticError(
       "RESEND_ERROR",
-      "Resend rejected the email request.",
+      `Resend HTTP ${response.status}: ${safeMessage}`,
       502,
-      { providerStatus: response.status, providerBody: responseBody },
+      { providerStatus: response.status },
     );
   }
 }
@@ -240,7 +264,7 @@ Deno.serve(async (request) => {
       );
     const isAdmin = Boolean(adminRow);
     logStep("Account authorization checked", { isAdmin });
-    if (Boolean(body.requireAdmin) !== isAdmin)
+    if (Boolean(body.requireAdmin) && !isAdmin)
       return diagnostic("AUTH_ERROR", "Account type is not authorized.", 403, {
         operation: "admin_users authorization check",
       });

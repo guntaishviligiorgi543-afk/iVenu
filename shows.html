@@ -19,7 +19,9 @@
       margin: 0 auto;
       margin-top: 100px;
       min-height: fit-content;
-      width: 900px;
+      width: min(900px, 100%);
+      max-width: 100%;
+      box-sizing: border-box;
     }
     .calendar {
       display: flex;
@@ -85,6 +87,33 @@
       height: fit-content;
     }
 
+    .eventFilters {
+      display: grid;
+      grid-template-columns: minmax(0, 2fr) minmax(180px, 1fr);
+      gap: 12px;
+      width: min(100%, 900px);
+      margin: 34px auto 0;
+      font-family: "Cabin", sans-serif;
+    }
+
+    .eventFilters input,
+    .eventFilters select {
+      width: 100%;
+      min-height: 44px;
+      padding: 10px 13px;
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      border-radius: 0;
+      color: #fff;
+      background: #111;
+      font: inherit;
+      outline: none;
+    }
+
+    .eventFilters input:focus,
+    .eventFilters select:focus {
+      border-color: #ff9475;
+    }
+
     .pagination {
       display: flex;
       justify-content: center;
@@ -120,7 +149,7 @@
       overflow: hidden;
       padding: 5px;
       overflow: hidden;
-      }
+    }
 
     .cardContent {
       width: 100%;
@@ -235,6 +264,27 @@
 
     .getTicketBtn {
       width: fit-content;
+    }
+
+    .eventsMessage {
+      grid-column: 1 / -1;
+      margin: 0;
+      padding: 32px 16px;
+      color: #fff;
+      text-align: center;
+      font-family: "Cabin", sans-serif;
+    }
+
+    @media (max-width: 768px) {
+      .eventFilters {
+        grid-template-columns: 1fr;
+        margin-top: 24px;
+      }
+
+      .eventCards {
+        grid-template-columns: 1fr;
+        padding-top: 30px;
+      }
     }
   </style>
 
@@ -363,6 +413,17 @@
               <span class="calendar-title__pattern"></span>
             </h2>
           </div>
+          <div class="eventFilters" aria-label="Search and filter events">
+            <input
+              id="eventSearch"
+              type="search"
+              placeholder="Search events"
+              aria-label="Search events by name"
+            />
+            <select id="eventCategory" aria-label="Filter events by category">
+              <option value="">All categories</option>
+            </select>
+          </div>
           <div class="eventCards"></div>
           <div class="pagination" aria-label="Event pages"></div>
         </div>
@@ -408,8 +469,11 @@
     <script>
       const eventCards = document.querySelector(".eventCards");
       const pagination = document.querySelector(".pagination");
+      const eventSearch = document.querySelector("#eventSearch");
+      const eventCategory = document.querySelector("#eventCategory");
       const EVENTS_PER_PAGE = 9;
       let loadedEvents = [];
+      let filteredEvents = [];
       let currentPage = 1;
 
       function showEventsMessage(message, isError = false) {
@@ -477,7 +541,7 @@
 
       function renderPagination() {
         if (!pagination) return;
-        const pageCount = Math.ceil(loadedEvents.length / EVENTS_PER_PAGE);
+        const pageCount = Math.ceil(filteredEvents.length / EVENTS_PER_PAGE);
         pagination.innerHTML = "";
         if (pageCount <= 1) return;
 
@@ -516,15 +580,60 @@
       }
 
       function renderPage() {
+        const pageCount = Math.max(
+          1,
+          Math.ceil(filteredEvents.length / EVENTS_PER_PAGE),
+        );
+        currentPage = Math.min(currentPage, pageCount);
         const start = (currentPage - 1) * EVENTS_PER_PAGE;
         eventCards.innerHTML = "";
-        loadedEvents
+        if (!filteredEvents.length) {
+          showEventsMessage("No results found");
+          renderPagination();
+          return;
+        }
+        filteredEvents
           .slice(start, start + EVENTS_PER_PAGE)
           .forEach(renderEventCard);
         bindEventCardInteractions();
         renderPagination();
         window.scrollTo({ top: 0, behavior: "smooth" });
       }
+
+      function getEventCategory(event) {
+        return event.categories?.name || "Uncategorized";
+      }
+
+      function fillCategoryFilter() {
+        const categories = [
+          ...new Set(loadedEvents.map(getEventCategory).filter(Boolean)),
+        ].sort((first, second) => first.localeCompare(second));
+        eventCategory.innerHTML = '<option value="">All categories</option>';
+        categories.forEach((category) => {
+          const option = document.createElement("option");
+          option.value = category;
+          option.textContent = category;
+          eventCategory.appendChild(option);
+        });
+      }
+
+      function applyEventFilters() {
+        const searchTerm = eventSearch.value.trim().toLowerCase();
+        const selectedCategory = eventCategory.value;
+        filteredEvents = loadedEvents.filter((event) => {
+          const name =
+            `${event.title || ""} ${event.performer || ""} ${event.bands?.name || ""}`.toLowerCase();
+          return (
+            (!searchTerm || name.includes(searchTerm)) &&
+            (!selectedCategory || getEventCategory(event) === selectedCategory)
+          );
+        });
+        currentPage = 1;
+        renderPage();
+      }
+
+      eventSearch.addEventListener("input", applyEventFilters);
+      eventCategory.addEventListener("change", applyEventFilters);
 
       async function loadEvents() {
         showEventsMessage("Loading events...");
@@ -538,6 +647,8 @@
           }
 
           loadedEvents = events;
+          fillCategoryFilter();
+          filteredEvents = loadedEvents;
           currentPage = 1;
           renderPage();
         } catch (error) {

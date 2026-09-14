@@ -230,61 +230,162 @@
                   Change password
                 </button>
               </form>
-              <form
-                class="auth-form dashboard-form secondary-form"
-                id="emailForm"
-                data-email-change-form
-              >
-                <p class="form-label">Change email address</p>
-                <p class="account-status">
-                  Current email: <span data-current-auth-email>Loading...</span>
-                </p>
-                <label
-                  >Current password<input
-                    name="currentPassword"
-                    type="password"
-                    autocomplete="current-password"
-                    required
-                /></label>
-                <label
-                  ><input
-                    name="email"
-                    type="email"
-                    placeholder="New email address"
-                    required
-                    autocomplete="email"
-                /></label>
-                <button class="account-outline-button" type="submit">
-                  Continue
-                </button>
-                <div class="email-change-otp" data-email-change-otp hidden>
-                  <p>Enter the 8-digit code sent to your new email.</p>
-                  <label
-                    >Verification code<input
-                      name="otp"
-                      type="text"
-                      inputmode="numeric"
-                      autocomplete="one-time-code"
-                      pattern="[0-9]{8}"
-                      minlength="8"
-                      maxlength="8"
-                  /></label>
-                  <button
-                    class="account-outline-button"
-                    type="button"
-                    data-email-change-verify
-                  >
-                    Verify email
-                  </button>
-                  <button
-                    class="account-text-button"
-                    type="button"
-                    data-email-change-resend
-                  >
-                    Resend code
-                  </button>
+              <div class="email-change-launcher">
+                <div>
+                  <p class="form-label">Email address</p>
+                  <p class="account-status">
+                    Current email:
+                    <span data-current-auth-email>Loading...</span>
+                  </p>
                 </div>
-              </form>
+                <button
+                  class="account-outline-button"
+                  id="openEmailChange"
+                  type="button"
+                >
+                  Change Email
+                </button>
+              </div>
+              <div
+                class="email-change-modal"
+                id="emailChangeModal"
+                hidden
+                role="presentation"
+              >
+                <div
+                  class="email-change-modal__panel"
+                  role="dialog"
+                  aria-modal="true"
+                  aria-labelledby="emailChangeTitle"
+                  aria-describedby="emailChangeDescription"
+                >
+                  <button
+                    class="email-change-modal__close"
+                    id="closeEmailChange"
+                    type="button"
+                    aria-label="Close email change dialog"
+                  >
+                    ×
+                  </button>
+                  <div class="email-change-modal__content">
+                    <div
+                      class="email-change-steps"
+                      aria-label="Email change steps"
+                    >
+                      <span
+                        class="is-active"
+                        data-email-change-step-indicator="1"
+                        >1. Account Verification</span
+                      >
+                      <span data-email-change-step-indicator="2"
+                        >2. Email Verification</span
+                      >
+                    </div>
+                    <form
+                      class="auth-form dashboard-form"
+                      id="emailForm"
+                      data-email-change-form
+                    >
+                      <div data-email-change-request>
+                        <p class="account-eyebrow">Account security</p>
+                        <h3 id="emailChangeTitle">Change Email</h3>
+                        <p
+                          id="emailChangeDescription"
+                          class="email-change-description"
+                        >
+                          Enter your current password and your new email
+                          address.
+                        </p>
+                        <label
+                          >Current Password<input
+                            name="currentPassword"
+                            type="password"
+                            autocomplete="current-password"
+                            required
+                        /></label>
+                        <label
+                          >New Email<input
+                            name="email"
+                            type="email"
+                            placeholder="New email address"
+                            required
+                            autocomplete="email"
+                        /></label>
+                        <button class="account-outline-button" type="submit">
+                          Continue
+                        </button>
+                      </div>
+                      <div
+                        class="email-change-otp"
+                        data-email-change-otp
+                        hidden
+                      >
+                        <p class="account-eyebrow">Email verification</p>
+                        <h3>Verify Your New Email</h3>
+                        <p class="email-change-description">
+                          We sent a verification code to your new email address.
+                        </p>
+                        <label
+                          >8-digit verification code<input
+                            name="otp"
+                            type="text"
+                            inputmode="numeric"
+                            autocomplete="one-time-code"
+                            pattern="[0-9]{8}"
+                            minlength="8"
+                            maxlength="8"
+                            aria-describedby="emailChangeStatus"
+                        /></label>
+                        <button
+                          class="account-outline-button"
+                          type="button"
+                          data-email-change-verify
+                        >
+                          Verify Email
+                        </button>
+                        <button
+                          class="account-text-button"
+                          type="button"
+                          data-email-change-resend
+                        >
+                          Resend Code
+                        </button>
+                      </div>
+                      <div
+                        class="email-change-success"
+                        data-email-change-success
+                        hidden
+                      >
+                        <div
+                          class="email-change-success__icon"
+                          aria-hidden="true"
+                        >
+                          ✓
+                        </div>
+                        <p class="account-eyebrow">Email verified</p>
+                        <h3>Email successfully changed.</h3>
+                        <p class="email-change-description">
+                          Your iVenue account now uses your new email address.
+                        </p>
+                        <button
+                          class="account-outline-button"
+                          type="button"
+                          data-email-change-done
+                        >
+                          Done
+                        </button>
+                      </div>
+                      <p
+                        class="auth-message email-change-status"
+                        id="emailChangeStatus"
+                        data-email-change-status
+                        role="status"
+                        aria-live="polite"
+                      ></p>
+                    </form>
+                  </div>
+                </div>
+              </div>
               <p class="auth-message" id="securityMessage" role="status"></p>
               <div
                 class="account-result-dialog"
