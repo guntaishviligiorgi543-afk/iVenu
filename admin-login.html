@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Login | The Launch</title>
+    <link rel="stylesheet" href="main.css" />
+    <link rel="stylesheet" href="auth.css" />
+  </head>
+  <body>
+    <main class="auth-page">
+      <section class="auth-shell" aria-labelledby="admin-login-title">
+        <p class="auth-intro">iVenue administration</p>
+        <h1 id="admin-login-title">admin login</h1>
+        <p class="auth-intro">
+          Sign in with an authorized administrator account.
+        </p>
+        <form class="auth-form" id="adminLoginForm">
+          <label>
+            Email
+            <input type="email" name="email" autocomplete="username" required />
+          </label>
+          <label>
+            Password
+            <input
+              type="password"
+              name="password"
+              autocomplete="current-password"
+              required
+            />
+          </label>
+          <button class="auth-submit" type="submit">Sign in</button>
+        </form>
+        <p class="auth-message" id="adminLoginMessage" role="status"></p>
+        <a class="auth-link" href="forgot-password.html?mode=admin">
+          Forgot password?
+        </a>
+        <a class="auth-link" href="index.html">Back to site</a>
+      </section>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <script src="auth.js"></script>
+    <script src="password-toggle.js"></script>
+    <script>
+      const form = document.querySelector("#adminLoginForm");
+      const message = document.querySelector("#adminLoginMessage");
+      const submit = form.querySelector("button");
+      const client = window.supabaseClient;
+
+      async function hasAdminAccess(userId) {
+        const { data, error } = await client
+          .from("admin_users")
+          .select("user_id")
+          .eq("user_id", userId)
+          .maybeSingle();
+        if (error) throw error;
+        return Boolean(data);
+      }
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        submit.disabled = true;
+        message.className = "auth-message";
+        message.textContent = "Checking access...";
+        try {
+          const values = new FormData(form);
+          const result = await window.authApi.signIn(
+            values.get("email"),
+            values.get("password"),
+          );
+          if (!result?.user || !(await hasAdminAccess(result.user.id))) {
+            await window.authApi.signOut();
+            throw new Error("Admin access is not authorized.");
+          }
+          window.location.href = "admin-dashboard.html";
+        } catch (error) {
+          console.error(error);
+          message.className = "auth-message error";
+          message.textContent = "Unable to verify administrator access.";
+          submit.disabled = false;
+        }
+      });
+    </script>
+  </body>
+</html>

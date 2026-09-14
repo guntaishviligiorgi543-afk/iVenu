@@ -40,7 +40,7 @@ async function loadSelectedEvent() {
   const band = event.bands || {};
   selectedBand = {
     id: event.id,
-    bandName: band.name || event.title,
+    bandName: event.performer || band.name || event.title,
     bandDescription: band.description || event.description || "",
     bandImg2: event.image_url || band.image_url || "",
     event: {

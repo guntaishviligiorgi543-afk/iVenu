@@ -453,6 +453,50 @@ header nav .authNavLink[hidden] {
   cursor: not-allowed;
 }
 
+.password-success-dialog {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(0, 0, 0, 0.78);
+}
+
+.password-success-dialog[hidden] {
+  display: none;
+}
+
+.password-success-dialog__panel {
+  width: min(420px, 100%);
+  padding: 32px;
+  border: 1px solid rgba(255, 148, 117, 0.75);
+  background: #151515;
+  box-shadow: 10px 10px 0 rgba(255, 148, 117, 0.5);
+  text-align: center;
+}
+
+.password-success-dialog__panel h2 {
+  margin: 0 0 12px;
+  color: #ff9475;
+  font-family: Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
+  font-size: 2rem;
+  font-weight: 400;
+  text-transform: uppercase;
+}
+
+.password-success-dialog__panel p {
+  margin: 0 0 24px;
+  color: rgba(255, 255, 255, 0.82);
+  line-height: 1.5;
+}
+
+.password-success-dialog__panel .auth-submit {
+  display: block;
+  margin: 0;
+  text-decoration: none;
+}
+
 .auth-verification .auth-form input {
   font-size: 1.4rem;
   letter-spacing: 0.3em;
@@ -1054,6 +1098,12 @@ header nav .authNavLink[hidden] {
   background: #080808;
 }
 
+.account-page.admin-gated .account-page-main,
+.account-page.admin-gated .event-cart-toggle,
+.account-page.admin-gated .event-cart-panel {
+  visibility: hidden;
+}
+
 .account-page .account-page-main {
   width: 100%;
   min-height: 100vh;
@@ -1121,6 +1171,68 @@ header nav .authNavLink[hidden] {
   font-size: 0.82rem;
   line-height: 1.5;
   text-align: right;
+}
+
+.account-page .account-admin-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
+  padding: 9px 13px;
+  border: 1px solid rgba(255, 148, 117, 0.55);
+  color: #ff9475;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.account-page .account-admin-link:hover {
+  color: #000;
+  background: #ff9475;
+}
+
+.account-page .account-admin-link[hidden] {
+  display: none;
+}
+
+.adminFloatingLink {
+  position: fixed;
+  left: 22px;
+  bottom: 22px;
+  z-index: 1000002;
+  padding: 11px 15px;
+  border: 1px solid #ff9475;
+  border-radius: 7px;
+  color: #000;
+  background: #ff9475;
+  font-family: "Cabin", sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.28);
+}
+
+.adminFloatingLink:hover {
+  color: #ff9475;
+  background: #111;
+}
+
+.adminFloatingLink[hidden] {
+  display: none;
+}
+
+.auth-link-button {
+  padding: 0;
+  border: 0;
+  color: inherit;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  text-decoration: underline;
+}
+
+.auth-link-button:disabled {
+  cursor: wait;
+  opacity: 0.55;
 }
 
 .account-page .account-layout {

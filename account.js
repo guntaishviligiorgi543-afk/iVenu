@@ -172,7 +172,6 @@
       status.textContent = "Please sign in to view your account.";
       form.hidden = true;
       securityForm.hidden = true;
-      securityNewPasswordFields.hidden = true;
       emailForm.hidden = true;
       deleteButton.hidden = true;
       editProfileButton.disabled = true;

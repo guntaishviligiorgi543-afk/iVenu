@@ -115,12 +115,12 @@
     }
     .vntCrd {
       position: relative;
-      height: 50vh;
+      height: 55vh;
       color: #fff;
       overflow: hidden;
       padding: 5px;
       overflow: hidden;
-    }
+      }
 
     .cardContent {
       width: 100%;
@@ -422,6 +422,7 @@
 
       function renderEventCard(event) {
         const band = event.bands || {};
+        const performer = event.performer || band.name || event.title;
         const card = document.createElement("div");
 
         card.classList.add("vntCrd");
@@ -429,10 +430,10 @@
         card.innerHTML = `
     <div class="cardContent">
 
-      <img src="${event.image_url || band.image_url || ""}" alt="${band.name || event.title}" />
+      <img src="${event.image_url || band.image_url || ""}" alt="${performer}" />
 
       <div>
-        <p class="bandNam">${band.name || event.title}</p>
+        <p class="bandNam">${performer}</p>
         <p class="concertDate">${event.event_date}</p>
       </div>
 

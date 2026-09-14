@@ -1,0 +1,486 @@
+@import url("https://fonts.googleapis.com/css2?family=Cabin:wght@400;500;600;700&family=Fjalla+One&display=swap");
+
+/* =========================================
+   GLOBAL RESET & BASE STYLES
+========================================= */
+
+.admin-page {
+  min-height: 100vh;
+  background: #080808;
+  color: #fff;
+  font-family: "Cabin", sans-serif;
+  overflow-x: hidden;
+}
+
+.admin-page *,
+.admin-page *::before,
+.admin-page *::after {
+  box-sizing: border-box;
+}
+
+.admin-gated .admin-shell {
+  visibility: hidden;
+}
+
+.admin-shell {
+  width: min(1180px, 100%);
+  margin: 0 auto;
+  padding: 30px 24px 70px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* =========================================
+   HEADER (არაფიქსირებული / Static position)
+========================================= */
+
+.admin-header {
+  position: relative; /* ფიქსირებული არ არის */
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.13);
+  background: linear-gradient(
+    90deg,
+    rgba(255, 148, 117, 0.1) 0%,
+    rgba(255, 148, 117, 0) 100%
+  );
+  border-radius: 8px;
+  margin-bottom: 20px; /* დაშორება ნავიგაციამდე */
+}
+
+.admin-header > div {
+  min-width: 0;
+  flex: 1;
+}
+
+.admin-header h1,
+.admin-panel h2 {
+  margin: 4px 0 8px;
+  font-family: "Fjalla One", Impact, sans-serif;
+  font-weight: 400;
+}
+
+.admin-header h1 {
+  font-size: clamp(2.4rem, 5vw, 4.2rem);
+  line-height: 1.1;
+  overflow-wrap: anywhere;
+}
+
+.admin-header p {
+  margin: 6px 0 0;
+  color: rgba(255, 255, 255, 0.58);
+  line-height: 1.5;
+}
+
+.admin-eyebrow {
+  margin: 0 0 6px 0;
+  color: #ff9475;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+/* =========================================
+   BUTTONS
+========================================= */
+
+.admin-logout,
+.admin-nav button,
+.admin-outline,
+.auth-submit {
+  flex-shrink: 0;
+  border: 1px solid rgba(255, 148, 117, 0.55);
+  padding: 10px 18px;
+  color: #000;
+  background: #ff9475;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  cursor: pointer;
+  white-space: nowrap;
+  border-radius: 6px;
+  transition: all 0.3s ease-in-out;
+}
+
+.admin-logout:hover,
+.admin-nav button:hover,
+.admin-outline:hover,
+.auth-submit:hover {
+  background: #ffaa91;
+  color: #000;
+  transition: all 0.3s ease-in-out;
+}
+
+.admin-outline {
+  background: transparent;
+  color: #ff9475;
+}
+
+.admin-outline:hover {
+  background: rgba(255, 148, 117, 0.15);
+  color: #ff9475;
+}
+
+/* =========================================
+   NAVIGATION
+========================================= */
+
+.admin-nav {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 24px;
+  width: 100%;
+}
+
+.admin-nav button {
+  background: transparent;
+  color: #ff9475;
+  border: 1px solid rgba(255, 148, 117, 0.4);
+}
+
+.admin-nav button.is-active {
+  background: #ff9475;
+  color: #000;
+  border-color: #ff9475;
+}
+
+/* =========================================
+   MESSAGES
+========================================= */
+
+.admin-message {
+  min-height: 24px;
+  margin-bottom: 20px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.9rem;
+}
+
+.admin-message.error {
+  color: #ffaaa0;
+}
+
+.admin-message.success {
+  color: #b8f0c3;
+}
+
+/* =========================================
+   PANELS
+========================================= */
+
+.admin-panel {
+  display: none;
+  width: 100%;
+  margin-top: 10px;
+}
+
+.admin-panel.is-active {
+  display: block;
+}
+
+.admin-panel-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+.admin-panel-heading > * {
+  min-width: 0;
+}
+
+.admin-panel h2 {
+  font-size: clamp(1.8rem, 4vw, 2.5rem);
+  line-height: 1.1;
+  overflow-wrap: anywhere;
+}
+
+/* =========================================
+   METRICS
+========================================= */
+
+.admin-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  width: 100%;
+}
+
+.admin-metric {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  background: #121212;
+  padding: 20px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.admin-metric strong {
+  display: block;
+  color: #ff9475;
+  font-family: "Fjalla One", Impact, sans-serif;
+  font-size: 2.2rem;
+  font-weight: 400;
+  line-height: 1.1;
+  overflow-wrap: anywhere;
+}
+
+.admin-metric span {
+  display: block;
+  margin-top: 8px;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 0.85rem;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+/* =========================================
+   SEARCH / FILTER TOOLS
+========================================= */
+
+.admin-tools {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.admin-tools input,
+.admin-tools select,
+.admin-form input,
+.admin-form select,
+.admin-form textarea {
+  display: block;
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 6px;
+  color: #fff;
+  background: #0d0d0d;
+  font: inherit;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.admin-tools input:focus,
+.admin-tools select:focus,
+.admin-form input:focus,
+.admin-form select:focus,
+.admin-form textarea:focus {
+  border-color: rgba(255, 148, 117, 0.8);
+}
+
+/* =========================================
+   EVENT LIST & ROWS
+========================================= */
+
+.admin-event-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.admin-event-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  width: 100%;
+  padding: 16px 20px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  background: #121212;
+}
+
+.admin-event-row > div:first-child {
+  flex: 1 1 250px;
+  min-width: 0;
+}
+
+.admin-event-row strong {
+  display: block;
+  overflow-wrap: anywhere;
+  font-size: 1.1rem;
+  line-height: 1.35;
+}
+
+.admin-event-row span {
+  display: block;
+  margin-top: 4px;
+  color: rgba(255, 255, 255, 0.52);
+  font-size: 0.85rem;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.admin-event-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.admin-event-actions button {
+  padding: 8px 12px;
+  font-size: 0.75rem;
+  color: #c3bebd;
+  border-radius: 20px;
+  border: 1px solid transparent;
+  background: transparent;
+  transition: all 0.3s ease-in-out;
+}
+
+.admin-event-actions button:hover {
+  background: rgba(255, 148, 117, 0.15);
+  color: #ff9475;
+}
+
+/* =========================================
+   BADGE
+========================================= */
+
+.admin-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 12px;
+  border: 1px solid rgba(255, 148, 117, 0.45);
+  border-radius: 999px;
+  color: #ff9475;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* =========================================
+   FORM
+========================================= */
+
+.admin-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  width: 100%;
+  max-width: 800px;
+}
+
+.admin-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.admin-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 14px;
+  width: 100%;
+}
+
+.admin-form textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.admin-form-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+/* =========================================
+   STATISTICS LINE
+========================================= */
+
+.admin-stat-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  width: 100%;
+  padding: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 7px;
+  background: #121212;
+}
+
+.admin-stat-line strong {
+  overflow-wrap: anywhere;
+}
+
+.admin-stat-line span {
+  color: rgba(255, 255, 255, 0.58);
+  font-size: 0.85rem;
+  overflow-wrap: anywhere;
+}
+
+/* =========================================
+   RESPONSIVE BREAKPOINTS
+========================================= */
+
+@media (max-width: 768px) {
+  .admin-shell {
+    padding: 20px 16px 40px;
+  }
+
+  .admin-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .admin-logout {
+    align-self: flex-start;
+  }
+
+  .admin-event-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .admin-event-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 480px) {
+  .admin-nav {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .admin-nav button {
+    width: 100%;
+    text-align: center;
+  }
+
+  .admin-form-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .admin-form-actions button {
+    width: 100%;
+  }
+}

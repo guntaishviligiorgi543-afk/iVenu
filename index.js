@@ -30,6 +30,7 @@ startDate.setHours(0, 0, 0, 0);
 // მხოლოდ მომდევნო 4 თვის კონცერტები
 function renderAccordion(event) {
   const band = event.bands || {};
+  const performer = event.performer || band.name || event.title;
   const accordion = document.createElement("div");
 
   accordion.classList.add("eventAcordion");
@@ -45,22 +46,10 @@ function renderAccordion(event) {
         </p>
 
         <h2 class="artistNAm">
-          ${band.name || event.title}
+          ${performer}
         </h2>
 
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="2em"
-          height="2em"
-          viewBox="0 0 24 24"
-        >
-          <path d="M0 0h24v24H0z" fill="none" />
-          <path
-            fill="currentColor"
-            d="M12 2C6.49 2 2 6.49 2 12s4.49 10 10 10s10-4.49 10-10S17.51 2 12 2m0 15.41L7.29 12.7l1.41-1.41l2.29 2.29v-6.59h2v6.59l2.29-2.29l1.41 1.41l-4.71 4.71Z"
-          />
-        </svg>
-
+ 
       </div>
 
  <button class="getTicketBtn" data-id="${event.id}">

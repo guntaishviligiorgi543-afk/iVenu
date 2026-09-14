@@ -1,4 +1,39 @@
 (() => {
+  async function isAdmin(session) {
+    if (!session?.user || !window.supabaseClient) return false;
+    const { data, error } = await window.supabaseClient
+      .from("admin_users")
+      .select("user_id")
+      .eq("user_id", session.user.id)
+      .maybeSingle();
+    if (error) {
+      console.error(error);
+      return false;
+    }
+    return Boolean(data);
+  }
+
+  const floatingAdminLink = document.createElement("a");
+  floatingAdminLink.className = "adminFloatingLink";
+  floatingAdminLink.href = "admin-dashboard.html";
+  floatingAdminLink.textContent = "Dashboard";
+  floatingAdminLink.hidden = true;
+  document.body.appendChild(floatingAdminLink);
+
+  if (window.authApi) {
+    window.authApi
+      .getSession()
+      .then(async (session) => {
+        floatingAdminLink.hidden = !(await isAdmin(session));
+      })
+      .catch(() => {
+        floatingAdminLink.hidden = true;
+      });
+    window.authApi.subscribeToAuthChanges(async (_event, session) => {
+      floatingAdminLink.hidden = !(await isAdmin(session));
+    });
+  }
+
   const nav = document.querySelector("header nav");
   if (!nav || !window.authApi) return;
 
@@ -11,7 +46,6 @@
   accountLink.href = "profile.html";
   accountLink.hidden = true;
   nav.appendChild(accountLink);
-
   const isAccountPage = document.body.classList.contains("account-page");
   let currentSession = null;
 
@@ -20,6 +54,8 @@
     authLink.textContent = session ? "logout" : "login";
     authLink.href = session ? "#" : "login.html";
     accountLink.hidden = isAccountPage || !session;
+    const admin = await isAdmin(session);
+    floatingAdminLink.hidden = !admin;
 
     if (!session) return;
     if (authLink.dataset.bound === "true") return;

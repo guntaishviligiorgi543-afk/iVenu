@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Dashboard | The Launch</title>
+    <link rel="stylesheet" href="main.css" />
+    <link rel="stylesheet" href="auth.css" />
+    <link rel="stylesheet" href="admin.css" />
+  </head>
+  <body class="admin-page admin-gated">
+    <main class="admin-shell">
+      <header class="admin-header">
+        <div>
+          <p class="admin-eyebrow">iVenue administration</p>
+          <h1>Dashboard</h1>
+          <p id="adminStatus">Checking admin access...</p>
+        </div>
+        <button class="admin-logout" id="adminLogout" type="button">
+          Logout
+        </button>
+      </header>
+      <nav class="admin-nav" aria-label="Admin sections">
+        <button class="is-active" data-panel="overview" type="button">
+          Overview
+        </button>
+        <button data-panel="events" type="button">Events</button>
+        <button data-panel="add-event" type="button">Add Event</button>
+        <button data-panel="stats" type="button">Ticket statistics</button>
+      </nav>
+      <p class="admin-message" id="adminMessage" role="status"></p>
+
+      <section class="admin-panel is-active" data-panel="overview">
+        <div class="admin-panel-heading">
+          <div>
+            <p class="admin-eyebrow">At a glance</p>
+            <h2>Overview</h2>
+          </div>
+          <button class="admin-outline" id="refreshAdmin" type="button">
+            Refresh
+          </button>
+        </div>
+        <div class="admin-metrics" id="overviewMetrics"></div>
+      </section>
+
+      <section class="admin-panel" data-panel="events">
+        <div class="admin-panel-heading">
+          <div>
+            <p class="admin-eyebrow">Manage your calendar</p>
+            <h2>All events</h2>
+          </div>
+        </div>
+        <div class="admin-tools">
+          <input
+            id="eventSearch"
+            type="search"
+            placeholder="Search name, venue or category"
+          /><select id="eventStatus">
+            <option value="">All statuses</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option></select
+          ><select id="eventCategory">
+            <option value="">All categories</option></select
+          ><select id="eventAvailability">
+            <option value="">All availability</option>
+            <option value="available">Available</option>
+            <option value="sold-out">Sold out</option>
+          </select>
+        </div>
+        <div class="admin-event-list" id="eventList"></div>
+      </section>
+
+      <section class="admin-panel" data-panel="add-event">
+        <div class="admin-panel-heading">
+          <div>
+            <p class="admin-eyebrow">Publish to the calendar</p>
+            <h2 id="eventFormTitle">Add event</h2>
+          </div>
+        </div>
+        <form class="admin-form" id="eventForm">
+          <input type="hidden" name="id" /><label
+            >Title<input name="title" required /></label
+          ><label
+            >Performer / Performers<input
+              name="performer"
+              id="eventPerformer"
+              placeholder="e.g. Bruno Mars, Dua Lipa"
+              required
+            />
+          </label>
+          <label
+            >Category<select
+              name="category_id"
+              id="eventCategorySelect"
+              required
+            >
+              <option value="">Select category</option>
+            </select>
+          </label>
+          <div class="admin-form-grid">
+            <label>Date<input name="event_date" type="date" required /></label
+            ><label>Time<input name="event_time" type="time" required /></label
+            ><label
+              >Doors open<input name="doors_open" type="time" required /></label
+            ><label
+              >Status<select name="status">
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select></label
+            >
+          </div>
+          <label>Venue<input name="venue" required /></label>
+          <div class="admin-form-grid">
+            <label>City<input name="city" required /></label
+            ><label>Country<input name="country" /></label>
+          </div>
+          <label>Image URL<input name="image_url" type="url" /></label
+          ><label
+            >Description<textarea name="description" rows="4"></textarea>
+          </label>
+          <div class="admin-form-actions">
+            <button class="auth-submit" type="submit">Save event</button
+            ><button
+              class="admin-outline"
+              id="cancelEventEdit"
+              type="button"
+              hidden
+            >
+              Cancel edit
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <section class="admin-panel" data-panel="stats">
+        <div class="admin-panel-heading">
+          <div>
+            <p class="admin-eyebrow">Sales health</p>
+            <h2>Ticket statistics</h2>
+          </div>
+        </div>
+        <div class="admin-event-list" id="statsList"></div>
+      </section>
+    </main>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <script src="auth.js"></script>
+    <script src="admin-dashboard.js"></script>
+  </body>
+</html>
