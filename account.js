@@ -207,6 +207,17 @@
 
     const profile = profileResult.data;
     if (profile) {
+      if (profile.email !== session.user.email) {
+        const { error: emailSyncError } = await client
+          .from("profiles")
+          .update({
+            email: session.user.email,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", session.user.id);
+        if (emailSyncError) console.error(emailSyncError);
+        profile.email = session.user.email;
+      }
       form.elements.firstName.value = profile.first_name || "";
       form.elements.lastName.value = profile.last_name || "";
       form.elements.email.value = profile.email || session.user.email || "";
@@ -326,39 +337,6 @@
     form.hidden = true;
     editProfileButton.hidden = false;
     setMessage("Profile saved.", "success");
-  });
-
-  emailForm.addEventListener("submit", async (event) => {
-    event.preventDefault();
-    const email = window.authApi.normalizeEmail(
-      new FormData(emailForm).get("email"),
-    );
-    setMessage("Updating authentication email...");
-
-    try {
-      const result = await window.authApi.updateEmail(email);
-      const updatedEmail = result.user?.email;
-      if (updatedEmail === email) {
-        const session = await window.authApi.getSession();
-        const { error } = await client
-          .from("profiles")
-          .update({ email, updated_at: new Date().toISOString() })
-          .eq("id", session.user.id);
-        if (error) throw error;
-        setMessage(
-          "Authentication email and profile email updated.",
-          "success",
-        );
-      } else {
-        setMessage(
-          "Check your new email to confirm the authentication change. Your profile email remains unchanged until confirmation.",
-          "success",
-        );
-      }
-    } catch (error) {
-      console.error(error);
-      setMessage("Authentication email could not be changed.", "error");
-    }
   });
 
   securityForm.addEventListener("submit", async (event) => {

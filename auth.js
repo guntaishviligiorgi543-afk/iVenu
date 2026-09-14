@@ -153,9 +153,14 @@
   }
 
   async function updateEmail(email) {
-    const { data, error } = await client.auth.updateUser({
-      email: normalizeEmail(email),
-    });
+    const { data, error } = await client.auth.updateUser(
+      {
+        email: normalizeEmail(email),
+      },
+      {
+        emailRedirectTo: `${window.location.origin}/profile.html`,
+      },
+    );
     if (error) throw error;
     return data;
   }

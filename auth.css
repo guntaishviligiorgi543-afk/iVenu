@@ -453,6 +453,10 @@ header nav .authNavLink[hidden] {
   cursor: not-allowed;
 }
 
+.email-change-otp[hidden] {
+  display: none;
+}
+
 .password-success-dialog {
   position: fixed;
   inset: 0;
