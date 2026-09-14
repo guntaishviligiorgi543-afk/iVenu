@@ -13,12 +13,17 @@
       <header class="admin-header">
         <div>
           <p class="admin-eyebrow">iVenue administration</p>
-          <h1>Dashboard</h1>
+          <h1>Admin Dashboard</h1>
           <p id="adminStatus">Checking admin access...</p>
         </div>
-        <button class="admin-logout" id="adminLogout" type="button">
-          Logout
-        </button>
+        <div class="admin-header-actions">
+          <button class="admin-outline" id="adminBack" type="button">
+            Back
+          </button>
+          <button class="admin-logout" id="adminLogout" type="button">
+            Logout
+          </button>
+        </div>
       </header>
       <nav class="admin-nav" aria-label="Admin sections">
         <button class="is-active" data-panel="overview" type="button">
@@ -27,9 +32,6 @@
         <button data-panel="events" type="button">Events</button>
         <button data-panel="add-event" type="button">Add Event</button>
         <button data-panel="stats" type="button">Ticket statistics</button>
-        <button data-panel="account-settings" type="button">
-          Account Settings
-        </button>
       </nav>
       <p class="admin-message" id="adminMessage" role="status"></p>
 
@@ -71,6 +73,11 @@
           </select>
         </div>
         <div class="admin-event-list" id="eventList"></div>
+        <div
+          class="admin-pagination"
+          id="eventsPagination"
+          aria-label="Events pagination"
+        ></div>
       </section>
 
       <section class="admin-panel" data-panel="add-event">
@@ -143,72 +150,16 @@
           </div>
         </div>
         <div class="admin-event-list" id="statsList"></div>
-      </section>
-
-      <section class="admin-panel" data-panel="account-settings">
-        <div class="admin-panel-heading">
-          <div>
-            <p class="admin-eyebrow">Administrator account</p>
-            <h2>Account Settings</h2>
-          </div>
-        </div>
-        <form class="admin-form" data-email-change-form data-require-admin>
-          <p class="admin-message">
-            Change your email with your current password and an OTP sent to the
-            new address.
-          </p>
-          <p class="admin-message">
-            Current email: <span data-current-auth-email>Loading...</span>
-          </p>
-          <label
-            >Current password<input
-              name="currentPassword"
-              type="password"
-              autocomplete="current-password"
-              required
-          /></label>
-          <label
-            >New email address<input
-              name="email"
-              type="email"
-              autocomplete="email"
-              required
-          /></label>
-          <button class="auth-submit" type="submit">Continue</button>
-          <div class="email-change-otp" data-email-change-otp hidden>
-            <p>Enter the 8-digit code sent to your new email.</p>
-            <label
-              >Verification code<input
-                name="otp"
-                type="text"
-                inputmode="numeric"
-                autocomplete="one-time-code"
-                pattern="[0-9]{8}"
-                minlength="8"
-                maxlength="8"
-            /></label>
-            <button
-              class="admin-outline"
-              type="button"
-              data-email-change-verify
-            >
-              Verify email
-            </button>
-            <button
-              class="admin-outline"
-              type="button"
-              data-email-change-resend
-            >
-              Resend code
-            </button>
-          </div>
-        </form>
+        <div
+          class="admin-pagination"
+          id="statsPagination"
+          aria-label="Ticket statistics pagination"
+        ></div>
       </section>
     </main>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-config.js"></script>
     <script src="auth.js"></script>
-    <script src="email-change.js"></script>
     <script src="admin-dashboard.js"></script>
   </body>
 </html>

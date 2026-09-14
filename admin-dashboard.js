@@ -1,4 +1,5 @@
 (() => {
+  const PAGE_SIZE = 5;
   const client = window.supabaseClient;
   const state = {
     events: [],
@@ -6,16 +7,21 @@
     ticketTypes: [],
     orderItems: [],
     users: 0,
+    eventPage: 1,
+    statsPage: 1,
   };
   const status = document.querySelector("#adminStatus");
   const message = document.querySelector("#adminMessage");
   const form = document.querySelector("#eventForm");
   const eventList = document.querySelector("#eventList");
   const statsList = document.querySelector("#statsList");
+  const eventsPagination = document.querySelector("#eventsPagination");
+  const statsPagination = document.querySelector("#statsPagination");
   const metrics = document.querySelector("#overviewMetrics");
   const performerInput = document.querySelector("#eventPerformer");
   const categorySelect = document.querySelector("#eventCategorySelect");
   const categoryFilter = document.querySelector("#eventCategory");
+  const backButton = document.querySelector("#adminBack");
 
   const escapeHtml = (value) =>
     String(value ?? "")
@@ -80,8 +86,28 @@
     state.ticketTypes = tickets.data || [];
     state.orderItems = orders.data || [];
     state.users = users.count || 0;
+    state.eventPage = 1;
+    state.statsPage = 1;
     renderAll();
     fillCategories();
+  }
+
+  function renderPagination(container, currentPage, totalItems, onPageChange) {
+    const totalPages = Math.ceil(totalItems / PAGE_SIZE);
+    if (totalPages <= 1) {
+      container.innerHTML = "";
+      return;
+    }
+
+    container.innerHTML = Array.from({ length: totalPages }, (_, index) => {
+      const page = index + 1;
+      return `<button class="admin-pagination-button${page === currentPage ? " is-active" : ""}" data-page="${page}" type="button" aria-label="Go to page ${page}"${page === currentPage ? ' aria-current="page"' : ""}>${page}</button>`;
+    }).join("");
+    container.querySelectorAll("[data-page]").forEach((button) => {
+      button.addEventListener("click", () =>
+        onPageChange(Number(button.dataset.page)),
+      );
+    });
   }
 
   function renderOverview() {
@@ -121,24 +147,50 @@
           (availability === "sold-out" ? stats.soldOut : !stats.soldOut))
       );
     });
-    eventList.innerHTML = filtered.length
-      ? filtered
+    const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+    state.eventPage = Math.min(state.eventPage, totalPages);
+    const pageStart = (state.eventPage - 1) * PAGE_SIZE;
+    const pageItems = filtered.slice(pageStart, pageStart + PAGE_SIZE);
+    eventList.innerHTML = pageItems.length
+      ? pageItems
           .map((event) => {
             const stats = eventStats(event);
             return `<article class="admin-event-row"><div><strong>${escapeHtml(event.title)}</strong><span>${escapeHtml(event.performer)} · ${escapeHtml(event.categories?.name || "Uncategorized")} · ${escapeHtml(event.event_date)} · ${escapeHtml(event.event_time)} · ${escapeHtml(event.venue)}, ${escapeHtml(event.city)}</span><span>${stats.sold} sold / ${stats.remaining} available</span></div><span class="admin-badge">${escapeHtml(event.status || "active")}</span><div class="admin-event-actions"><button data-edit="${event.id}" type="button">Edit</button><button data-delete="${event.id}" type="button">Delete</button></div></article>`;
           })
           .join("")
       : '<p class="admin-message">No matching events.</p>';
+    renderPagination(
+      eventsPagination,
+      state.eventPage,
+      filtered.length,
+      (page) => {
+        state.eventPage = page;
+        renderEvents();
+      },
+    );
   }
 
   function renderStats() {
+    const totalPages = Math.max(1, Math.ceil(state.events.length / PAGE_SIZE));
+    state.statsPage = Math.min(state.statsPage, totalPages);
+    const pageStart = (state.statsPage - 1) * PAGE_SIZE;
     statsList.innerHTML =
       state.events
+        .slice(pageStart, pageStart + PAGE_SIZE)
         .map((event) => {
           const stats = eventStats(event);
           return `<div class="admin-stat-line"><strong>${escapeHtml(event.title)}</strong><span>${stats.sold} sold</span><span>${stats.remaining} remaining</span></div>`;
         })
         .join("") || '<p class="admin-message">No events found.</p>';
+    renderPagination(
+      statsPagination,
+      state.statsPage,
+      state.events.length,
+      (page) => {
+        state.statsPage = page;
+        renderStats();
+      },
+    );
   }
 
   function renderAll() {
@@ -242,8 +294,12 @@
         );
     }),
   );
-  ["eventSearch", "eventStatus", "eventCategory", "eventAvailability"].forEach((id) =>
-    document.querySelector(`#${id}`).addEventListener("input", renderEvents),
+  ["eventSearch", "eventStatus", "eventCategory", "eventAvailability"].forEach(
+    (id) =>
+      document.querySelector(`#${id}`).addEventListener("input", () => {
+        state.eventPage = 1;
+        renderEvents();
+      }),
   );
   document
     .querySelector("#refreshAdmin")
@@ -291,6 +347,17 @@
     .addEventListener("click", () =>
       window.authApi.signOut({ redirectTo: "admin-login.html" }),
     );
+  backButton.addEventListener("click", () => {
+    const previousPage = document.referrer;
+    if (
+      previousPage &&
+      new URL(previousPage).origin === window.location.origin
+    ) {
+      window.history.back();
+      return;
+    }
+    window.location.href = "index.html";
+  });
 
   (async () => {
     try {

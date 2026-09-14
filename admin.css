@@ -56,6 +56,14 @@
   flex: 1;
 }
 
+.admin-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
 .admin-header h1,
 .admin-panel h2 {
   margin: 4px 0 8px;
@@ -290,6 +298,31 @@
   width: 100%;
 }
 
+.admin-pagination {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.admin-pagination-button {
+  min-width: 38px;
+  padding: 8px 12px;
+  border: 1px solid rgba(255, 148, 117, 0.4);
+  border-radius: 6px;
+  color: #ff9475;
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+}
+
+.admin-pagination-button:hover,
+.admin-pagination-button.is-active {
+  color: #000;
+  background: #ff9475;
+  border-color: #ff9475;
+}
+
 .admin-event-row {
   display: flex;
   align-items: center;
@@ -451,6 +484,10 @@
 
   .admin-logout {
     align-self: flex-start;
+  }
+
+  .admin-header-actions {
+    justify-content: flex-start;
   }
 
   .admin-event-row {
