@@ -62,6 +62,9 @@ async function loadSelectedEvent() {
   renderSelectedEvent();
   initializeBasket();
   renderBasket();
+  window.supabaseData.recordEventView(selectedBand.id).catch((error) => {
+    console.error("Unable to record event view", error);
+  });
 }
 
 function getEventState() {

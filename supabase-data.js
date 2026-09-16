@@ -58,10 +58,36 @@
     return data || [];
   }
 
+  async function recordEventView(eventId) {
+    const { error } = await client.rpc("record_event_view", {
+      p_event_id: eventId,
+    });
+    if (error) throw new Error(getErrorMessage(error));
+  }
+
+  async function toggleFavorite(eventId) {
+    const { data, error } = await client.rpc("toggle_favorite", {
+      p_event_id: eventId,
+    });
+    if (error) throw new Error(getErrorMessage(error));
+    return Boolean(data);
+  }
+
+  async function isEventFavorited(eventId) {
+    const { data, error } = await client.rpc("is_event_favorited", {
+      p_event_id: eventId,
+    });
+    if (error) throw new Error(getErrorMessage(error));
+    return Boolean(data);
+  }
+
   window.supabaseData = {
     getBands,
     getEvents,
     getEvent,
     getTicketTypes,
+    recordEventView,
+    toggleFavorite,
+    isEventFavorited,
   };
 })();

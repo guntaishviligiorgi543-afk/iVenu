@@ -46,6 +46,74 @@
           </button>
         </div>
         <div class="admin-metrics" id="overviewMetrics"></div>
+        <div class="analytics-toolbar">
+          <label for="analyticsPeriod">Analytics period</label>
+          <select id="analyticsPeriod">
+            <option value="all">All time</option>
+            <option value="today">Today</option>
+            <option value="7d">Last 7 days</option>
+            <option value="30d">Last 30 days</option>
+          </select>
+        </div>
+        <div class="analytics-grid">
+          <section class="analytics-card analytics-card--wide">
+            <h3>Top 5 added to cart</h3>
+            <div class="analytics-list" id="topCartAdditions"></div>
+          </section>
+          <section class="analytics-card analytics-card--wide">
+            <h3>Top 5 most viewed</h3>
+            <div class="analytics-list" id="topViews"></div>
+          </section>
+          <section class="analytics-card">
+            <h3>Top 5 best-selling</h3>
+            <div class="analytics-list" id="topSales"></div>
+          </section>
+          <section class="analytics-card">
+            <h3>Most popular category</h3>
+            <div id="popularCategory"></div>
+          </section>
+          <section class="analytics-card">
+            <h3>Recent activity</h3>
+            <div class="analytics-list" id="recentActivity"></div>
+          </section>
+        </div>
+        <section class="analytics-card analytics-performance">
+          <div class="analytics-card-heading">
+            <h3>Event performance</h3>
+            <select id="performanceSort" aria-label="Sort event performance">
+              <option value="performance">Overall popularity</option>
+              <option value="views">Views</option>
+              <option value="cart_adds">Cart additions</option>
+              <option value="tickets_sold">Tickets sold</option>
+              <option value="revenue">Revenue</option>
+            </select>
+          </div>
+          <div class="analytics-table-wrap">
+            <table class="analytics-table">
+              <thead>
+                <tr>
+                  <th>Event</th>
+                  <th>Category</th>
+                  <th>Views</th>
+                  <th>Cart adds</th>
+                  <th>Tickets sold</th>
+                  <th>Revenue</th>
+                </tr>
+              </thead>
+              <tbody id="performanceTable"></tbody>
+            </table>
+          </div>
+          <div class="analytics-table-actions">
+            <button
+              class="admin-outline"
+              id="performanceMore"
+              type="button"
+              hidden
+            >
+              See More
+            </button>
+          </div>
+        </section>
       </section>
 
       <section class="admin-panel" data-panel="events">

@@ -22,6 +22,7 @@ body {
 }
 header {
   display: flex;
+  align-items: center;
   justify-content: space-between;
   padding: 30px;
   position: fixed;
@@ -39,7 +40,7 @@ header nav {
 header nav span {
   font-family: Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
   color: #ffffff;
-  font-size: 17px;
+  font-size: 16px;
   font-weight: 100;
   text-transform: uppercase;
   transition: 0.2s ease-in;

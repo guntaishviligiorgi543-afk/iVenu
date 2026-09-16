@@ -9,6 +9,8 @@
     users: 0,
     eventPage: 1,
     statsPage: 1,
+    analytics: null,
+    performanceVisible: 10,
   };
   const status = document.querySelector("#adminStatus");
   const message = document.querySelector("#adminMessage");
@@ -21,6 +23,9 @@
   const performerInput = document.querySelector("#eventPerformer");
   const categorySelect = document.querySelector("#eventCategorySelect");
   const categoryFilter = document.querySelector("#eventCategory");
+  const analyticsPeriod = document.querySelector("#analyticsPeriod");
+  const performanceSort = document.querySelector("#performanceSort");
+  const performanceMore = document.querySelector("#performanceMore");
   const backButton = document.querySelector("#adminBack");
 
   const escapeHtml = (value) =>
@@ -34,6 +39,10 @@
     message.className = `admin-message ${type}`;
     message.textContent = text;
   };
+
+  const formatRevenue = (value) => `${Number(value || 0).toFixed(2)}₾`;
+  const formatActivityDate = (value) =>
+    value ? new Date(value).toLocaleString() : "";
   const eventTickets = (eventId) =>
     state.ticketTypes.filter(
       (ticket) => String(ticket.event_id) === String(eventId),
@@ -88,8 +97,19 @@
     state.users = users.count || 0;
     state.eventPage = 1;
     state.statsPage = 1;
+    await loadAnalytics();
     renderAll();
     fillCategories();
+  }
+
+  async function loadAnalytics() {
+    state.performanceVisible = 10;
+    const { data, error } = await client.rpc("get_admin_event_analytics", {
+      p_period: analyticsPeriod.value,
+    });
+    if (error) throw error;
+    state.analytics = data || null;
+    renderAnalytics();
   }
 
   function renderPagination(container, currentPage, totalItems, onPageChange) {
@@ -127,6 +147,99 @@
           `<article class="admin-metric"><strong>${value}</strong><span>${label}</span></article>`,
       )
       .join("");
+  }
+
+  function renderAnalyticsList(containerId, items, valueLabel) {
+    const container = document.querySelector(`#${containerId}`);
+    if (!container) return;
+    container.innerHTML = items?.length
+      ? items
+          .map(
+            (item) =>
+              `<div class="analytics-list-row"><strong>${escapeHtml(item.title)}</strong><span>${escapeHtml(valueLabel(item))}</span></div>`,
+          )
+          .join("")
+      : '<p class="analytics-empty">No data for this period.</p>';
+  }
+
+  function renderAnalytics() {
+    const analytics = state.analytics;
+    if (!analytics) return;
+    const overview = analytics.overview || {};
+    metrics.innerHTML = [
+      ["Total users", overview.total_users],
+      ["Total events", overview.total_events],
+      ["Event views", overview.total_event_views],
+      ["Cart additions", overview.total_cart_additions],
+      ["Tickets sold", overview.total_tickets_sold],
+      ["Revenue", formatRevenue(overview.total_revenue)],
+    ]
+      .map(
+        ([label, value]) =>
+          `<article class="admin-metric"><strong>${escapeHtml(value)}</strong><span>${label}</span></article>`,
+      )
+      .join("");
+
+    renderAnalyticsList(
+      "topCartAdditions",
+      analytics.top_cart_additions,
+      (item) => `${item.cart_adds} additions`,
+    );
+    renderAnalyticsList(
+      "topViews",
+      analytics.top_views,
+      (item) => `${item.views} views`,
+    );
+    renderAnalyticsList(
+      "topSales",
+      analytics.top_sales,
+      (item) => `${item.tickets_sold} sold · ${formatRevenue(item.revenue)}`,
+    );
+
+    const category = analytics.popular_category || {};
+    document.querySelector("#popularCategory").innerHTML = category.category
+      ? `<div class="popular-category"><strong>${escapeHtml(category.category)}</strong><span>${category.event_count} events · ${category.engagement} tickets sold</span></div>`
+      : '<p class="analytics-empty">No category sales yet.</p>';
+
+    const recent = document.querySelector("#recentActivity");
+    recent.innerHTML = analytics.recent_activity?.length
+      ? analytics.recent_activity
+          .map(
+            (item) =>
+              `<div class="analytics-activity"><strong>${escapeHtml(item.activity_type)}</strong><span>${escapeHtml(item.event_title || "")}</span><time>${escapeHtml(formatActivityDate(item.created_at))}</time></div>`,
+          )
+          .join("")
+      : '<p class="analytics-empty">No recent activity.</p>';
+
+    renderPerformanceTable();
+  }
+
+  function renderPerformanceTable() {
+    const rows = [...(state.analytics?.performance || [])];
+    const sortKey = performanceSort.value;
+    rows.sort((first, second) => {
+      if (sortKey === "performance") {
+        return (
+          second.views +
+          second.cart_adds +
+          second.tickets_sold -
+          (first.views + first.cart_adds + first.tickets_sold)
+        );
+      }
+      return Number(second[sortKey] || 0) - Number(first[sortKey] || 0);
+    });
+    const visibleRows = rows.slice(0, state.performanceVisible);
+    document.querySelector("#performanceTable").innerHTML = visibleRows.length
+      ? visibleRows
+          .map(
+            (row) =>
+              `<tr><td>${escapeHtml(row.title)}</td><td>${escapeHtml(row.category)}</td><td>${row.views}</td><td>${row.cart_adds}</td><td>${row.tickets_sold}</td><td>${formatRevenue(row.revenue)}</td></tr>`,
+          )
+          .join("")
+      : '<tr><td colspan="6" class="analytics-empty">No event data.</td></tr>';
+    const hasMore = state.performanceVisible < rows.length;
+    performanceMore.hidden = rows.length <= 10;
+    performanceMore.textContent = hasMore ? "See More" : "See Less";
   }
 
   function renderEvents() {
@@ -197,6 +310,7 @@
     renderOverview();
     renderEvents();
     renderStats();
+    renderAnalytics();
   }
 
   function fillCategories() {
@@ -306,6 +420,21 @@
     .addEventListener("click", () =>
       loadData().catch((error) => setMessage(error.message, "error")),
     );
+  analyticsPeriod.addEventListener("change", () =>
+    loadAnalytics().catch((error) => setMessage(error.message, "error")),
+  );
+  performanceSort.addEventListener("change", () => {
+    state.performanceVisible = 10;
+    renderPerformanceTable();
+  });
+  performanceMore.addEventListener("click", () => {
+    const total = state.analytics?.performance?.length || 0;
+    state.performanceVisible =
+      state.performanceVisible < total
+        ? Math.min(state.performanceVisible + 10, total)
+        : 10;
+    renderPerformanceTable();
+  });
   document
     .querySelector("#cancelEventEdit")
     .addEventListener("click", resetForm);
