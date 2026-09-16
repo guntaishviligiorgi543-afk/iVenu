@@ -38,6 +38,7 @@ async function loadSelectedEvent() {
   if (!event) return;
 
   const band = event.bands || {};
+  const eventLocation = window.supabaseData.getEventLocation(event);
   selectedBand = {
     id: event.id,
     bandName: event.performer || band.name || event.title,
@@ -52,10 +53,15 @@ async function loadSelectedEvent() {
     },
     tickets: createTicketAdapter(ticketTypes),
     location: {
-      city: event.city,
-      venue: event.venue,
-      address: event.country || "",
-      coordinates: { lat: 0, lng: 0 },
+      city: eventLocation.cityArea,
+      venue: eventLocation.venue,
+      region: eventLocation.region,
+      country: eventLocation.country,
+      address: eventLocation.address,
+      coordinates: {
+        lat: eventLocation.latitude,
+        lng: eventLocation.longitude,
+      },
     },
   };
 
@@ -577,6 +583,40 @@ function initializeBasket() {
   renderBasket();
 }
 
+function uniqueLocationParts(parts) {
+  return [...new Set(parts.filter(Boolean))];
+}
+
+function formatSelectedLocation(location) {
+  const details = uniqueLocationParts([
+    location.city,
+    location.region,
+    location.country,
+  ]).join(", ");
+  return [location.venue, details].filter(Boolean).join(", ");
+}
+
+function getMapQuery(location) {
+  const { lat, lng } = location.coordinates || {};
+  const hasCoordinates =
+    lat !== null &&
+    lat !== undefined &&
+    lng !== null &&
+    lng !== undefined &&
+    Number.isFinite(Number(lat)) &&
+    Number.isFinite(Number(lng));
+
+  if (hasCoordinates) return `${lat},${lng}`;
+
+  return uniqueLocationParts([
+    location.venue,
+    location.address,
+    location.city,
+    location.region,
+    location.country,
+  ]).join(", ");
+}
+
 function renderSelectedEvent() {
   if (!selectedBand) return;
 
@@ -629,13 +669,13 @@ function renderSelectedEvent() {
   }
 
   const timeLocation = document.querySelector(".timeLocation");
+  const locationText = formatSelectedLocation(selectedBand.location);
   if (timeLocation) {
     const time = timeLocation.querySelector("p:nth-of-type(1)");
     const location = timeLocation.querySelector("p:nth-of-type(2)");
     if (time)
       time.textContent = `${selectedBand.event.time} — Doors open ${selectedBand.event.doorsOpen}`;
-    if (location)
-      location.textContent = `${selectedBand.location.venue}, ${selectedBand.location.city}`;
+    if (location) location.textContent = locationText;
   }
 
   const ticketInfo = document.querySelector(".ticketInfo");
@@ -650,9 +690,7 @@ function renderSelectedEvent() {
 
   const map = document.querySelector(".map");
   if (map) {
-    const mapQuery = encodeURIComponent(
-      `${selectedBand.location.venue}, ${selectedBand.location.city}`,
-    );
+    const mapQuery = encodeURIComponent(getMapQuery(selectedBand.location));
     map.innerHTML = `
       <iframe
         src="https://www.google.com/maps?q=${mapQuery}&output=embed"
@@ -671,8 +709,7 @@ function renderSelectedEvent() {
     container.querySelector(".bandNam").textContent = selectedBand.bandName;
     container.querySelector(".vntDate").textContent =
       `${selectedBand.event.date} • ${selectedBand.event.time}`;
-    container.querySelector(".vntLocation").textContent =
-      `${selectedBand.location.venue}, ${selectedBand.location.city}`;
+    container.querySelector(".vntLocation").textContent = locationText;
   }
 
   const bandName = document.querySelector(".tittle-date-dcrp-btn .bandNam");

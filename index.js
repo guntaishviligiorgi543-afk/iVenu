@@ -31,6 +31,7 @@ startDate.setHours(0, 0, 0, 0);
 function renderAccordion(event) {
   const band = event.bands || {};
   const performer = event.performer || band.name || event.title;
+  const location = window.supabaseData.getEventLocation(event);
   const accordion = document.createElement("div");
 
   accordion.classList.add("eventAcordion");
@@ -68,8 +69,7 @@ function renderAccordion(event) {
         </p>
 
         <p class="adress">
-          ${event.venue},
-          ${event.city}, ${event.country || ""}
+          ${location.text}
         </p>
 
       </div>

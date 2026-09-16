@@ -487,6 +487,7 @@
       function renderEventCard(event) {
         const band = event.bands || {};
         const performer = event.performer || band.name || event.title;
+        const location = window.supabaseData.getEventLocation(event);
         const card = document.createElement("div");
 
         card.classList.add("vntCrd");
@@ -525,8 +526,8 @@
     </p>
 
     <p>
-      ${event.venue}<br>
-      ${event.city}, ${event.country || ""}
+      ${location.venue}<br>
+      ${location.details}
     </p>
 
  <button class="getTicketBtn" data-id="${event.id}">

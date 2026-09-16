@@ -12,6 +12,7 @@
     analytics: null,
     performanceVisible: 10,
     catalog: [],
+    venues: [],
   };
   const status = document.querySelector("#adminStatus");
   const message = document.querySelector("#adminMessage");
@@ -23,6 +24,8 @@
   const metrics = document.querySelector("#overviewMetrics");
   const performerInput = document.querySelector("#eventPerformer");
   const categorySelect = document.querySelector("#eventCategorySelect");
+  const venueSelect = document.querySelector("#eventVenueSelect");
+  const venuePreview = document.querySelector("#venuePreview");
   const categoryFilter = document.querySelector("#eventCategory");
   const analyticsPeriod = document.querySelector("#analyticsPeriod");
   const performanceSort = document.querySelector("#performanceSort");
@@ -77,12 +80,12 @@
   };
 
   async function loadData() {
-    const [events, categories, tickets, orders, users, catalog] =
+    const [events, categories, tickets, orders, users, catalog, venues] =
       await Promise.all([
         client
           .from("events")
           .select(
-            "id, performer, category_id, title, description, event_date, event_time, doors_open, venue, city, country, image_url, status, categories(id, name)",
+            "id, performer, category_id, title, description, event_date, event_time, doors_open, venue_id, venue, city, country, image_url, status, venues:venues!events_venue_id_fkey(id, name, city_area, region, country, address, latitude, longitude, image_url), categories(id, name)",
           )
           .order("event_date", { ascending: true }),
         client.from("categories").select("id, name").order("name"),
@@ -95,8 +98,14 @@
           .from("venue_catalog")
           .select("id, image_url, display_order, created_at")
           .order("display_order", { ascending: true }),
+        client
+          .from("venues")
+          .select(
+            "id, name, city_area, region, country, address, latitude, longitude, image_url",
+          )
+          .order("name"),
       ]);
-    for (const result of [events, categories, tickets, orders, catalog])
+    for (const result of [events, categories, tickets, orders, catalog, venues])
       if (result.error) throw result.error;
     state.events = events.data || [];
     state.categories = categories.data || [];
@@ -104,11 +113,13 @@
     state.orderItems = orders.data || [];
     state.users = users.count || 0;
     state.catalog = catalog.data || [];
+    state.venues = venues.data || [];
     state.eventPage = 1;
     state.statsPage = 1;
     await loadAnalytics();
     renderAll();
     fillCategories();
+    fillVenues();
     renderCatalog();
   }
 
@@ -285,8 +296,9 @@
     const filtered = state.events.filter((event) => {
       const stats = eventStats(event);
       const category = event.categories?.name || "";
+      const location = getEventLocation(event);
       const text =
-        `${event.title} ${event.performer} ${event.venue} ${event.city} ${category}`.toLowerCase();
+        `${event.title} ${event.performer} ${location.venue} ${location.details} ${category}`.toLowerCase();
       return (
         (!search || text.includes(search)) &&
         (!statusFilter || event.status === statusFilter) &&
@@ -303,7 +315,8 @@
       ? pageItems
           .map((event) => {
             const stats = eventStats(event);
-            return `<article class="admin-event-row"><div><strong>${escapeHtml(event.title)}</strong><span>${escapeHtml(event.performer)} · ${escapeHtml(event.categories?.name || "Uncategorized")} · ${escapeHtml(event.event_date)} · ${escapeHtml(event.event_time)} · ${escapeHtml(event.venue)}, ${escapeHtml(event.city)}</span><span>${stats.sold} sold / ${stats.remaining} available</span></div><span class="admin-badge">${escapeHtml(event.status || "active")}</span><div class="admin-event-actions"><button data-edit="${event.id}" type="button">Edit</button><button data-delete="${event.id}" type="button">Delete</button></div></article>`;
+            const location = getEventLocation(event);
+            return `<article class="admin-event-row"><div><strong>${escapeHtml(event.title)}</strong><span>${escapeHtml(event.performer)} · ${escapeHtml(event.categories?.name || "Uncategorized")} · ${escapeHtml(event.event_date)} · ${escapeHtml(event.event_time)} · ${escapeHtml(location.text)}</span><span>${stats.sold} sold / ${stats.remaining} available</span></div><span class="admin-badge">${escapeHtml(event.status || "active")}</span><div class="admin-event-actions"><button data-edit="${event.id}" type="button">Edit</button><button data-delete="${event.id}" type="button">Delete</button></div></article>`;
           })
           .join("")
       : '<p class="admin-message">No matching events.</p>';
@@ -366,9 +379,63 @@
         )
         .join("");
   }
+
+  function getEventLocation(event) {
+    const venue =
+      event?.venues && !Array.isArray(event.venues) ? event.venues : null;
+    const cityArea = venue?.city_area ?? event?.city ?? "";
+    const region = venue?.region ?? "";
+    const country = venue?.country ?? event?.country ?? "";
+    const details = [...new Set([cityArea, region, country].filter(Boolean))];
+
+    return {
+      venue: venue?.name ?? event?.venue ?? "",
+      details: details.join(", "),
+      text: [venue?.name ?? event?.venue ?? "", details.join(", ")]
+        .filter(Boolean)
+        .join(", "),
+    };
+  }
+
+  function renderVenuePreview(venueId) {
+    const venue = state.venues.find((item) => item.id === venueId);
+    if (!venue) {
+      venuePreview.textContent = "";
+      venuePreview.hidden = true;
+      return;
+    }
+
+    const location = [
+      ...new Set([venue.city_area, venue.region, venue.country].filter(Boolean)),
+    ].join(", ");
+    venuePreview.textContent = [venue.name, location, venue.address]
+      .filter(Boolean)
+      .join(" — ");
+    venuePreview.hidden = false;
+  }
+
+  function fillVenues() {
+    const selectedVenueId = venueSelect.value;
+    venueSelect.innerHTML =
+      '<option value="">Select venue</option>' +
+      state.venues
+        .map(
+          (venue) =>
+            `<option value="${venue.id}">${escapeHtml(venue.name)}</option>`,
+        )
+        .join("");
+    venueSelect.value = state.venues.some(
+      (venue) => venue.id === selectedVenueId,
+    )
+      ? selectedVenueId
+      : "";
+    renderVenuePreview(venueSelect.value);
+  }
+
   function resetForm() {
     form.reset();
     form.elements.id.value = "";
+    renderVenuePreview("");
     document.querySelector("#eventFormTitle").textContent = "Add event";
     document.querySelector("#cancelEventEdit").hidden = true;
   }
@@ -382,14 +449,13 @@
       event_time: event.event_time,
       doors_open: event.doors_open,
       status: event.status || "active",
-      venue: event.venue,
-      city: event.city,
-      country: event.country,
+      venue_id: event.venue_id,
       image_url: event.image_url,
       description: event.description,
     }).forEach(([key, value]) => {
       if (form.elements[key]) form.elements[key].value = value || "";
     });
+    renderVenuePreview(venueSelect.value);
     document.querySelector("#eventFormTitle").textContent = "Edit event";
     document.querySelector("#cancelEventEdit").hidden = false;
     document
@@ -415,9 +481,7 @@
       event_date: values.get("event_date"),
       event_time: values.get("event_time"),
       doors_open: values.get("doors_open"),
-      venue: values.get("venue").trim(),
-      city: values.get("city").trim(),
-      country: values.get("country").trim(),
+      venue_id: values.get("venue_id"),
       image_url: values.get("image_url").trim(),
       status: values.get("status"),
     };
@@ -473,6 +537,9 @@
   document
     .querySelector("#cancelEventEdit")
     .addEventListener("click", resetForm);
+  venueSelect.addEventListener("change", () =>
+    renderVenuePreview(venueSelect.value),
+  );
   form.addEventListener("submit", (event) => {
     event.preventDefault();
     saveEvent(event).catch((error) => {
