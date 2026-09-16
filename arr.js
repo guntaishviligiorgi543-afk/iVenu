@@ -814,44 +814,4 @@ const bands = [
       "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS3e7GG44ZNexUIVTDicQ8sTkyuWBEVyh6xXEnp7q-17-Z_S3s-fDE_kw0&s=10",
   },
 ];
-const catalog = [
-  {
-    img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR1LvTgr6LEnKOsCbARda1Sv0SnZ3ZaQ8W8V2t_rsPjgQ&s=10",
-  },
-  {
-    img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR7D0h_YCbjCE7Pvvf0pwjq8lodbpRaH-Cn6BaT0VXTDg&s=10",
-  },
-  {
-    img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSAp6kT0xELuT7PjzGL8sgDUKk1b_wL8ZRaOF9FeIybSw&s=10",
-  },
-  {
-    img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSZti-O30_FdI4Wf2kXFbfC18cEbpp8tOeq92SUz4Qm1IWzYzDmzkKSyuU&s=10",
-  },
-  {
-    img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTcwKOqVJBZsWGOyd63rQuhk0G5ncAyXN4Vxg6bFYFXeA&s=10",
-  },
-  {
-    img: "https://www.rollingstone.com/wp-content/uploads/2018/11/Muse-Dominic-Howard-Matt-Bellamy-and-Chris-Wolstenholme-2017.jpg",
-  },
-  {
-    img: "https://www.nj.com/resizer/v2/SZYRLEQ72VFBVBY3UOMHIKCPRM.jpg?auth=5e9c5202caa1f5db18692063ef5864c44ac69d6c373ca4ecec1dc3810d1fc349&width=1280&smart=true&quality=90",
-  },
-  {
-    img: "https://www.nme.com/wp-content/uploads/2020/04/GettyImages-611696776_radiohead_new_album_ok_computer_plans_2000.jpg",
-  },
-  {
-    img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRPWm5nmPiStnxvTx_RiiaZghUbm2UT6GSfEXOGIqDW1Q&s=10",
-  },
-  {
-    img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSIxFFSoAwz6-Jbf-FCDCdeYMTiUBI67e9hbkugfp_N-g&s=10",
-  },
-];
-const catalogContainer = document.querySelector(".catalog");
-
-catalog.forEach((item, index) => {
-  const img = catalogContainer.querySelector(`.img${index + 1} img`);
-
-  if (!img) return;
-
-  img.src = item.img;
-});
+ 

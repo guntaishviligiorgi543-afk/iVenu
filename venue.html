@@ -282,6 +282,7 @@
     .catalogImg {
       display: block;
       width: 100%;
+      height: 100%;
       transition: filter 0.3s ease;
     }
 
@@ -303,7 +304,104 @@
     .catalogItem:hover .catalogActions {
       opacity: 1;
     }
+    /* Share Modal Styles */
+    .shareModal {
+      position: fixed;
+      inset: 0;
+      z-index: 10001;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition:
+        opacity 0.3s ease,
+        visibility 0.3s ease;
+    }
 
+    .shareModal.active {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+    }
+
+    .shareModalOverlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(4px);
+    }
+
+    .shareModalContent {
+      position: relative;
+      background: #1e1e1e;
+      border: 1px solid #333;
+      width: 90%;
+      max-width: 420px;
+      padding: 30px 25px;
+      text-align: center;
+      z-index: 1;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    .shareModalClose {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      background: transparent;
+      border: none;
+      color: #fff;
+      font-size: 28px;
+      cursor: pointer;
+      line-height: 1;
+      transition: color 0.2s ease;
+    }
+
+    .shareModalClose:hover {
+      color: #f4a185;
+    }
+
+    .shareModalTitle {
+      font-family:
+        system-ui,
+        -apple-system,
+        sans-serif;
+      color: #fff;
+      font-size: 1.6rem;
+      font-weight: 300;
+      margin: 0 0 25px 0;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .shareSocialIcons {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+    }
+
+    .shareSocialBtn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 50px;
+      height: 50px;
+      background: #2d2d2d;
+      color: #fff;
+      text-decoration: none;
+      border-radius: 50%;
+      transition:
+        transform 0.2s ease,
+        background-color 0.2s ease,
+        color 0.2s ease;
+    }
+
+    .shareSocialBtn:hover {
+      transform: translateY(-3px);
+      background-color: #f4a185;
+      color: #000;
+    }
     .catalogActions button {
       border: none;
       border-radius: 50%;
@@ -664,369 +762,13 @@
       <section>
         <div class="section3cont">
           <h2>the launch in photos</h2>
-          <div class="catalog">
-            <div class="catalogItem img1">
-              <img class="catalogImg" src="" alt="" />
-
-              <div class="catalogActions">
-                <!-- Heart -->
-                <button class="heartBtn">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      fill="currentColor"
-                      d="M12 21s-8-4.35-8-10.5A4.5 4.5 0 0 1 12 7a4.5 4.5 0 0 1 8 3.5C20 16.65 12 21 12 21Z"
-                    />
-                  </svg>
-                </button>
-
-                <!-- Share -->
-                <button class="shareBtn">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="1em"
-                    height="1em"
-                    viewBox="0 0 24 24"
-                  >
-                    <path d="M0 0h24v24H0z" fill="none" />
-                    <path
-                      fill="currentColor"
-                      d="M11 7.05V4a1 1 0 0 0-1-1a1 1 0 0 0-.7.29l-7 7a1 1 0 0 0 0 1.42l7 7A1 1 0 0 0 11 18v-3.1h.85a10.89 10.89 0 0 1 8.36 3.72a1 1 0 0 0 1.11.35A1 1 0 0 0 22 18c0-9.12-8.08-10.68-11-10.95m.85 5.83a15 15 0 0 0-2 .13A1 1 0 0 0 9 14v1.59L4.42 11L9 6.41V8a1 1 0 0 0 1 1c.91 0 8.11.2 9.67 6.43a13.07 13.07 0 0 0-7.82-2.55"
-                    />
-                  </svg>
-                </button>
-              </div>
-            </div>
-            <div class="catalogItem img2">
-              <img class="catalogImg" src="" alt="" />
-
-              <div class="catalogActions">
-                <!-- Heart -->
-                <button class="heartBtn">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      fill="currentColor"
-                      d="M12 21s-8-4.35-8-10.5A4.5 4.5 0 0 1 12 7a4.5 4.5 0 0 1 8 3.5C20 16.65 12 21 12 21Z"
-                    />
-                  </svg>
-                </button>
-
-                <!-- Share -->
-                <button class="shareBtn">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="1em"
-                    height="1em"
-                    viewBox="0 0 24 24"
-                  >
-                    <path d="M0 0h24v24H0z" fill="none" />
-                    <path
-                      fill="currentColor"
-                      d="M11 7.05V4a1 1 0 0 0-1-1a1 1 0 0 0-.7.29l-7 7a1 1 0 0 0 0 1.42l7 7A1 1 0 0 0 11 18v-3.1h.85a10.89 10.89 0 0 1 8.36 3.72a1 1 0 0 0 1.11.35A1 1 0 0 0 22 18c0-9.12-8.08-10.68-11-10.95m.85 5.83a15 15 0 0 0-2 .13A1 1 0 0 0 9 14v1.59L4.42 11L9 6.41V8a1 1 0 0 0 1 1c.91 0 8.11.2 9.67 6.43a13.07 13.07 0 0 0-7.82-2.55"
-                    />
-                  </svg>
-                </button>
-              </div>
-            </div>
-            <div class="catalogItem img3">
-              <img class="catalogImg" src="" alt="" />
-
-              <div class="catalogActions">
-                <!-- Heart -->
-                <button class="heartBtn">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      fill="currentColor"
-                      d="M12 21s-8-4.35-8-10.5A4.5 4.5 0 0 1 12 7a4.5 4.5 0 0 1 8 3.5C20 16.65 12 21 12 21Z"
-                    />
-                  </svg>
-                </button>
-
-                <!-- Share -->
-                <button class="shareBtn">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="1em"
-                    height="1em"
-                    viewBox="0 0 24 24"
-                  >
-                    <path d="M0 0h24v24H0z" fill="none" />
-                    <path
-                      fill="currentColor"
-                      d="M11 7.05V4a1 1 0 0 0-1-1a1 1 0 0 0-.7.29l-7 7a1 1 0 0 0 0 1.42l7 7A1 1 0 0 0 11 18v-3.1h.85a10.89 10.89 0 0 1 8.36 3.72a1 1 0 0 0 1.11.35A1 1 0 0 0 22 18c0-9.12-8.08-10.68-11-10.95m.85 5.83a15 15 0 0 0-2 .13A1 1 0 0 0 9 14v1.59L4.42 11L9 6.41V8a1 1 0 0 0 1 1c.91 0 8.11.2 9.67 6.43a13.07 13.07 0 0 0-7.82-2.55"
-                    />
-                  </svg>
-                </button>
-              </div>
-            </div>
-            <div class="catalogItem img4">
-              <img class="catalogImg" src="" alt="" />
-
-              <div class="catalogActions">
-                <!-- Heart -->
-                <button class="heartBtn">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      fill="currentColor"
-                      d="M12 21s-8-4.35-8-10.5A4.5 4.5 0 0 1 12 7a4.5 4.5 0 0 1 8 3.5C20 16.65 12 21 12 21Z"
-                    />
-                  </svg>
-                </button>
-
-                <!-- Share -->
-                <button class="shareBtn">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="1em"
-                    height="1em"
-                    viewBox="0 0 24 24"
-                  >
-                    <path d="M0 0h24v24H0z" fill="none" />
-                    <path
-                      fill="currentColor"
-                      d="M11 7.05V4a1 1 0 0 0-1-1a1 1 0 0 0-.7.29l-7 7a1 1 0 0 0 0 1.42l7 7A1 1 0 0 0 11 18v-3.1h.85a10.89 10.89 0 0 1 8.36 3.72a1 1 0 0 0 1.11.35A1 1 0 0 0 22 18c0-9.12-8.08-10.68-11-10.95m.85 5.83a15 15 0 0 0-2 .13A1 1 0 0 0 9 14v1.59L4.42 11L9 6.41V8a1 1 0 0 0 1 1c.91 0 8.11.2 9.67 6.43a13.07 13.07 0 0 0-7.82-2.55"
-                    />
-                  </svg>
-                </button>
-              </div>
-            </div>
-            <div class="catalogItem img5">
-              <img class="catalogImg" src="" alt="" />
-
-              <div class="catalogActions">
-                <!-- Heart -->
-                <button class="heartBtn">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      fill="currentColor"
-                      d="M12 21s-8-4.35-8-10.5A4.5 4.5 0 0 1 12 7a4.5 4.5 0 0 1 8 3.5C20 16.65 12 21 12 21Z"
-                    />
-                  </svg>
-                </button>
-
-                <!-- Share -->
-                <button class="shareBtn">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="1em"
-                    height="1em"
-                    viewBox="0 0 24 24"
-                  >
-                    <path d="M0 0h24v24H0z" fill="none" />
-                    <path
-                      fill="currentColor"
-                      d="M11 7.05V4a1 1 0 0 0-1-1a1 1 0 0 0-.7.29l-7 7a1 1 0 0 0 0 1.42l7 7A1 1 0 0 0 11 18v-3.1h.85a10.89 10.89 0 0 1 8.36 3.72a1 1 0 0 0 1.11.35A1 1 0 0 0 22 18c0-9.12-8.08-10.68-11-10.95m.85 5.83a15 15 0 0 0-2 .13A1 1 0 0 0 9 14v1.59L4.42 11L9 6.41V8a1 1 0 0 0 1 1c.91 0 8.11.2 9.67 6.43a13.07 13.07 0 0 0-7.82-2.55"
-                    />
-                  </svg>
-                </button>
-              </div>
-            </div>
-            <div class="catalogItem img6">
-              <img class="catalogImg" src="" alt="" />
-
-              <div class="catalogActions">
-                <!-- Heart -->
-                <button class="heartBtn">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      fill="currentColor"
-                      d="M12 21s-8-4.35-8-10.5A4.5 4.5 0 0 1 12 7a4.5 4.5 0 0 1 8 3.5C20 16.65 12 21 12 21Z"
-                    />
-                  </svg>
-                </button>
-
-                <!-- Share -->
-                <button class="shareBtn">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="1em"
-                    height="1em"
-                    viewBox="0 0 24 24"
-                  >
-                    <path d="M0 0h24v24H0z" fill="none" />
-                    <path
-                      fill="currentColor"
-                      d="M11 7.05V4a1 1 0 0 0-1-1a1 1 0 0 0-.7.29l-7 7a1 1 0 0 0 0 1.42l7 7A1 1 0 0 0 11 18v-3.1h.85a10.89 10.89 0 0 1 8.36 3.72a1 1 0 0 0 1.11.35A1 1 0 0 0 22 18c0-9.12-8.08-10.68-11-10.95m.85 5.83a15 15 0 0 0-2 .13A1 1 0 0 0 9 14v1.59L4.42 11L9 6.41V8a1 1 0 0 0 1 1c.91 0 8.11.2 9.67 6.43a13.07 13.07 0 0 0-7.82-2.55"
-                    />
-                  </svg>
-                </button>
-              </div>
-            </div>
-            <div class="catalogItem img7">
-              <img class="catalogImg" src="" alt="" />
-
-              <div class="catalogActions">
-                <!-- Heart -->
-                <button class="heartBtn">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      fill="currentColor"
-                      d="M12 21s-8-4.35-8-10.5A4.5 4.5 0 0 1 12 7a4.5 4.5 0 0 1 8 3.5C20 16.65 12 21 12 21Z"
-                    />
-                  </svg>
-                </button>
-
-                <!-- Share -->
-                <button class="shareBtn">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="1em"
-                    height="1em"
-                    viewBox="0 0 24 24"
-                  >
-                    <path d="M0 0h24v24H0z" fill="none" />
-                    <path
-                      fill="currentColor"
-                      d="M11 7.05V4a1 1 0 0 0-1-1a1 1 0 0 0-.7.29l-7 7a1 1 0 0 0 0 1.42l7 7A1 1 0 0 0 11 18v-3.1h.85a10.89 10.89 0 0 1 8.36 3.72a1 1 0 0 0 1.11.35A1 1 0 0 0 22 18c0-9.12-8.08-10.68-11-10.95m.85 5.83a15 15 0 0 0-2 .13A1 1 0 0 0 9 14v1.59L4.42 11L9 6.41V8a1 1 0 0 0 1 1c.91 0 8.11.2 9.67 6.43a13.07 13.07 0 0 0-7.82-2.55"
-                    />
-                  </svg>
-                </button>
-              </div>
-            </div>
-            <div class="catalogItem img8">
-              <img class="catalogImg" src="" alt="" />
-
-              <div class="catalogActions">
-                <!-- Heart -->
-                <button class="heartBtn">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      fill="currentColor"
-                      d="M12 21s-8-4.35-8-10.5A4.5 4.5 0 0 1 12 7a4.5 4.5 0 0 1 8 3.5C20 16.65 12 21 12 21Z"
-                    />
-                  </svg>
-                </button>
-
-                <!-- Share -->
-                <button class="shareBtn">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="1em"
-                    height="1em"
-                    viewBox="0 0 24 24"
-                  >
-                    <path d="M0 0h24v24H0z" fill="none" />
-                    <path
-                      fill="currentColor"
-                      d="M11 7.05V4a1 1 0 0 0-1-1a1 1 0 0 0-.7.29l-7 7a1 1 0 0 0 0 1.42l7 7A1 1 0 0 0 11 18v-3.1h.85a10.89 10.89 0 0 1 8.36 3.72a1 1 0 0 0 1.11.35A1 1 0 0 0 22 18c0-9.12-8.08-10.68-11-10.95m.85 5.83a15 15 0 0 0-2 .13A1 1 0 0 0 9 14v1.59L4.42 11L9 6.41V8a1 1 0 0 0 1 1c.91 0 8.11.2 9.67 6.43a13.07 13.07 0 0 0-7.82-2.55"
-                    />
-                  </svg>
-                </button>
-              </div>
-            </div>
-            <div class="catalogItem img9">
-              <img class="catalogImg" src="" alt="" />
-
-              <div class="catalogActions">
-                <!-- Heart -->
-                <button class="heartBtn">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      fill="currentColor"
-                      d="M12 21s-8-4.35-8-10.5A4.5 4.5 0 0 1 12 7a4.5 4.5 0 0 1 8 3.5C20 16.65 12 21 12 21Z"
-                    />
-                  </svg>
-                </button>
-
-                <!-- Share -->
-                <button class="shareBtn">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="1em"
-                    height="1em"
-                    viewBox="0 0 24 24"
-                  >
-                    <path d="M0 0h24v24H0z" fill="none" />
-                    <path
-                      fill="currentColor"
-                      d="M11 7.05V4a1 1 0 0 0-1-1a1 1 0 0 0-.7.29l-7 7a1 1 0 0 0 0 1.42l7 7A1 1 0 0 0 11 18v-3.1h.85a10.89 10.89 0 0 1 8.36 3.72a1 1 0 0 0 1.11.35A1 1 0 0 0 22 18c0-9.12-8.08-10.68-11-10.95m.85 5.83a15 15 0 0 0-2 .13A1 1 0 0 0 9 14v1.59L4.42 11L9 6.41V8a1 1 0 0 0 1 1c.91 0 8.11.2 9.67 6.43a13.07 13.07 0 0 0-7.82-2.55"
-                    />
-                  </svg>
-                </button>
-              </div>
-            </div>
-            <div class="catalogItem img10">
-              <img class="catalogImg" src="" alt="" />
-
-              <div class="catalogActions">
-                <!-- Heart -->
-                <button class="heartBtn">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      fill="currentColor"
-                      d="M12 21s-8-4.35-8-10.5A4.5 4.5 0 0 1 12 7a4.5 4.5 0 0 1 8 3.5C20 16.65 12 21 12 21Z"
-                    />
-                  </svg>
-                </button>
-
-                <!-- Share -->
-                <button class="shareBtn">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="1em"
-                    height="1em"
-                    viewBox="0 0 24 24"
-                  >
-                    <path d="M0 0h24v24H0z" fill="none" />
-                    <path
-                      fill="currentColor"
-                      d="M11 7.05V4a1 1 0 0 0-1-1a1 1 0 0 0-.7.29l-7 7a1 1 0 0 0 0 1.42l7 7A1 1 0 0 0 11 18v-3.1h.85a10.89 10.89 0 0 1 8.36 3.72a1 1 0 0 0 1.11.35A1 1 0 0 0 22 18c0-9.12-8.08-10.68-11-10.95m.85 5.83a15 15 0 0 0-2 .13A1 1 0 0 0 9 14v1.59L4.42 11L9 6.41V8a1 1 0 0 0 1 1c.91 0 8.11.2 9.67 6.43a13.07 13.07 0 0 0-7.82-2.55"
-                    />
-                  </svg>
-                </button>
-              </div>
-            </div>
-          </div>
+          <div class="catalog"></div>
         </div>
+
+        <p class="copyright">
+          LIVE LOCAL MUSIC, FOOD &amp; DRINKS ©2035 BY THE LAUNCH. Powered and
+          secured by <u>Wix</u>
+        </p>
       </section>
       <section class="sec4" aria-labelledby="newsletter-title">
         <div class="newsletter">
@@ -1099,12 +841,111 @@
       </button>
     </div>
 
-    <script src="arr.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="supabase-config.js"></script>
-    <script src="auth.js"></script>
-    <script src="event-cart.js"></script>
-    <script src="auth-ui.js"></script>
+    <!-- SHARE MODAL -->
+    <div class="shareModal" id="shareModal" aria-hidden="true">
+      <div class="shareModalOverlay" id="shareModalOverlay"></div>
+      <div class="shareModalContent">
+        <button
+          class="shareModalClose"
+          id="shareModalClose"
+          aria-label="Close modal"
+        >
+          &times;
+        </button>
+        <h3 class="shareModalTitle">Share this event</h3>
+        <div class="shareSocialIcons">
+          <!-- Facebook -->
+          <a
+            href="#"
+            id="shareFacebook"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="shareSocialBtn fb"
+            title="Share on Facebook"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="1.5em"
+              height="1.5em"
+              viewBox="0 0 24 24"
+            >
+              <path
+                fill="currentColor"
+                d="M9.602 21.026v-7.274H6.818a.545.545 0 0 1-.545-.545V10.33a.545.545 0 0 1 .545-.545h2.773V7a4.547 4.547 0 0 1 4.86-4.989h2.32a.556.556 0 0 1 .557.546v2.436a.557.557 0 0 1-.557.545h-1.45c-1.566 0-1.867.742-1.867 1.833v2.413h3.723a.533.533 0 0 1 .546.603l-.337 2.888a.545.545 0 0 1-.545.476h-3.364v7.274a.96.96 0 0 1-.975.974h-1.937a.96.96 0 0 1-.963-.974"
+              />
+            </svg>
+          </a>
+
+          <!-- Instagram -->
+          <a
+            href="https://www.instagram.com"
+            id="shareInstagram"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="shareSocialBtn ig"
+            title="Instagram Page"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="1.5em"
+              height="1.5em"
+              viewBox="0 0 24 24"
+            >
+              <path
+                fill="currentColor"
+                fill-rule="evenodd"
+                d="M7.465 1.066C8.638 1.012 9.012 1 12 1s3.362.013 4.534.066s1.972.24 2.672.511c.733.277 1.398.71 1.948 1.27c.56.549.992 1.213 1.268 1.947c.272.7.458 1.5.512 2.67C22.988 8.639 23 9.013 23 12s-.013 3.362-.066 4.535c-.053 1.17-.24 1.97-.512 2.67a5.4 5.4 0 0 1-1.268 1.949c-.55.56-1.215.992-1.948 1.268c-.7.272-1.5.458-2.67.512c-1.174.054-1.548.066-4.536.066s-3.362-.013-4.535-.066c-1.17-.053-1.97-.24-2.67-.512a5.4 5.4 0 0 1-1.949-1.268a5.4 5.4 0 0 1-1.269-1.948c-.271-.7-.457-1.5-.511-2.67C1.012 15.361 1 14.987 1 12s.013-3.362.066-4.534s.24-1.972.511-2.672a5.4 5.4 0 0 1 1.27-1.948a5.4 5.4 0 0 1 1.947-1.269c.7-.271 1.5-.457 2.67-.511m8.98 1.98c-1.16-.053-1.508-.064-4.445-.064s-3.285.011-4.445.064c-1.073.049-1.655.228-2.043.379c-.513.2-.88.437-1.265.822a3.4 3.4 0 0 0-.822 1.265c-.151.388-.33.97-.379 2.043c-.053 1.16-.064 1.508-.064 4.445s.011 3.285.064 4.445c.049 1.073.228 1.655.379 2.043c.176.477.457.91.822 1.265c.355.365.788.646 1.265.822c.388.151.97.33 2.043.379c1.16.053 1.507.064 4.445.064s3.285-.011 4.445-.064c1.073-.049 1.655-.228 2.043-.379c.513-.2.88-.437 1.265-.822c.365-.355.646-.788.822-1.265c.151-.388.33-.97.379-2.043c.053-1.16.064-1.508.064-4.445s-.011-3.285-.064-4.445c-.049-1.073-.228-1.655-.379-2.043c-.2-.513-.437-.88-.822-1.265a3.4 3.4 0 0 0-1.265-.822c-.388-.151-.97-.33-2.043-.379m-5.85 12.345a3.669 3.669 0 0 0 4-5.986a3.67 3.67 0 1 0-4 5.986M8.002 8.002a5.654 5.654 0 1 1 7.996 7.996a5.654 5.654 0 0 1-7.996-7.996m10.906-.814a1.337 1.337 0 1 0-1.89-1.89a1.337 1.337 0 0 0 1.89 1.89"
+                clip-rule="evenodd"
+              />
+            </svg>
+          </a>
+
+          <!-- X / Twitter -->
+          <a
+            href="#"
+            id="shareX"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="shareSocialBtn x"
+            title="Share on X"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="1.5em"
+              height="1.5em"
+              viewBox="0 0 24 24"
+            >
+              <path
+                fill="currentColor"
+                d="M23.643 4.937c-.835.37-1.732.62-2.675.733a4.67 4.67 0 0 0 2.048-2.578a9.3 9.3 0 0 1-2.958 1.13a4.66 4.66 0 0 0-7.938 4.25a13.23 13.23 0 0 1-9.602-4.868c-.4.69-.63 1.49-.63 2.342A4.66 4.66 0 0 0 3.96 9.824a4.65 4.65 0 0 1-2.11-.583v.06a4.66 4.66 0 0 0 3.737 4.568a4.7 4.7 0 0 1-2.104.08a4.66 4.66 0 0 0 4.352 3.234a9.35 9.35 0 0 1-5.786 1.995a10 10 0 0 1-1.112-.065a13.2 13.2 0 0 0 7.14 2.093c8.57 0 13.255-7.098 13.255-13.254q0-.301-.014-.602a9.5 9.5 0 0 0 2.323-2.41z"
+              />
+            </svg>
+          </a>
+
+          <!-- YouTube -->
+          <a
+            href="https://www.youtube.com"
+            id="shareYouTube"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="shareSocialBtn yt"
+            title="YouTube Channel"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="1.5em"
+              height="1.5em"
+              viewBox="0 0 24 24"
+            >
+              <path
+                fill="currentColor"
+                d="M23.5 6.507a2.8 2.8 0 0 0-.766-1.27a3.05 3.05 0 0 0-1.338-.742C19.518 4 11.994 4 11.994 4a77 77 0 0 0-9.39.47a3.16 3.16 0 0 0-1.338.76c-.37.356-.638.795-.778 1.276A29 29 0 0 0 0 12c-.012 1.841.151 3.68.488 5.494c.137.479.404.916.775 1.269s.833.608 1.341.743c1.903.494 9.39.494 9.39.494a77 77 0 0 0 9.402-.47a3.05 3.05 0 0 0 1.338-.742a2.8 2.8 0 0 0 .765-1.27A28.4 28.4 0 0 0 24 12.023a26.6 26.6 0 0 0-.5-5.517M9.602 15.424V8.577l6.26 3.424z"
+              />
+            </svg>
+          </a>
+        </div>
+      </div>
+    </div>
     <script>
       const imageModal = document.querySelector(".imageModal");
       const modalImage = document.querySelector(".modalImage");
@@ -1115,13 +956,158 @@
       let currentIndex = 0;
       let lastWheelTime = 0;
 
-      // ყველა კატალოგის სურათი
+      // ყველა კატალოგის სურათის წამოღების ფუნქცია Modal Gallery-სთვის
       function getImages() {
         return Array.from(document.querySelectorAll(".catalogImg"));
       }
+      console.log(getImages());
 
+      // ==========================
+      // SUPABASE CATALOG FETCH
+      // ==========================
+      // ==========================
+      // SUPABASE CATALOG FETCH (შესწორებული)
+      // ==========================
+      async function loadCatalogFromSupabase() {
+        const catalogContainer = document.querySelector(".catalog");
+        if (!catalogContainer) return;
+
+        // Supabase Client-ის უსაფრთხო იდენტიფიკაცია
+        const client =
+          typeof supabase !== "undefined" && typeof supabase.from === "function"
+            ? supabase
+            : window.supabaseClient &&
+                typeof window.supabaseClient.from === "function"
+              ? window.supabaseClient
+              : window._supabase && typeof window._supabase.from === "function"
+                ? window._supabase
+                : null;
+
+        if (!client) {
+          console.error(
+            "Supabase client is not initialized correctly. Please check supabase-config.js.",
+          );
+          return;
+        }
+
+        try {
+          const { data: catalog, error } = await client
+            .from("venue_catalog")
+            .select("*")
+            .order("display_order", { ascending: true });
+
+          if (error) {
+            console.error("Error fetching venue catalog from Supabase:", error);
+            return;
+          }
+
+          catalogContainer.innerHTML = "";
+          (catalog || []).forEach((item, index) => {
+            const catalogItem = document.createElement("div");
+            catalogItem.className = `catalogItem img${(index % 10) + 1}`;
+            catalogItem.dataset.id = item.id;
+
+            const image = document.createElement("img");
+            image.className = "catalogImg";
+            image.src = item.image_url;
+            image.alt = `Venue photo ${index + 1}`;
+
+            const actions = document.createElement("div");
+            actions.className = "catalogActions";
+            actions.innerHTML =
+              '<button class="shareBtn" aria-label="Share">&#8599;</button>';
+
+            catalogItem.append(image, actions);
+            catalogContainer.appendChild(catalogItem);
+          });
+        } catch (err) {
+          console.error("Unexpected error loading catalog:", err);
+        }
+      }
+      // ჩავტვირთოთ კატალოგი გვერდის გახსნისთანავე
+      document.addEventListener("DOMContentLoaded", loadCatalogFromSupabase);
+
+      // ==========================
+      // SHARE MODAL FUNCTIONALITY
+      // ==========================
+      const shareModal = document.getElementById("shareModal");
+      const shareModalOverlay = document.getElementById("shareModalOverlay");
+      const shareModalClose = document.getElementById("shareModalClose");
+
+      const shareFacebook = document.getElementById("shareFacebook");
+      const shareX = document.getElementById("shareX");
+
+      function openShareModal(eventId) {
+        if (!shareModal) return;
+
+        // ავაგოთ კონკრეტული event-ის URL
+        const baseUrl =
+          window.location.origin +
+          window.location.pathname.replace("venue.html", "event.html");
+        const eventUrl = eventId
+          ? `${baseUrl}?id=${eventId}`
+          : window.location.href;
+        const encodedUrl = encodeURIComponent(eventUrl);
+
+        // Facebook და X (Twitter) dynamic share URLs
+        if (shareFacebook) {
+          shareFacebook.href = `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`;
+        }
+        if (shareX) {
+          shareX.href = `https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodeURIComponent("Check out this event at The Launch!")}`;
+        }
+
+        // გავახილოთ Modal
+        shareModal.classList.add("active");
+        shareModal.setAttribute("aria-hidden", "false");
+        document.body.style.overflow = "hidden";
+      }
+
+      function closeShareModal() {
+        if (!shareModal) return;
+
+        shareModal.classList.remove("active");
+        shareModal.setAttribute("aria-hidden", "true");
+        document.body.style.overflow = "";
+      }
+
+      // Event Delegation - Share button-ზე დაჭერისას
+      const catalogEl = document.querySelector(".catalog");
+      if (catalogEl) {
+        catalogEl.addEventListener("click", function (e) {
+          const shareBtn = e.target.closest(".shareBtn");
+          if (!shareBtn) return;
+
+          e.stopPropagation(); // თავიდან ავაცილოთ სურათის modal-ის გახსნა
+
+          const catalogItem = shareBtn.closest(".catalogItem");
+          const eventId = catalogItem ? catalogItem.dataset.id : null;
+
+          openShareModal(eventId);
+        });
+      }
+
+      // Share Modal-ის დახურვის Event-ები
+      if (shareModalClose)
+        shareModalClose.addEventListener("click", closeShareModal);
+      if (shareModalOverlay)
+        shareModalOverlay.addEventListener("click", closeShareModal);
+
+      document.addEventListener("keydown", function (e) {
+        if (
+          e.key === "Escape" &&
+          shareModal &&
+          shareModal.classList.contains("active")
+        ) {
+          closeShareModal();
+        }
+      });
+
+      // ==========================
+      // IMAGE MODAL GALLERY
+      // ==========================
       function handleModalWheel(e) {
-        if (!imageModal.classList.contains("active")) return;
+        if (!imageModal || !imageModal.classList.contains("active")) return;
 
         e.preventDefault();
 
@@ -1137,36 +1123,31 @@
         }
       }
 
-      // ==========================
-      // OPEN IMAGE
-      // ==========================
-
-      document
-        .querySelector(".catalog")
-        .addEventListener("click", function (e) {
+      // OPEN IMAGE MODAL
+      if (catalogEl) {
+        catalogEl.addEventListener("click", function (e) {
           const img = e.target.closest(".catalogImg");
-
           if (!img) return;
 
           const images = getImages();
-
           currentIndex = images.indexOf(img);
 
-          modalImage.src = img.src;
-          modalImage.alt = img.alt;
+          if (modalImage) {
+            modalImage.src = img.src;
+            modalImage.alt = img.alt || "";
+          }
 
-          imageModal.classList.add("active");
+          if (imageModal) {
+            imageModal.classList.add("active");
+          }
 
           document.body.style.overflow = "hidden";
         });
+      }
 
-      // ==========================
-      // SHOW IMAGE
-      // ==========================
-
+      // SHOW IMAGE IN MODAL
       function showImage(index) {
         const images = getImages();
-
         if (images.length === 0) return;
 
         if (index >= images.length) {
@@ -1179,100 +1160,89 @@
 
         currentIndex = index;
 
-        modalImage.style.opacity = "0";
-
-        setTimeout(() => {
-          modalImage.src = images[currentIndex].src;
-          modalImage.alt = images[currentIndex].alt;
-
-          modalImage.style.opacity = "1";
-        }, 150);
-      }
-
-      // ==========================
-      // NEXT
-      // ==========================
-
-      modalNext.addEventListener("click", function (e) {
-        e.stopPropagation();
-
-        showImage(currentIndex + 1);
-      });
-
-      // ==========================
-      // PREVIOUS
-      // ==========================
-
-      modalPrev.addEventListener("click", function (e) {
-        e.stopPropagation();
-
-        showImage(currentIndex - 1);
-      });
-
-      // ==========================
-      // CLOSE
-      // ==========================
-
-      function closeModal() {
-        imageModal.classList.remove("active");
-
-        document.body.style.overflow = "";
-
-        wheelLocked = false;
-      }
-      modalClose.addEventListener("click", function (e) {
-        e.stopPropagation();
-
-        closeModal();
-      });
-
-      // ==========================
-      // CLICK OUTSIDE IMAGE
-      // ==========================
-
-      imageModal.addEventListener("click", function (e) {
-        if (e.target === imageModal) {
-          closeModal();
-        }
-      });
-
-      // ==========================
-      // MOUSE WHEEL NAVIGATION
-      // ==========================
-
-      let wheelLocked = false;
-
-      imageModal.addEventListener(
-        "wheel",
-        function (e) {
-          if (!imageModal.classList.contains("active")) return;
-
-          e.preventDefault();
-          e.stopPropagation();
-
-          if (wheelLocked) return;
-
-          if (Math.abs(e.deltaX) < 10) return;
-
-          wheelLocked = true;
-
-          if (e.deltaX > 0) {
-            showImage(currentIndex + 1);
-          } else {
-            showImage(currentIndex - 1);
-          }
+        if (modalImage) {
+          modalImage.style.opacity = "0";
 
           setTimeout(() => {
-            wheelLocked = false;
-          }, 450);
-        },
-        { passive: false },
-      ); // ==========================
-      // KEYBOARD
-      // ==========================
+            modalImage.src = images[currentIndex].src;
+            modalImage.alt = images[currentIndex].alt || "";
+            modalImage.style.opacity = "1";
+          }, 150);
+        }
+      }
 
+      // NEXT / PREVIOUS / CLOSE
+      if (modalNext) {
+        modalNext.addEventListener("click", function (e) {
+          e.stopPropagation();
+          showImage(currentIndex + 1);
+        });
+      }
+
+      if (modalPrev) {
+        modalPrev.addEventListener("click", function (e) {
+          e.stopPropagation();
+          showImage(currentIndex - 1);
+        });
+      }
+
+      function closeModal() {
+        if (imageModal) {
+          imageModal.classList.remove("active");
+        }
+        document.body.style.overflow = "";
+        wheelLocked = false;
+      }
+
+      if (modalClose) {
+        modalClose.addEventListener("click", function (e) {
+          e.stopPropagation();
+          closeModal();
+        });
+      }
+
+      if (imageModal) {
+        imageModal.addEventListener("click", function (e) {
+          if (e.target === imageModal) {
+            closeModal();
+          }
+        });
+      }
+
+      // MOUSE WHEEL NAVIGATION
+      let wheelLocked = false;
+
+      if (imageModal) {
+        imageModal.addEventListener(
+          "wheel",
+          function (e) {
+            if (!imageModal.classList.contains("active")) return;
+
+            e.preventDefault();
+            e.stopPropagation();
+
+            if (wheelLocked) return;
+            if (Math.abs(e.deltaX) < 10) return;
+
+            wheelLocked = true;
+
+            if (e.deltaX > 0) {
+              showImage(currentIndex + 1);
+            } else {
+              showImage(currentIndex - 1);
+            }
+
+            setTimeout(() => {
+              wheelLocked = false;
+            }, 450);
+          },
+          { passive: false },
+        );
+      }
+
+      // KEYBOARD NAVIGATION
       document.addEventListener("keydown", function (e) {
-        if (!imageModal.classList.contains("active")) return;
+        if (!imageModal || !imageModal.classList.contains("active")) return;
 
         if (e.key === "Escape") {
           closeModal();
@@ -1287,5 +1257,11 @@
         }
       });
     </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <script src="auth.js"></script>
+    <script src="event-cart.js"></script>
+    <script src="auth-ui.js"></script>
   </body>
 </html>

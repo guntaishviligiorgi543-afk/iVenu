@@ -32,6 +32,7 @@
         <button data-panel="events" type="button">Events</button>
         <button data-panel="add-event" type="button">Add Event</button>
         <button data-panel="stats" type="button">Ticket statistics</button>
+        <button data-panel="catalog" type="button">Venue catalog</button>
       </nav>
       <p class="admin-message" id="adminMessage" role="status"></p>
 
@@ -223,6 +224,38 @@
           id="statsPagination"
           aria-label="Ticket statistics pagination"
         ></div>
+      </section>
+
+      <section class="admin-panel" data-panel="catalog">
+        <div class="admin-panel-heading">
+          <div>
+            <p class="admin-eyebrow">Venue gallery</p>
+            <h2>Venue catalog</h2>
+          </div>
+        </div>
+        <form class="admin-form" id="catalogForm">
+          <input type="hidden" name="id" />
+          <label>Image URL<input name="image_url" type="url" required /></label>
+          <label
+            >Display order<input
+              name="display_order"
+              type="number"
+              min="1"
+              required
+          /></label>
+          <div class="admin-form-actions">
+            <button class="auth-submit" type="submit">Save image</button>
+            <button
+              class="admin-outline"
+              id="cancelCatalogEdit"
+              type="button"
+              hidden
+            >
+              Cancel edit
+            </button>
+          </div>
+        </form>
+        <div class="admin-catalog-grid" id="catalogList"></div>
       </section>
     </main>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>

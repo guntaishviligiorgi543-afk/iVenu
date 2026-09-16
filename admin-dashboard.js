@@ -11,6 +11,7 @@
     statsPage: 1,
     analytics: null,
     performanceVisible: 10,
+    catalog: [],
   };
   const status = document.querySelector("#adminStatus");
   const message = document.querySelector("#adminMessage");
@@ -27,6 +28,8 @@
   const performanceSort = document.querySelector("#performanceSort");
   const performanceMore = document.querySelector("#performanceMore");
   const backButton = document.querySelector("#adminBack");
+  const catalogForm = document.querySelector("#catalogForm");
+  const catalogList = document.querySelector("#catalogList");
 
   const escapeHtml = (value) =>
     String(value ?? "")
@@ -74,32 +77,64 @@
   };
 
   async function loadData() {
-    const [events, categories, tickets, orders, users] = await Promise.all([
-      client
-        .from("events")
-        .select(
-          "id, performer, category_id, title, description, event_date, event_time, doors_open, venue, city, country, image_url, status, categories(id, name)",
-        )
-        .order("event_date", { ascending: true }),
-      client.from("categories").select("id, name").order("name"),
-      client
-        .from("ticket_types")
-        .select("id, event_id, name, total_quantity, available_quantity"),
-      client.from("order_items").select("ticket_type_id, quantity"),
-      client.from("profiles").select("id", { count: "exact", head: true }),
-    ]);
-    for (const result of [events, categories, tickets, orders])
+    const [events, categories, tickets, orders, users, catalog] =
+      await Promise.all([
+        client
+          .from("events")
+          .select(
+            "id, performer, category_id, title, description, event_date, event_time, doors_open, venue, city, country, image_url, status, categories(id, name)",
+          )
+          .order("event_date", { ascending: true }),
+        client.from("categories").select("id, name").order("name"),
+        client
+          .from("ticket_types")
+          .select("id, event_id, name, total_quantity, available_quantity"),
+        client.from("order_items").select("ticket_type_id, quantity"),
+        client.from("profiles").select("id", { count: "exact", head: true }),
+        client
+          .from("venue_catalog")
+          .select("id, image_url, display_order, created_at")
+          .order("display_order", { ascending: true }),
+      ]);
+    for (const result of [events, categories, tickets, orders, catalog])
       if (result.error) throw result.error;
     state.events = events.data || [];
     state.categories = categories.data || [];
     state.ticketTypes = tickets.data || [];
     state.orderItems = orders.data || [];
     state.users = users.count || 0;
+    state.catalog = catalog.data || [];
     state.eventPage = 1;
     state.statsPage = 1;
     await loadAnalytics();
     renderAll();
     fillCategories();
+    renderCatalog();
+  }
+
+  function resetCatalogForm() {
+    catalogForm.reset();
+    catalogForm.elements.id.value = "";
+    catalogForm.elements.display_order.value = state.catalog.length + 1;
+    document.querySelector("#cancelCatalogEdit").hidden = true;
+  }
+
+  function renderCatalog() {
+    catalogList.innerHTML = state.catalog.length
+      ? state.catalog
+          .map(
+            (item) =>
+              `<article class="admin-catalog-row"><img src="${escapeHtml(item.image_url)}" alt="Venue catalog image ${item.display_order}" /><div><strong>Image ${item.display_order}</strong><span>${escapeHtml(item.image_url)}</span></div><div class="admin-event-actions"><button type="button" data-catalog-edit="${item.id}">Edit</button><button type="button" data-catalog-delete="${item.id}">Delete</button></div></article>`,
+          )
+          .join("")
+      : '<p class="admin-message">No catalog images found.</p>';
+  }
+
+  function fillCatalogForm(item) {
+    catalogForm.elements.id.value = item.id;
+    catalogForm.elements.image_url.value = item.image_url;
+    catalogForm.elements.display_order.value = item.display_order;
+    document.querySelector("#cancelCatalogEdit").hidden = false;
   }
 
   async function loadAnalytics() {
@@ -445,6 +480,64 @@
       setMessage(error.message || "Event could not be saved.", "error");
     });
   });
+  document
+    .querySelector("#cancelCatalogEdit")
+    .addEventListener("click", resetCatalogForm);
+  catalogForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const values = new FormData(catalogForm);
+    const payload = {
+      image_url: values.get("image_url").trim(),
+      display_order: Number(values.get("display_order")),
+    };
+    const id = values.get("id");
+    try {
+      const result = id
+        ? await client.from("venue_catalog").update(payload).eq("id", id)
+        : await client.from("venue_catalog").insert(payload);
+      if (result.error) throw result.error;
+      setMessage(
+        id ? "Catalog image updated." : "Catalog image added.",
+        "success",
+      );
+      resetCatalogForm();
+      await loadData();
+    } catch (error) {
+      console.error(error);
+      setMessage(error.message || "Catalog image could not be saved.", "error");
+    }
+  });
+  catalogList.addEventListener("click", async (event) => {
+    const edit = event.target.closest("[data-catalog-edit]");
+    const remove = event.target.closest("[data-catalog-delete]");
+    if (edit) {
+      const item = state.catalog.find(
+        (candidate) => String(candidate.id) === edit.dataset.catalogEdit,
+      );
+      if (item) fillCatalogForm(item);
+    }
+    if (remove) {
+      const item = state.catalog.find(
+        (candidate) => String(candidate.id) === remove.dataset.catalogDelete,
+      );
+      if (!item || !window.confirm("Delete this catalog image?")) return;
+      try {
+        const result = await client
+          .from("venue_catalog")
+          .delete()
+          .eq("id", item.id);
+        if (result.error) throw result.error;
+        setMessage("Catalog image deleted.", "success");
+        await loadData();
+      } catch (error) {
+        console.error(error);
+        setMessage(
+          error.message || "Catalog image could not be deleted.",
+          "error",
+        );
+      }
+    }
+  });
   eventList.addEventListener("click", async (event) => {
     const edit = event.target.closest("[data-edit]");
     const remove = event.target.closest("[data-delete]");
@@ -504,6 +597,7 @@
       document.body.classList.remove("admin-gated");
       status.textContent = "Authorized administrator";
       await loadData();
+      resetCatalogForm();
     } catch (error) {
       console.error(error);
       status.textContent = "Unable to load admin dashboard.";
