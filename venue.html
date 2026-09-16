@@ -1015,7 +1015,7 @@
             const actions = document.createElement("div");
             actions.className = "catalogActions";
             actions.innerHTML =
-              '<button class="shareBtn" aria-label="Share">&#8599;</button>';
+              '<button class="shareBtn" aria-label="Share">&#x1F517;</button>';
 
             catalogItem.append(image, actions);
             catalogContainer.appendChild(catalogItem);
@@ -1057,7 +1057,6 @@
           shareX.href = `https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodeURIComponent("Check out this event at The Launch!")}`;
         }
 
-        // გავახილოთ Modal
         shareModal.classList.add("active");
         shareModal.setAttribute("aria-hidden", "false");
         document.body.style.overflow = "hidden";

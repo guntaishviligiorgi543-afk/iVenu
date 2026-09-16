@@ -356,7 +356,12 @@ Deno.serve(async (request) => {
         Date.now() - new Date(activeRequest.last_sent_at).getTime() <
           RESEND_COOLDOWN_SECONDS * 1000
       ) {
-        throw new Error("Please wait before requesting another code.");
+        throw new DiagnosticError(
+          "RATE_LIMIT_ERROR",
+          "Please wait before requesting another code.",
+          429,
+          { operation: "active email-change cooldown" },
+        );
       }
       if (oldRequestId) {
         const { data: oldRequest, error: oldError } = await adminClient
@@ -438,7 +443,9 @@ Deno.serve(async (request) => {
         await sendEmail(newEmail, otp, resendApiKey, emailFrom);
         logStep("Email sending succeeded");
       } catch (error) {
-        logStep("Email sending failed");
+        logStep("Email sending failed", {
+          error: error instanceof Error ? error.message : "Unknown error",
+        });
         await adminClient
           .from("email_change_verifications")
           .update({ consumed_at: new Date().toISOString() })

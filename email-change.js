@@ -105,7 +105,7 @@
       text.includes("rate limit") ||
       text.includes("wait before")
     )
-      return "Please wait before requesting or verifying another code.";
+      return "Please wait before requesting another code.";
     if (text.includes("authentication") || text.includes("session"))
       return "Your session has expired. Please sign in again.";
     if (text.includes("resend_error") || text.includes("resend http"))
@@ -130,8 +130,19 @@
     );
     if (error) {
       let serverError = null;
+      const response = error.context;
       try {
-        serverError = await error.context?.json();
+        const responseText = (await response?.clone?.().text()) || "";
+        try {
+          serverError = responseText ? JSON.parse(responseText) : null;
+        } catch {
+          serverError = null;
+        }
+        console.error("Email change Edge Function response", {
+          status: response?.status,
+          statusText: response?.statusText,
+          body: serverError || responseText.slice(0, 2000) || null,
+        });
       } catch {
         serverError = null;
       }
@@ -165,6 +176,10 @@
 
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
+    if (!otpPanel.hidden) {
+      verifyButton.click();
+      return;
+    }
     const values = new FormData(form);
     const currentPassword = String(values.get("currentPassword") || "");
     const newEmail = window.authApi.normalizeEmail(values.get("email"));

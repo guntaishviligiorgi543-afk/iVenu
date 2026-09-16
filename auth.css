@@ -358,6 +358,31 @@ header nav .authNavLink[hidden] {
   margin-top: 30px;
 }
 
+/* Registration benefits from paired fields while preserving the shared auth form. */
+.auth-shell:has(#registerForm) {
+  max-width: 680px;
+}
+
+#registerForm {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 20px;
+  row-gap: 20px;
+}
+
+#registerForm label {
+  min-width: 0;
+}
+
+#registerForm input {
+  box-sizing: border-box;
+  min-height: 48px;
+}
+
+#registerForm .auth-submit {
+  grid-column: 1 / -1;
+  min-height: 48px;
+}
+
 .auth-form[hidden] {
   display: none;
 }
@@ -516,6 +541,11 @@ header nav .authNavLink[hidden] {
     width: 100%;
     padding: 28px 22px;
     box-shadow: 7px 7px 0 rgba(255, 148, 117, 0.72);
+  }
+
+  #registerForm {
+    grid-template-columns: 1fr;
+    gap: 18px;
   }
 }
 
@@ -1452,7 +1482,6 @@ header nav .authNavLink[hidden] {
   box-sizing: border-box;
   width: 100%;
   height: 100%;
-  overflow: hidden;
   padding: 20px;
   background: rgba(0, 0, 0, 0.78);
   backdrop-filter: blur(5px);
@@ -1462,12 +1491,8 @@ header nav .authNavLink[hidden] {
   position: relative;
   display: flex;
   flex-direction: column;
-  width: min(80vw, 920px);
-  height: min(80vh, 720px);
-  min-height: 520px;
+  width: min(82vw, 720px);
   max-width: 100%;
-  max-height: 100%;
-  overflow: auto;
   box-sizing: border-box;
   border: 1px solid rgba(255, 148, 117, 0.25);
   border-radius: 16px;
@@ -1479,13 +1504,11 @@ header nav .authNavLink[hidden] {
 .email-change-modal__content {
   display: flex;
   flex-direction: column;
-  justify-content: center;
   box-sizing: border-box;
   width: 100%;
-  max-width: 520px;
-  min-height: 100%;
+  max-width: 640px;
   margin: 0 auto;
-  padding: 64px 42px 42px;
+  padding: 54px 42px 38px;
 }
 
 .email-change-modal__close {
@@ -1516,7 +1539,7 @@ header nav .authNavLink[hidden] {
 .email-change-steps {
   display: flex;
   gap: 10px;
-  margin-bottom: 34px;
+  margin-bottom: 26px;
   color: rgba(255, 255, 255, 0.38);
   font-size: 0.68rem;
   font-weight: 700;
@@ -1538,7 +1561,7 @@ header nav .authNavLink[hidden] {
 .email-change-modal .dashboard-form {
   display: flex;
   flex-direction: column;
-  gap: 22px;
+  gap: 18px;
   width: 100%;
   max-width: none;
   min-width: 0;
@@ -1554,6 +1577,11 @@ header nav .authNavLink[hidden] {
   width: 100%;
   min-width: 0;
   gap: 18px;
+}
+
+.email-change-modal [data-email-change-request] > .account-outline-button,
+.email-change-modal [data-email-change-verify] {
+  min-height: 48px;
 }
 
 .email-change-modal [data-email-change-request][hidden],
@@ -1578,6 +1606,30 @@ header nav .authNavLink[hidden] {
   line-height: 1.55;
 }
 
+.email-change-current-email {
+  display: grid;
+  gap: 7px;
+  padding: 14px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.email-change-field-label {
+  color: rgba(255, 255, 255, 0.52);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.email-change-current-email strong {
+  overflow-wrap: anywhere;
+  color: #fff;
+  font-size: 0.98rem;
+  font-weight: 600;
+}
+
 .email-change-modal .auth-form input {
   box-sizing: border-box;
   width: 100%;
@@ -1586,6 +1638,16 @@ header nav .authNavLink[hidden] {
 
 .email-change-modal [data-email-change-verify] {
   width: 100%;
+}
+
+.email-change-modal .email-change-otp {
+  max-width: 440px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.email-change-modal .email-change-otp label {
+  text-align: left;
 }
 
 .email-change-modal [data-email-change-resend] {
@@ -1738,14 +1800,12 @@ header nav .authNavLink[hidden] {
 
   .email-change-modal__panel {
     width: 95vw;
-    height: 90vh;
-    min-height: 0;
     border-radius: 12px;
   }
 
   .email-change-modal__content {
     max-width: none;
-    padding: 58px 22px 28px;
+    padding: 48px 22px 28px;
   }
 
   .email-change-steps {
