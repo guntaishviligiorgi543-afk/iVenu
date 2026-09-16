@@ -551,6 +551,38 @@
     .catalogActions button {
       pointer-events: auto;
     }
+
+    .catalog-more {
+      display: flex;
+      justify-content: center;
+      margin: 32px 0 12px;
+    }
+
+    .catalog-more button {
+      width: fit-content;
+      min-width: 128px;
+      padding: 11px 20px;
+      border: 1px solid #fff;
+      color: #000;
+      background: #fff;
+      font: inherit;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      transition: color 0.2s ease, background-color 0.2s ease;
+    }
+
+    .catalog-more button:hover,
+    .catalog-more button:focus-visible {
+      color: #fff;
+      background: #000;
+    }
+
+    .catalog-more button:focus-visible {
+      outline: 2px solid #fff;
+      outline-offset: 3px;
+    }
+
     body:has(.imageModal.active) header,
     body:has(.imageModal.active) .socIcons {
       display: none;
@@ -579,6 +611,10 @@
       .modalClose {
         top: 15px;
         right: 15px;
+      }
+
+      .catalog-more {
+        margin-top: 24px;
       }
     }
   </style>
@@ -763,6 +799,9 @@
         <div class="section3cont">
           <h2>the launch in photos</h2>
           <div class="catalog"></div>
+          <div class="catalog-more" id="catalogMore" hidden>
+            <button id="catalogMoreButton" type="button">See More</button>
+          </div>
         </div>
 
         <p class="copyright">
@@ -955,12 +994,54 @@
 
       let currentIndex = 0;
       let lastWheelTime = 0;
+      const CATALOG_BATCH_SIZE = 10;
+      let catalogItems = [];
+      let visibleCatalogCount = CATALOG_BATCH_SIZE;
+      const catalogContainer = document.querySelector(".catalog");
+      const catalogMore = document.querySelector("#catalogMore");
+      const catalogMoreButton = document.querySelector("#catalogMoreButton");
 
       // ყველა კატალოგის სურათის წამოღების ფუნქცია Modal Gallery-სთვის
       function getImages() {
         return Array.from(document.querySelectorAll(".catalogImg"));
       }
       console.log(getImages());
+
+      function appendCatalogItems(items, startIndex) {
+        items.forEach((item, offset) => {
+          const index = startIndex + offset;
+          const catalogItem = document.createElement("div");
+          catalogItem.className = `catalogItem img${(index % 10) + 1}`;
+          catalogItem.dataset.id = item.id;
+
+          const image = document.createElement("img");
+          image.className = "catalogImg";
+          image.src = item.image_url;
+          image.alt = `Venue photo ${index + 1}`;
+
+          const actions = document.createElement("div");
+          actions.className = "catalogActions";
+          actions.innerHTML =
+            '<button class="shareBtn" aria-label="Share">&#x1F517;</button>';
+
+          catalogItem.append(image, actions);
+          catalogContainer.appendChild(catalogItem);
+        });
+      }
+
+      function updateCatalogMoreButton() {
+        if (!catalogMore || !catalogMoreButton) return;
+        catalogMore.hidden = catalogItems.length <= CATALOG_BATCH_SIZE;
+        catalogMoreButton.textContent =
+          visibleCatalogCount >= catalogItems.length ? "See Less" : "See More";
+      }
+
+      function renderCatalog() {
+        if (!catalogContainer) return;
+        catalogContainer.innerHTML = "";
+        appendCatalogItems(catalogItems.slice(0, visibleCatalogCount), 0);
+        updateCatalogMoreButton();
+      }
 
       // ==========================
       // SUPABASE CATALOG FETCH
@@ -969,7 +1050,6 @@
       // SUPABASE CATALOG FETCH (შესწორებული)
       // ==========================
       async function loadCatalogFromSupabase() {
-        const catalogContainer = document.querySelector(".catalog");
         if (!catalogContainer) return;
 
         // Supabase Client-ის უსაფრთხო იდენტიფიკაცია
@@ -1001,31 +1081,37 @@
             return;
           }
 
-          catalogContainer.innerHTML = "";
-          (catalog || []).forEach((item, index) => {
-            const catalogItem = document.createElement("div");
-            catalogItem.className = `catalogItem img${(index % 10) + 1}`;
-            catalogItem.dataset.id = item.id;
-
-            const image = document.createElement("img");
-            image.className = "catalogImg";
-            image.src = item.image_url;
-            image.alt = `Venue photo ${index + 1}`;
-
-            const actions = document.createElement("div");
-            actions.className = "catalogActions";
-            actions.innerHTML =
-              '<button class="shareBtn" aria-label="Share">&#x1F517;</button>';
-
-            catalogItem.append(image, actions);
-            catalogContainer.appendChild(catalogItem);
-          });
+          catalogItems = catalog || [];
+          visibleCatalogCount = CATALOG_BATCH_SIZE;
+          renderCatalog();
         } catch (err) {
           console.error("Unexpected error loading catalog:", err);
         }
       }
       // ჩავტვირთოთ კატალოგი გვერდის გახსნისთანავე
       document.addEventListener("DOMContentLoaded", loadCatalogFromSupabase);
+
+      if (catalogMoreButton) {
+        catalogMoreButton.addEventListener("click", () => {
+          if (visibleCatalogCount < catalogItems.length) {
+            const previousCount = visibleCatalogCount;
+            visibleCatalogCount = Math.min(
+              visibleCatalogCount + CATALOG_BATCH_SIZE,
+              catalogItems.length,
+            );
+            appendCatalogItems(
+              catalogItems.slice(previousCount, visibleCatalogCount),
+              previousCount,
+            );
+            updateCatalogMoreButton();
+            return;
+          }
+
+          visibleCatalogCount = CATALOG_BATCH_SIZE;
+          renderCatalog();
+          catalogContainer.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+      }
 
       // ==========================
       // SHARE MODAL FUNCTIONALITY

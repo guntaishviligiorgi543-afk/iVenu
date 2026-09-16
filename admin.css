@@ -502,6 +502,37 @@
   margin-top: 30px;
 }
 
+.admin-catalog-more {
+  display: flex;
+  justify-content: center;
+  margin: 24px 0 8px;
+}
+
+.admin-catalog-more-button {
+  width: fit-content;
+  min-width: 128px;
+  padding: 10px 18px;
+  border: 1px solid #ff9475;
+  border-radius: 6px;
+  color: #ff9475;
+  background: transparent;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+.admin-catalog-more-button:hover,
+.admin-catalog-more-button:focus-visible {
+  color: #000;
+  background: #ff9475;
+}
+
+.admin-catalog-more-button:focus-visible {
+  outline: 2px solid #ff9475;
+  outline-offset: 3px;
+}
+
 .admin-catalog-row {
   display: grid;
   grid-template-columns: 100px minmax(0, 1fr) auto;

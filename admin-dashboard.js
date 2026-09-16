@@ -1,5 +1,6 @@
 (() => {
   const PAGE_SIZE = 5;
+  const CATALOG_BATCH_SIZE = 10;
   const client = window.supabaseClient;
   const state = {
     events: [],
@@ -12,6 +13,7 @@
     analytics: null,
     performanceVisible: 10,
     catalog: [],
+    catalogVisibleCount: CATALOG_BATCH_SIZE,
     venues: [],
   };
   const status = document.querySelector("#adminStatus");
@@ -33,6 +35,8 @@
   const backButton = document.querySelector("#adminBack");
   const catalogForm = document.querySelector("#catalogForm");
   const catalogList = document.querySelector("#catalogList");
+  const catalogMore = document.querySelector("#catalogMore");
+  const catalogMoreButton = document.querySelector("#catalogMoreButton");
 
   const escapeHtml = (value) =>
     String(value ?? "")
@@ -113,6 +117,7 @@
     state.orderItems = orders.data || [];
     state.users = users.count || 0;
     state.catalog = catalog.data || [];
+    state.catalogVisibleCount = CATALOG_BATCH_SIZE;
     state.venues = venues.data || [];
     state.eventPage = 1;
     state.statsPage = 1;
@@ -131,14 +136,25 @@
   }
 
   function renderCatalog() {
-    catalogList.innerHTML = state.catalog.length
-      ? state.catalog
+    const visibleCatalog = state.catalog.slice(0, state.catalogVisibleCount);
+    catalogList.innerHTML = visibleCatalog.length
+      ? visibleCatalog
           .map(
             (item) =>
               `<article class="admin-catalog-row"><img src="${escapeHtml(item.image_url)}" alt="Venue catalog image ${item.display_order}" /><div><strong>Image ${item.display_order}</strong><span>${escapeHtml(item.image_url)}</span></div><div class="admin-event-actions"><button type="button" data-catalog-edit="${item.id}">Edit</button><button type="button" data-catalog-delete="${item.id}">Delete</button></div></article>`,
           )
           .join("")
       : '<p class="admin-message">No catalog images found.</p>';
+    updateCatalogMoreButton();
+  }
+
+  function updateCatalogMoreButton() {
+    if (!catalogMore || !catalogMoreButton) return;
+    catalogMore.hidden = state.catalog.length <= CATALOG_BATCH_SIZE;
+    catalogMoreButton.textContent =
+      state.catalogVisibleCount >= state.catalog.length
+        ? "See Less"
+        : "See More";
   }
 
   function fillCatalogForm(item) {
@@ -550,6 +566,20 @@
   document
     .querySelector("#cancelCatalogEdit")
     .addEventListener("click", resetCatalogForm);
+  catalogMoreButton.addEventListener("click", () => {
+    if (state.catalogVisibleCount < state.catalog.length) {
+      state.catalogVisibleCount = Math.min(
+        state.catalogVisibleCount + CATALOG_BATCH_SIZE,
+        state.catalog.length,
+      );
+      renderCatalog();
+      return;
+    }
+
+    state.catalogVisibleCount = CATALOG_BATCH_SIZE;
+    renderCatalog();
+    catalogList.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
   catalogForm.addEventListener("submit", async (event) => {
     event.preventDefault();
     const values = new FormData(catalogForm);
