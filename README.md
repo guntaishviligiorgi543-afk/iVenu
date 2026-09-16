@@ -1,19 +1,26 @@
-# The Launch
+# The Launch / iVenue
 
-The Launch is a static music venue landing page with a full-screen hero slider for featured shows.
+The Launch is an iVenue music venue site with show discovery, ticket-cart support, account management, and Supabase-backed authentication.
 
 ## Features
 
-- Auto-advancing show carousel
-- Dot navigation for selecting a show
-- Mouse wheel and trackpad navigation at the page boundaries
-- Responsive layout for desktop and mobile screens
-- Social links, venue details, show dates, and ticket call-to-actions
+- Responsive show discovery, venue, contact, and ticket pages
+- Show carousel with dot, mouse-wheel, and trackpad navigation
+- Authentication: registration, login, email verification, password reset, and account dashboard
+- Account security controls for password and email changes
+- Two-stage email-change flow: current-password confirmation, then an 8-digit email verification code
+- Event cart and account order/cart views
+- Supabase Edge Function integration for email-change verification and Resend delivery
 
 ## Project Structure
 
-- `index.html` - Page markup and slider behavior
-- `main.css` - Layout, typography, colors, animations, and responsive styles
+- `index.html` - Landing page
+- `shows.html`, `venue.html`, `contact.html` - Public venue pages
+- `login.html`, `register.html`, `forgot-password.html`, `reset-password.html`, `verify-email.html` - Authentication pages
+- `profile.html` - Account dashboard and Change Email modal
+- `main.css`, `auth.css` - Shared site and account/authentication styles
+- `auth.js`, `auth-ui.js`, `email-change.js` - Client-side account flows
+- `supabase/functions/email-change/index.ts` - Protected email-change Edge Function
 
 ## Run Locally
 
@@ -24,6 +31,17 @@ python -m http.server 8000
 ```
 
 Then visit <http://localhost:8000>.
+
+## Supabase configuration
+
+The client configuration is in `supabase-config.js`. The email-change flow requires the `email-change` Edge Function and its configured server-side secrets:
+
+- `RESEND_API_KEY`
+- `EMAIL_FROM`
+- `OTP_HASH_SECRET`
+- Supabase service-role credentials supplied by the Edge Function runtime
+
+Never place service-role keys or Resend API keys in browser code.
 
 ## Deployment
 
