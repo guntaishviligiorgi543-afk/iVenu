@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="main.css" />
     <link rel="stylesheet" href="auth.css" />
   </head>
-  <body>
+  <body class="auth-register-page">
     <header>
       <nav>
         <a href="index.html"><span>home</span></a>
@@ -15,7 +15,7 @@
         <a href="venue.html"><span>venue</span></a>
         <a href="contact.html"><span>contact</span></a>
       </nav>
-      <a class="contact" href="contact.html"><span>the launch</span></a>
+      <a class="auth-home-brand" href="index.html">iVenue</a>
     </header>
 
     <main class="auth-page">
@@ -23,35 +23,61 @@
         <h1 id="register-title">register</h1>
         <p class="auth-intro">Create your account for faster checkout.</p>
 
-        <form class="auth-form" id="registerForm">
+        <form class="auth-form" id="registerForm" novalidate>
           <label>
-            First name
+            <span class="field-label">First name <span class="required-mark">*</span></span>
             <input
               type="text"
               name="firstName"
               autocomplete="given-name"
               required
             />
+            <span class="field-error" data-field-error="firstName"></span>
           </label>
           <label>
-            Last name
+            <span class="field-label">Last name <span class="required-mark">*</span></span>
             <input
               type="text"
               name="lastName"
               autocomplete="family-name"
               required
             />
+            <span class="field-error" data-field-error="lastName"></span>
           </label>
           <label>
-            Email
+            <span class="field-label">Email <span class="required-mark">*</span></span>
             <input type="email" name="email" autocomplete="email" required />
+            <span class="field-error" data-field-error="email"></span>
           </label>
           <label>
-            Phone
-            <input type="tel" name="phone" autocomplete="tel" required />
+            <span class="field-label">Phone <span class="required-mark">*</span></span>
+            <span class="phone-input-group">
+              <select id="phoneCountry" aria-label="Country calling code" required>
+                <option value="GE" selected>GE +995</option>
+                <option value="US">US +1</option>
+                <option value="GB">GB +44</option>
+                <option value="DE">DE +49</option>
+                <option value="FR">FR +33</option>
+                <option value="ES">ES +34</option>
+                <option value="IT">IT +39</option>
+                <option value="TR">TR +90</option>
+                <option value="AM">AM +374</option>
+                <option value="AZ">AZ +994</option>
+                <option value="UA">UA +380</option>
+                <option value="PL">PL +48</option>
+              </select>
+              <input
+                type="tel"
+                name="phone"
+                autocomplete="tel"
+                inputmode="tel"
+                required
+              />
+            </span>
+            <span class="field-error" data-field-error="phone"></span>
           </label>
           <label>
-            Password
+            <span class="field-label">Password <span class="required-mark">*</span></span>
             <input
               type="password"
               name="password"
@@ -59,9 +85,10 @@
               autocomplete="new-password"
               required
             />
+            <span class="field-error" data-field-error="password"></span>
           </label>
           <label>
-            Confirm password
+            <span class="field-label">Confirm password <span class="required-mark">*</span></span>
             <input
               type="password"
               name="confirmPassword"
@@ -69,6 +96,7 @@
               autocomplete="new-password"
               required
             />
+            <span class="field-error" data-field-error="confirmPassword"></span>
           </label>
           <button class="auth-submit" type="submit">Create account</button>
         </form>
@@ -87,12 +115,157 @@
       const form = document.querySelector("#registerForm");
       const message = document.querySelector("#authMessage");
       const submit = form.querySelector("button");
+      const fields = Object.fromEntries(
+        ["firstName", "lastName", "email", "phone", "password", "confirmPassword"].map(
+          (name) => [name, form.elements[name]],
+        ),
+      );
+      const fieldErrors = Object.fromEntries(
+        Object.keys(fields).map((name) => [
+          name,
+          form.querySelector(`[data-field-error="${name}"]`),
+        ]),
+      );
+      const touchedFields = new Set();
+      const phoneCountry = document.querySelector("#phoneCountry");
+      const phoneRules = {
+        GE: { dialCode: "+995", pattern: /^5\d{8}$/, placeholder: "555 12 34 56" },
+        US: { dialCode: "+1", pattern: /^[2-9]\d{9}$/, placeholder: "555 123 4567" },
+        GB: { dialCode: "+44", pattern: /^\d{9,10}$/, placeholder: "7700 900123" },
+        DE: { dialCode: "+49", pattern: /^\d{7,11}$/, placeholder: "151 23456789" },
+        FR: { dialCode: "+33", pattern: /^\d{9}$/, placeholder: "6 12 34 56 78" },
+        ES: { dialCode: "+34", pattern: /^[6-9]\d{8}$/, placeholder: "612 345 678" },
+        IT: { dialCode: "+39", pattern: /^\d{6,11}$/, placeholder: "312 345 6789" },
+        TR: { dialCode: "+90", pattern: /^\d{10}$/, placeholder: "532 123 4567" },
+        AM: { dialCode: "+374", pattern: /^\d{8}$/, placeholder: "91 123456" },
+        AZ: { dialCode: "+994", pattern: /^\d{9}$/, placeholder: "50 123 45 67" },
+        UA: { dialCode: "+380", pattern: /^\d{9}$/, placeholder: "50 123 45 67" },
+        PL: { dialCode: "+48", pattern: /^\d{9}$/, placeholder: "512 345 678" },
+      };
+
+      const getLocalPhoneDigits = () => {
+        const digits = String(fields.phone.value || "").replace(/\D/g, "");
+        const rule = phoneRules[phoneCountry.value];
+        const dialDigits = rule?.dialCode.replace(/\D/g, "") || "";
+        return dialDigits && digits.startsWith(dialDigits)
+          ? digits.slice(dialDigits.length)
+          : digits;
+      };
+
+      const getNormalizedPhone = () => {
+        const rule = phoneRules[phoneCountry.value];
+        return rule ? `${rule.dialCode}${getLocalPhoneDigits()}` : "";
+      };
+
+      const getFieldError = (name, forceRequired = false) => {
+        const value = String(fields[name].value || "");
+        const isEmpty = !value.trim();
+        if (name === "firstName")
+          return isEmpty
+            ? forceRequired
+              ? "Please enter your first name."
+              : ""
+            : "";
+        if (name === "lastName")
+          return isEmpty
+            ? forceRequired
+              ? "Please enter your last name."
+              : ""
+            : "";
+        if (name === "email")
+          return isEmpty
+            ? forceRequired
+              ? "Please enter your email address."
+              : ""
+            : /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim())
+            ? ""
+            : "Please enter a valid email address.";
+        if (name === "phone") {
+          const rule = phoneRules[phoneCountry.value];
+          return isEmpty
+            ? forceRequired
+              ? "Please enter your phone number."
+              : ""
+            : rule && rule.pattern.test(getLocalPhoneDigits())
+            ? ""
+            : "Please enter a valid phone number for the selected country.";
+        }
+        if (name === "password")
+          return isEmpty
+            ? forceRequired
+              ? "Please enter your password."
+              : ""
+            : window.authApi.validatePassword(value);
+        if (name === "confirmPassword")
+          return isEmpty
+            ? forceRequired
+              ? "Please confirm your password."
+              : ""
+            : value === fields.password.value
+              ? ""
+              : "Passwords must match.";
+        return "";
+      };
+
+      const validateField = (name, force = false) => {
+        if (!force && !touchedFields.has(name)) return true;
+        const error = getFieldError(name, force);
+        fields[name].classList.toggle("invalid", Boolean(error));
+        fields[name].setAttribute("aria-invalid", String(Boolean(error)));
+        fieldErrors[name].textContent = error;
+        return !error;
+      };
+
+      Object.entries(fields).forEach(([name, field]) => {
+        const validate = () => validateField(name);
+        field.addEventListener("input", () => {
+          touchedFields.add(name);
+          validate();
+          if (
+            name === "password" &&
+            fields.confirmPassword.value.trim()
+          ) {
+            validateField("confirmPassword");
+          }
+        });
+        field.addEventListener("blur", () => {
+          touchedFields.add(name);
+          validate();
+        });
+        field.addEventListener("change", () => {
+          touchedFields.add(name);
+          validate();
+        });
+      });
+
+      phoneCountry.addEventListener("change", () => {
+        fields.phone.placeholder = phoneRules[phoneCountry.value]?.placeholder || "";
+        if (fields.phone.value.trim()) {
+          touchedFields.add("phone");
+          validateField("phone");
+        }
+      });
+
+      const validateForm = () => {
+        let invalidField = null;
+        Object.keys(fields).forEach((name) => {
+          touchedFields.add(name);
+          if (!validateField(name, true) && !invalidField) invalidField = name;
+        });
+        if (invalidField) {
+          if (invalidField === "phone" && !phoneCountry.value) phoneCountry.focus();
+          else fields[invalidField].focus();
+        }
+        return !invalidField;
+      };
 
       form.addEventListener("submit", async (event) => {
         event.preventDefault();
+        if (!validateForm()) return;
         const formData = new FormData(form);
         const password = formData.get("password");
         const confirmPassword = formData.get("confirmPassword");
+        const phone = getNormalizedPhone();
 
         const passwordError = window.authApi.validatePassword(password);
         if (passwordError) {
@@ -116,7 +289,7 @@
             firstName: formData.get("firstName").trim(),
             lastName: formData.get("lastName").trim(),
             email: formData.get("email").trim(),
-            phone: formData.get("phone").trim(),
+            phone,
             password,
           });
 

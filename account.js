@@ -12,6 +12,14 @@
   const emailForm = document.querySelector("#emailForm");
   const deleteButton = document.querySelector("#deleteAccount");
   const deleteMessage = document.querySelector("#deleteMessage");
+  const deleteDialog = document.querySelector("#deleteAccountDialog");
+  const closeDeleteDialog = document.querySelector("#closeDeleteAccountDialog");
+  const cancelDeleteAccount = document.querySelector("#cancelDeleteAccount");
+  const continueDeleteAccount = document.querySelector("#continueDeleteAccount");
+  const backDeleteAccount = document.querySelector("#backDeleteAccount");
+  const deleteWarning = document.querySelector("[data-delete-account-warning]");
+  const deleteConfirmForm = document.querySelector("[data-delete-account-confirm]");
+  const deleteDialogMessage = document.querySelector("#deleteAccountDialogMessage");
   const securityMessage = document.querySelector("#securityMessage");
   const passwordResultDialog = document.querySelector("#passwordResultDialog");
   const passwordResultTitle = document.querySelector("#passwordResultTitle");
@@ -370,33 +378,78 @@
     }
   });
 
-  deleteButton.addEventListener("click", async () => {
-    if (!window.confirm("Delete your account? This cannot be undone.")) return;
+  const showDeleteStep = (confirmPassword) => {
+    deleteWarning.hidden = confirmPassword;
+    deleteConfirmForm.hidden = !confirmPassword;
+    deleteDialogMessage.textContent = "";
+    if (confirmPassword) deleteConfirmForm.elements.currentPassword.focus();
+  };
 
-    deleteButton.disabled = true;
-    deleteMessage.className = "auth-message";
-    deleteMessage.textContent = "Deleting your account securely...";
+  const closeDeleteAccountDialog = () => {
+    deleteDialog.hidden = true;
+    document.body.classList.remove("account-delete-modal-open");
+    deleteConfirmForm.reset();
+    showDeleteStep(false);
+  };
+
+  deleteButton.addEventListener("click", () => {
+    deleteDialog.hidden = false;
+    document.body.classList.add("account-delete-modal-open");
+    deleteConfirmForm.reset();
+    showDeleteStep(false);
+    continueDeleteAccount.focus();
+  });
+
+  closeDeleteDialog.addEventListener("click", closeDeleteAccountDialog);
+  cancelDeleteAccount.addEventListener("click", closeDeleteAccountDialog);
+  backDeleteAccount.addEventListener("click", () => {
+    deleteConfirmForm.reset();
+    showDeleteStep(false);
+    continueDeleteAccount.focus();
+  });
+  continueDeleteAccount.addEventListener("click", () => showDeleteStep(true));
+  deleteDialog.addEventListener("click", (event) => {
+    if (event.target === deleteDialog) closeDeleteAccountDialog();
+  });
+
+  deleteConfirmForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const currentPassword = String(
+      deleteConfirmForm.elements.currentPassword.value || "",
+    );
+    if (!currentPassword) return;
+
+    const submitButton = deleteConfirmForm.querySelector('button[type="submit"]');
+    submitButton.disabled = true;
+    deleteDialogMessage.className = "auth-message account-delete-dialog__message";
+    deleteDialogMessage.textContent = "Verifying password...";
 
     try {
-      const session = await window.authApi.getSession();
-      if (!session?.user)
-        throw new Error("You must be signed in to delete your account.");
-
       const { data, error } = await client.functions.invoke("delete-account", {
-        body: {},
+        body: { currentPassword },
       });
-      if (error) throw error;
+      if (error) {
+        let responseError = null;
+        try {
+          responseError = await error.context?.json();
+        } catch {
+          responseError = null;
+        }
+        throw new Error(responseError?.error || error.message);
+      }
       if (!data?.deleted)
         throw new Error("Account deletion was not completed.");
 
       await window.authApi.signOut({ redirectTo: "index.html" });
     } catch (error) {
-      console.error(error);
-      deleteButton.disabled = false;
-      deleteMessage.className = "auth-message error";
-      deleteMessage.textContent =
-        error.message ||
-        "Account deletion failed. No account changes were confirmed.";
+      const message = String(error?.message || "");
+      deleteDialogMessage.className =
+        "auth-message account-delete-dialog__message error";
+      deleteDialogMessage.textContent =
+        message.toLowerCase().includes("incorrect password")
+          ? "Incorrect password."
+          : message || "Account deletion failed. No account changes were confirmed.";
+      submitButton.disabled = false;
     }
   });
 

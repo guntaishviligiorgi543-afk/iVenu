@@ -166,6 +166,88 @@
                 Delete account
               </button>
               <p class="auth-message" id="deleteMessage" role="status"></p>
+              <div
+                class="account-delete-dialog"
+                id="deleteAccountDialog"
+                hidden
+              >
+                <div
+                  class="account-delete-dialog__panel"
+                  role="dialog"
+                  aria-modal="true"
+                  aria-labelledby="deleteAccountDialogTitle"
+                >
+                  <button
+                    class="account-delete-dialog__close"
+                    id="closeDeleteAccountDialog"
+                    type="button"
+                    aria-label="Close delete account dialog"
+                  >
+                    ×
+                  </button>
+                  <div data-delete-account-warning>
+                    <p class="account-eyebrow">Account security</p>
+                    <h3 id="deleteAccountDialogTitle">Delete account?</h3>
+                    <p>Are you sure you want to permanently delete your account?</p>
+                    <p class="account-delete-dialog__warning">
+                      Once you confirm the deletion with your password, this
+                      action cannot be undone.
+                    </p>
+                    <div class="account-delete-dialog__actions">
+                      <button
+                        class="account-text-button"
+                        id="cancelDeleteAccount"
+                        type="button"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        class="auth-submit"
+                        id="continueDeleteAccount"
+                        type="button"
+                      >
+                        Continue
+                      </button>
+                    </div>
+                  </div>
+                  <form data-delete-account-confirm hidden>
+                    <p class="account-eyebrow">Final confirmation</p>
+                    <h3>Confirm your password</h3>
+                    <p>
+                      For security, enter your current password to permanently
+                      delete your account.
+                    </p>
+                    <label for="deleteAccountPassword"
+                      >Current password</label
+                    >
+                    <input
+                      id="deleteAccountPassword"
+                      name="currentPassword"
+                      type="password"
+                      autocomplete="current-password"
+                      required
+                    />
+                    <p
+                      class="auth-message account-delete-dialog__message"
+                      id="deleteAccountDialogMessage"
+                      role="status"
+                      aria-live="polite"
+                    ></p>
+                    <div class="account-delete-dialog__actions">
+                      <button
+                        class="account-text-button"
+                        id="backDeleteAccount"
+                        type="button"
+                      >
+                        Back
+                      </button>
+                      <button class="auth-danger" type="submit">
+                        Delete account
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
             </section>
 
             <section

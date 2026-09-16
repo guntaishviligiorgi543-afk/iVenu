@@ -57,6 +57,43 @@ Deno.serve(async (request) => {
     });
   }
 
+  let body: { currentPassword?: string };
+  try {
+    body = await request.json();
+  } catch {
+    return new Response(JSON.stringify({ error: "Invalid request" }), {
+      status: 400,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
+  const currentPassword = String(body.currentPassword || "");
+  if (!currentPassword) {
+    return new Response(JSON.stringify({ error: "Current password is required." }), {
+      status: 400,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
+  const passwordVerifier = createClient(supabaseUrl, anonKey, {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+      detectSessionInUrl: false,
+    },
+  });
+  const { error: passwordError } = await passwordVerifier.auth.signInWithPassword({
+    email: user.email || "",
+    password: currentPassword,
+  });
+  await passwordVerifier.auth.signOut({ scope: "local" });
+  if (passwordError) {
+    return new Response(JSON.stringify({ error: "Incorrect password." }), {
+      status: 401,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
   const { data: orders, error: ordersError } = await adminClient
     .from("orders")
     .select("id")

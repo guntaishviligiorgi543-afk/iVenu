@@ -280,6 +280,8 @@
 }
 
 .auth-shell {
+  position: relative;
+  z-index: 1000;
   justify-self: center;
   width: 100%;
   min-width: 0;
@@ -298,6 +300,63 @@
   padding: 150px 24px 70px;
   color: #fff;
   font-family: "Cabin", sans-serif;
+}
+
+/* Keep the authentication-page navigation sized to its links. */
+body.auth-login-page > header > nav,
+body.auth-register-page > header > nav {
+  width: fit-content;
+}
+
+body.auth-login-page > header > .auth-home-brand,
+body.auth-register-page > header > .auth-home-brand {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  padding: 9px 13px;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  color: #fff;
+  font-family: "Cabin", sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  line-height: 1;
+  text-decoration: none;
+  transition: 0.2s ease;
+}
+
+body.auth-login-page > header > .auth-home-brand:hover,
+body.auth-login-page > header > .auth-home-brand:focus-visible,
+body.auth-register-page > header > .auth-home-brand:hover,
+body.auth-register-page > header > .auth-home-brand:focus-visible {
+  color: #000;
+  background: #fff;
+  transform: translateY(-1px);
+}
+
+@media (max-width: 400px) {
+  body.auth-login-page > header,
+  body.auth-register-page > header {
+    gap: 8px;
+    padding: 14px;
+  }
+
+  body.auth-login-page > header > nav,
+  body.auth-register-page > header > nav {
+    gap: 8px;
+    padding: 8px;
+  }
+
+  body.auth-login-page > header > nav span,
+  body.auth-register-page > header > nav span {
+    font-size: 14px;
+  }
+
+  body.auth-login-page > header > .auth-home-brand,
+  body.auth-register-page > header > .auth-home-brand {
+    padding: 8px 10px;
+    font-size: 0.82rem;
+  }
 }
 
 .auth-shell label,
@@ -367,7 +426,7 @@ header nav .authNavLink[hidden] {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   column-gap: 20px;
   row-gap: 20px;
-}
+ }
 
 #registerForm label {
   min-width: 0;
@@ -381,6 +440,93 @@ header nav .authNavLink[hidden] {
 #registerForm .auth-submit {
   grid-column: 1 / -1;
   min-height: 48px;
+}
+
+#registerForm .field-error {
+  display: block;
+  min-height: 1.1em;
+  color: #ffb2a0;
+  font-size: 0.76rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  line-height: 1.35;
+  text-transform: none;
+}
+
+#registerForm .phone-input-group {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+ }
+
+#registerForm .required-mark {
+  color: #ff9475;
+  font-size: 0.95em;
+  font-weight: 700;
+}
+
+#registerForm .phone-input-group:focus-within {
+  outline: 2px solid #ff9475;
+  outline-offset: 2px;
+}
+
+#registerForm .phone-input-group:has(input.invalid) {
+  border-color: #ff8f7b;
+}
+
+#registerForm .phone-input-group select,
+#registerForm .phone-input-group input {
+  min-width: 0;
+  min-height: 48px;
+  border: 0;
+  border-radius: 0;
+  outline: 0;
+  color: #fff;
+  background: transparent;
+  font: inherit;
+}
+
+#registerForm .phone-input-group select {
+  padding: 13px 14px;
+   border-right: 1px solid rgba(255, 255, 255, 0.24);
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+#registerForm .phone-input-group select option {
+  color: #fff;
+  background: #171717;
+}
+
+#registerForm .phone-input-group input {
+  width: 100%;
+  padding: 13px 14px;
+}
+
+#registerForm input.invalid + .field-error,
+#registerForm .phone-input-group:has(input.invalid) + .field-error {
+  color: #ffb2a0;
+}
+
+#registerForm input.invalid {
+  border-color: #ff8f7b;
+}
+
+#registerForm input.invalid:focus {
+  outline-color: #ff8f7b;
+}
+
+@media (max-width: 420px) {
+  #registerForm .phone-input-group {
+    grid-template-columns: max-content minmax(0, 1fr);
+  }
+
+  #registerForm .phone-input-group select {
+    padding-left: 10px;
+    font-size: 0.85rem;
+  }
 }
 
 .auth-form[hidden] {
@@ -1959,6 +2105,176 @@ header nav .authNavLink[hidden] {
 
 .account-page .account-result-dialog__close:hover {
   color: #ff9475;
+}
+
+.account-delete-dialog {
+  position: fixed;
+  inset: 0;
+  z-index: 1000001;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.72);
+}
+
+.account-delete-dialog[hidden] {
+  display: none;
+}
+
+.account-delete-dialog__panel {
+  position: relative;
+  width: min(460px, 100%);
+  padding: 32px;
+  border: 1px solid rgba(255, 255, 255, 0.17);
+  border-radius: 10px;
+  background: #121212;
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.48);
+  animation: account-delete-dialog-in 0.2s ease-out both;
+}
+
+.account-delete-dialog__panel h3 {
+  margin: 0 0 12px;
+  color: #fff;
+  font-family: "Fjalla One", Impact, sans-serif;
+  font-size: 2rem;
+  font-weight: 400;
+  line-height: 1;
+}
+
+.account-delete-dialog__panel > div,
+.account-delete-dialog__panel form {
+  display: grid;
+  gap: 18px;
+}
+
+.account-delete-dialog__panel > div[hidden],
+.account-delete-dialog__panel form[hidden] {
+  display: none;
+}
+
+.account-delete-dialog__panel p:not(.account-eyebrow):not(.auth-message) {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.68);
+  line-height: 1.55;
+}
+
+.account-delete-dialog__warning {
+  padding: 13px 14px;
+  border-left: 2px solid #ff6b6b;
+  color: #ffd0d0 !important;
+  background: rgba(255, 107, 107, 0.08);
+}
+
+.account-delete-dialog__panel label {
+  display: grid;
+  gap: 7px;
+  color: #ff9475;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.account-delete-dialog__panel input {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 48px;
+  padding: 13px 44px 13px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  border-radius: 7px;
+  color: #fff;
+  background: #0a0a0a;
+  font: inherit;
+}
+
+.account-delete-dialog__panel input:focus {
+  border-color: #ff9475;
+  outline: 2px solid rgba(255, 148, 117, 0.2);
+}
+
+.account-delete-dialog__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.account-delete-dialog__actions .auth-submit,
+.account-delete-dialog__actions .auth-danger {
+  width: auto;
+  min-height: 44px;
+  margin: 0;
+  padding: 11px 17px;
+}
+
+.account-delete-dialog__actions .auth-danger {
+  border-color: #ff6b6b;
+  color: #fff;
+  background: #b83232;
+}
+
+.account-delete-dialog__actions .auth-danger:hover,
+.account-delete-dialog__actions .auth-danger:disabled {
+  color: #fff;
+  background: #e14c4c;
+}
+
+.account-delete-dialog__message {
+  min-height: 22px;
+  margin: 0;
+}
+
+.account-delete-dialog__close {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  padding: 0;
+  border: 0;
+  color: rgba(255, 255, 255, 0.58);
+  background: transparent;
+  font: inherit;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.account-delete-dialog__close:hover,
+.account-delete-dialog__close:focus-visible {
+  color: #ff9475;
+}
+
+.account-delete-modal-open {
+  overflow: hidden;
+}
+
+@keyframes account-delete-dialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (max-width: 480px) {
+  .account-delete-dialog {
+    padding: 14px;
+  }
+
+  .account-delete-dialog__panel {
+    padding: 28px 20px 22px;
+  }
+
+  .account-delete-dialog__actions {
+    flex-direction: column-reverse;
+  }
+
+  .account-delete-dialog__actions .auth-submit,
+  .account-delete-dialog__actions .auth-danger,
+  .account-delete-dialog__actions .account-text-button {
+    width: 100%;
+  }
 }
 
 .event-cart-toggle {
