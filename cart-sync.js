@@ -26,7 +26,8 @@
       .from("cart_items")
       .select("id")
       .eq("user_id", session.user.id)
-      .eq("ticket_type_id", ticketTypeId);
+      .eq("ticket_type_id", ticketTypeId)
+      .is("event_seat_id", null);
     const { data: rows, error } = await query.order("created_at");
     if (error) throw error;
     const data = rows?.[0] || null;
@@ -77,7 +78,7 @@
 
     const { data, error } = await client
       .from("cart_items")
-      .select("id, ticket_type_id, quantity, created_at, updated_at")
+      .select("id, ticket_type_id, event_seat_id, quantity, created_at, updated_at")
       .eq("user_id", session.user.id)
       .order("updated_at", { ascending: false });
 

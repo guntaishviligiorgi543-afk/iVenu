@@ -41,6 +41,8 @@ async function loadSelectedEvent() {
   const eventLocation = window.supabaseData.getEventLocation(event);
   selectedBand = {
     id: event.id,
+    venueId: event.venue_id,
+    venueName: event.venues?.name || eventLocation.venue,
     bandName: event.performer || band.name || event.title,
     bandDescription: band.description || event.description || "",
     bandImg2: event.image_url || band.image_url || "",
@@ -66,6 +68,7 @@ async function loadSelectedEvent() {
   };
 
   renderSelectedEvent();
+  window.dispatchEvent(new CustomEvent("event-seat-context"));
   initializeBasket();
   renderBasket();
   window.supabaseData.recordEventView(selectedBand.id).catch((error) => {
@@ -125,212 +128,6 @@ function getCurrency() {
 
 function getSelectedTicketTypeValue(type) {
   return (type || "").toLowerCase();
-}
-
-function getVisibleAvailableTickets() {
-  const allTickets = [];
-
-  hallMap.sections.forEach((section) => {
-    const ticket = selectedBand?.tickets?.[section.ticketType];
-    if (!ticket) return;
-
-    for (let row = 1; row <= section.rows; row++) {
-      for (let seat = 1; seat <= section.seatsPerRow; seat++) {
-        const key = getSeatKey(section.id, row, seat);
-        const isAlreadySelected = basketTickets.some(
-          (item) => getSeatKey(item.section, item.row, item.seat) === key,
-        );
-
-        if (isAlreadySelected) continue;
-
-        allTickets.push({
-          section: section.id,
-          row,
-          seat,
-          type: ticket.name.toLowerCase(),
-          displayType: ticket.name,
-          price: Number(ticket.price),
-          currency: ticket.currency,
-          serviceFee: Number(
-            ticket.serviceFee || Math.round(ticket.price * 0.05),
-          ),
-          ticketTypeId: ticket.id,
-        });
-      }
-    }
-  });
-
-  return allTickets;
-}
-
-function filterTicketList(container) {
-  if (!container || !selectedBand) return;
-
-  const typeFilter = container.querySelector(".fillterByTktType");
-  const zoneFilter = container.querySelector(".fillterByZone");
-  const cardList = container.querySelector(".tktsInList");
-  const freeTkts = container.querySelector(".freeTkts");
-
-  if (!cardList || !freeTkts) return;
-
-  const selectedType = typeFilter ? typeFilter.value : "";
-  const selectedZone = zoneFilter ? zoneFilter.value : "";
-  const cards = [...cardList.querySelectorAll(".tktCard")];
-
-  let visibleCount = 0;
-  cards.forEach((card) => {
-    const tktType = (card.dataset.type || "").toLowerCase();
-    const section = (card.dataset.section || "").toLowerCase();
-    const zoneMatch =
-      !selectedZone || section === selectedZone.replace("zone-", "");
-    const typeMatch =
-      !selectedType || tktType.includes(selectedType.toLowerCase());
-
-    const shouldShow = typeMatch && zoneMatch;
-    card.style.display = shouldShow ? "" : "none";
-    if (shouldShow) visibleCount += 1;
-  });
-
-  freeTkts.textContent = `avaliable ticktets (${visibleCount})`;
-
-  const mapState = document.querySelectorAll(".stageMap .hall-section");
-  mapState.forEach((sectionEl) => {
-    const sectionClass = sectionEl.className.match(/section-([a-c])/);
-    if (!sectionClass) return;
-
-    const sectionId = sectionClass[1].toLowerCase();
-    if (!selectedType && !selectedZone) {
-      sectionEl.style.opacity = "1";
-      return;
-    }
-
-    const typeSectionMap = {
-      standard: "a",
-      cheap: "a",
-      medium: "b",
-      vip: "c",
-    };
-    const zoneSectionMap = {
-      "zone-a": "a",
-      "zone-b": "b",
-      "zone-c": "c",
-    };
-
-    const typeSection = selectedType ? typeSectionMap[selectedType] : null;
-    const zoneSection = selectedZone ? zoneSectionMap[selectedZone] : null;
-
-    let matchingSections = [];
-    if (typeSection) matchingSections.push(typeSection);
-    if (zoneSection) matchingSections.push(zoneSection);
-
-    if (selectedType && selectedZone) {
-      matchingSections =
-        typeSection && zoneSection && typeSection === zoneSection
-          ? [typeSection]
-          : [];
-    }
-
-    sectionEl.style.opacity = matchingSections.includes(sectionId)
-      ? "1"
-      : "0.3";
-  });
-}
-
-function renderTicketListForContainer(container) {
-  if (!container || !selectedBand) return;
-
-  const list = container.querySelector(".tktsInList");
-  const freeTickets = container.querySelector(".freeTkts");
-  if (!list || !freeTickets) return;
-
-  const availableTickets = getVisibleAvailableTickets();
-  const selectedType =
-    container.querySelector(".fillterByTktType")?.value || "";
-  const selectedZone = container.querySelector(".fillterByZone")?.value || "";
-
-  const filteredTickets = availableTickets.filter((ticket) => {
-    const typeMatch =
-      !selectedType || ticket.type.includes(selectedType.toLowerCase());
-    const zoneMatch =
-      !selectedZone ||
-      ticket.section.toLowerCase() === selectedZone.replace("zone-", "");
-    return typeMatch && zoneMatch;
-  });
-
-  list.innerHTML = filteredTickets
-    .map(
-      (ticket) => `
-        <div class="tktCard section-${ticket.section.toLowerCase()}" data-type="${ticket.displayType.toLowerCase()}" data-section="${ticket.section.toLowerCase()}">
-          <div class="tktInfo">
-            <div class="sectionCont">
-              <h5>section <p class="section">${ticket.section}</p></h5>
-              <h5>row <p class="row">${ticket.row}</p></h5>
-              <h5>seat <p class="seat">${ticket.seat}</p></h5>
-            </div>
-            <div class="tktPriceCont">
-              <p class="tktType">${ticket.displayType}</p>
-              <p class="tktprice">${ticket.price}${ticket.currency}</p>
-              <h5 class="serviceFee">service fee <span>${ticket.serviceFee}${ticket.currency}</span></h5>
-            </div>
-          </div>
-          <button class="addToBskt" data-section="${ticket.section}" data-row="${ticket.row}" data-seat="${ticket.seat}">
-            <svg xmlns="http://www.w3.org/2000/svg" width="1.25em" height="1.25em" viewBox="0 0 24 24">
-              <path d="M0 0h24v24H0z" fill="none"/>
-              <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2" d="M12 20v-8m0 0V4m0 8h8m-8 0H4"/>
-            </svg>
-            <span>add to basket</span>
-          </button>
-        </div>
-      `,
-    )
-    .join("");
-
-  freeTickets.textContent = `avaliable ticktets (${filteredTickets.length})`;
-
-  list.querySelectorAll(".addToBskt").forEach((button) => {
-    button.addEventListener("click", () => {
-      const seatData = getTicketMetaForSeat(
-        button.dataset.section,
-        button.dataset.row,
-        button.dataset.seat,
-      );
-
-      if (!seatData) return;
-
-      const seat = getSeatElement(
-        seatData.section,
-        seatData.row,
-        seatData.seat,
-      );
-      if (seat) {
-        eventState.selectedSeat = seat;
-        const section = hallMap.sections.find(
-          (item) => item.id === seatData.section,
-        );
-        const ticket = section
-          ? selectedBand.tickets[section.ticketType]
-          : null;
-        if (!ticket) return;
-
-        const confirmSectionElement = document.querySelector(".confirmSection");
-        const confirmRowElement = document.querySelector(".confirmRow");
-        const confirmSeatElement = document.querySelector(".confirmSeat");
-        const confirmPriceElement = document.querySelector(".confirmPrice");
-
-        if (confirmSectionElement)
-          confirmSectionElement.textContent = section.name;
-        if (confirmRowElement) confirmRowElement.textContent = seatData.row;
-        if (confirmSeatElement) confirmSeatElement.textContent = seatData.seat;
-        if (confirmPriceElement)
-          confirmPriceElement.textContent = `${ticket.price}${ticket.currency}`;
-
-        const confirmDialogElement = document.querySelector("#confirmDialog");
-        if (confirmDialogElement) confirmDialogElement.style.display = "flex";
-      }
-    });
-  });
-
-  filterTicketList(container);
 }
 
 function updateBasketQuantity() {
@@ -416,7 +213,7 @@ function renderBasket() {
           <div class="tktCard section-${ticket.section.toLowerCase()}">
             <div class="tktInfo">
               <div class="sectionCont">
-                <h5>section <p class="section">${ticket.section}</p></h5>
+                <h5>section <p class="section">${ticket.sectionName || ticket.section}</p></h5>
                 <h5>row <p class="row">${ticket.row}</p></h5>
                 <h5>seat <p class="seat">${ticket.seat}</p></h5>
               </div>
@@ -426,7 +223,7 @@ function renderBasket() {
                 <h5 class="serviceFee">service fee <span>${ticket.serviceFee}${ticket.currency}</span></h5>
               </div>
             </div>
-            <button class="removeTkt" data-section="${ticket.section}" data-row="${ticket.row}" data-seat="${ticket.seat}">
+            <button class="removeTkt" data-event-seat-id="${ticket.eventSeatId || ""}" data-section="${ticket.section}" data-row="${ticket.row}" data-seat="${ticket.seat}">
               <svg xmlns="http://www.w3.org/2000/svg" width="1.25em" height="1.25em" viewBox="0 0 1024 1024">
                 <path d="M0 0h1024v1024H0z" fill="none"/>
                 <path fill="currentColor" fill-opacity=".15" d="M292.7 840h438.6l24.2-512h-487z"/>
@@ -442,6 +239,7 @@ function renderBasket() {
     basketList.querySelectorAll(".removeTkt").forEach((button) => {
       button.addEventListener("click", () => {
         removeTicketFromBasket({
+          eventSeatId: button.dataset.eventSeatId || null,
           section: button.dataset.section,
           row: Number(button.dataset.row),
           seat: Number(button.dataset.seat),
@@ -451,7 +249,7 @@ function renderBasket() {
   }
 
   document.querySelectorAll(".tktListContainer").forEach((container) => {
-    renderTicketListForContainer(container);
+    window.canonicalTicketSeatMap?.renderTicketListForContainer(container);
   });
 
   syncSelectedSeatStateOnMap();
@@ -555,25 +353,6 @@ function bindTicketListControls() {
     });
   });
 
-  document.querySelectorAll(".fillterByTktType").forEach((select) => {
-    select.addEventListener("change", () => {
-      const container = select.closest(".tktListContainer");
-      if (container) {
-        renderTicketListForContainer(container);
-        filterTicketList(container);
-      }
-    });
-  });
-
-  document.querySelectorAll(".fillterByZone").forEach((select) => {
-    select.addEventListener("change", () => {
-      const container = select.closest(".tktListContainer");
-      if (container) {
-        renderTicketListForContainer(container);
-        filterTicketList(container);
-      }
-    });
-  });
 }
 
 function initializeBasket() {

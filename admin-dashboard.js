@@ -6,7 +6,9 @@
     events: [],
     categories: [],
     ticketTypes: [],
+    seating: null,
     orderItems: [],
+    inventory: [],
     users: 0,
     eventPage: 1,
     statsPage: 1,
@@ -28,6 +30,15 @@
   const categorySelect = document.querySelector("#eventCategorySelect");
   const venueSelect = document.querySelector("#eventVenueSelect");
   const venuePreview = document.querySelector("#venuePreview");
+  const seatingConfiguration = document.querySelector("#seatingConfiguration");
+  const seatingSummary = document.querySelector("#seatingSummary");
+  const seatingTicketTypes = document.querySelector("#seatingTicketTypes");
+  const seatingSections = document.querySelector("#seatingSections");
+  const addTicketTypeForm = document.querySelector("#addTicketTypeForm");
+  const addSectionForm = document.querySelector("#addSectionForm");
+  const addTicketTypeButton = document.querySelector("#addTicketType");
+  const addSectionButton = document.querySelector("#addSection");
+  const previewSeatMap = document.querySelector("#previewSeatMap");
   const categoryFilter = document.querySelector("#eventCategory");
   const analyticsPeriod = document.querySelector("#analyticsPeriod");
   const performanceSort = document.querySelector("#performanceSort");
@@ -62,6 +73,19 @@
       .filter((item) => String(item.ticket_type_id) === String(ticketId))
       .reduce((sum, item) => sum + Number(item.quantity || 0), 0);
   const eventStats = (event) => {
+    const inventory = state.inventory.find(
+      (item) => String(item.event_id) === String(event.id),
+    );
+    if (inventory) {
+      return {
+        remaining: Number(inventory.available_capacity || 0),
+        total: Number(inventory.total_capacity || 0),
+        sold: Number(inventory.sold_capacity || 0),
+        reserved: Number(inventory.reserved_capacity || 0),
+        blocked: Number(inventory.blocked_capacity || 0),
+        soldOut: Number(inventory.available_capacity || 0) <= 0,
+      };
+    }
     const tickets = eventTickets(event.id);
     const remaining = tickets.reduce(
       (sum, ticket) => sum + Number(ticket.available_quantity || 0),
@@ -79,12 +103,13 @@
       remaining,
       total,
       sold,
+      blocked: 0,
       soldOut: tickets.length > 0 && remaining <= 0,
     };
   };
 
   async function loadData() {
-    const [events, categories, tickets, orders, users, catalog, venues] =
+    const [events, categories, tickets, orders, users, catalog, venues, inventory] =
       await Promise.all([
         client
           .from("events")
@@ -95,7 +120,7 @@
         client.from("categories").select("id, name").order("name"),
         client
           .from("ticket_types")
-          .select("id, event_id, name, total_quantity, available_quantity"),
+          .select("id, event_id, name, price, is_active, total_quantity, available_quantity"),
         client.from("order_items").select("ticket_type_id, quantity"),
         client.from("profiles").select("id", { count: "exact", head: true }),
         client
@@ -108,8 +133,9 @@
             "id, name, city_area, region, country, address, latitude, longitude, image_url",
           )
           .order("name"),
+        client.rpc("get_admin_event_inventory"),
       ]);
-    for (const result of [events, categories, tickets, orders, catalog, venues])
+    for (const result of [events, categories, tickets, orders, catalog, venues, inventory])
       if (result.error) throw result.error;
     state.events = events.data || [];
     state.categories = categories.data || [];
@@ -119,6 +145,7 @@
     state.catalog = catalog.data || [];
     state.catalogVisibleCount = CATALOG_BATCH_SIZE;
     state.venues = venues.data || [];
+    state.inventory = inventory.data || [];
     state.eventPage = 1;
     state.statsPage = 1;
     await loadAnalytics();
@@ -332,7 +359,7 @@
           .map((event) => {
             const stats = eventStats(event);
             const location = getEventLocation(event);
-            return `<article class="admin-event-row"><div><strong>${escapeHtml(event.title)}</strong><span>${escapeHtml(event.performer)} · ${escapeHtml(event.categories?.name || "Uncategorized")} · ${escapeHtml(event.event_date)} · ${escapeHtml(event.event_time)} · ${escapeHtml(location.text)}</span><span>${stats.sold} sold / ${stats.remaining} available</span></div><span class="admin-badge">${escapeHtml(event.status || "active")}</span><div class="admin-event-actions"><button data-edit="${event.id}" type="button">Edit</button><button data-delete="${event.id}" type="button">Delete</button></div></article>`;
+            return `<article class="admin-event-row"><div><strong>${escapeHtml(event.title)}</strong><span>${escapeHtml(event.performer)} · ${escapeHtml(event.categories?.name || "Uncategorized")} · ${escapeHtml(event.event_date)} · ${escapeHtml(event.event_time)} · ${escapeHtml(location.text)}</span><span>${stats.sold} sold / ${stats.remaining} available${stats.blocked ? ` / ${stats.blocked} blocked` : ""}</span></div><span class="admin-badge">${escapeHtml(event.status || "active")}</span><div class="admin-event-actions"><button data-edit="${event.id}" type="button">Edit</button><button data-delete="${event.id}" type="button">Delete</button></div></article>`;
           })
           .join("")
       : '<p class="admin-message">No matching events.</p>';
@@ -356,7 +383,7 @@
         .slice(pageStart, pageStart + PAGE_SIZE)
         .map((event) => {
           const stats = eventStats(event);
-          return `<div class="admin-stat-line"><strong>${escapeHtml(event.title)}</strong><span>${stats.sold} sold</span><span>${stats.remaining} remaining</span></div>`;
+          return `<div class="admin-stat-line"><strong>${escapeHtml(event.title)}</strong><span>${stats.sold} sold</span><span>${stats.remaining} remaining</span>${stats.blocked ? `<span>${stats.blocked} blocked</span>` : ""}</div>`;
         })
         .join("") || '<p class="admin-message">No events found.</p>';
     renderPagination(
@@ -448,12 +475,103 @@
     renderVenuePreview(venueSelect.value);
   }
 
+  const formatSeatNumber = (value) => Number(value || 0).toLocaleString();
+  const seatingError = (error, fallback) => {
+    const message = error?.message || "";
+    if (/Administrator access|required|not belong|not found|name is required|price cannot|Rows must|Seats per row|Cannot (modify|remove)|still assigned|unused physical|Section code|Display color/i.test(message)) return message;
+    return fallback;
+  };
+
+  function activeSeatingEventId() {
+    return state.seating?.event_id || form.elements.id.value || null;
+  }
+
+  function ticketTypeOptions(selectedId, includeInactive = false) {
+    const ticketTypes = state.seating?.ticket_types || [];
+    return ticketTypes
+      .filter((ticket) => ticket.is_active || includeInactive || ticket.id === selectedId)
+      .map((ticket) => `<option value="${ticket.id}" ${ticket.id === selectedId ? "selected" : ""}>${escapeHtml(ticket.name)} — ${formatRevenue(ticket.price)}</option>`)
+      .join("");
+  }
+
+  function ticketWarningsHtml(ticket) {
+    const warnings = [];
+    if (!ticket.is_active) warnings.push("Tier is inactive.");
+    if (!ticket.has_valid_price) warnings.push("Set a valid non-negative price.");
+    if (!ticket.has_valid_color) warnings.push("Set a valid map color.");
+    if (!Number(ticket.capacity)) warnings.push("No canonical seats are assigned.");
+    return warnings.length
+      ? `<p class="admin-message error">${escapeHtml(warnings.join(" "))}</p>`
+      : "";
+  }
+
+  function renderSeatingConfiguration() {
+    const seating = state.seating;
+    if (!seating) {
+      seatingConfiguration.hidden = true;
+      return;
+    }
+    seatingConfiguration.hidden = false;
+    const inventory = seating.inventory || {};
+    const configuration = seating.validation || {};
+    seatingSummary.textContent = `${seating.event_title} · ${seating.venue_name} · ${formatSeatNumber(inventory.total)} total · ${formatSeatNumber(inventory.available)} available · ${formatSeatNumber(inventory.reserved)} reserved · ${formatSeatNumber(inventory.sold)} sold${Number(inventory.blocked) ? ` · ${formatSeatNumber(inventory.blocked)} blocked` : ""}`;
+    seatingSummary.classList.toggle("error", configuration.is_complete === false);
+    if (configuration.is_complete === false) {
+      seatingSummary.textContent += ` - configuration incomplete${(configuration.issues || []).length ? `: ${(configuration.issues || []).map((issue) => issue.message).join(" ")}` : ""}`;
+    }
+    seatingTicketTypes.innerHTML = (seating.ticket_types || []).map((ticket) => `
+      <article class="admin-seat-card" data-ticket-id="${ticket.id}">
+        <div class="admin-seat-card-grid">
+          <label>Canonical tier<input data-ticket-name value="${escapeHtml(ticket.name)}" readonly /></label>
+          <label>Price (₾)<input data-ticket-price type="number" min="0" step="0.01" value="${Number(ticket.price)}" /></label>
+          <label>Map color<input data-ticket-color type="color" value="${escapeHtml(ticket.display_color || "#2878ff")}" /></label>
+          <label class="admin-check"><input data-ticket-active type="checkbox" ${ticket.is_active ? "checked" : ""} /> Active</label>
+        </div>
+        <p>${formatSeatNumber(ticket.capacity)} seats · ${formatSeatNumber(ticket.available)} available</p>
+        ${ticketWarningsHtml(ticket)}
+        <button class="admin-outline" data-save-ticket="${ticket.id}" type="button">Save ticket type</button>
+      </article>`).join("") || '<p class="admin-message">No ticket types configured.</p>';
+    seatingSections.innerHTML = (seating.sections || []).map((section) => `
+      <article class="admin-seat-card" data-section-id="${section.id}">
+        <div class="admin-seat-card-heading"><strong>${escapeHtml(section.name)}</strong><span>${formatSeatNumber(section.capacity)} seats · ${formatSeatNumber(section.available)} available · ${formatSeatNumber(section.reserved)} reserved · ${formatSeatNumber(section.sold)} sold</span></div>
+        <div class="admin-seat-card-grid">
+          <label>Section name<input data-section-name value="${escapeHtml(section.name)}" /></label>
+          <label>Ticket type<select data-section-ticket>${ticketTypeOptions(section.ticket_type_id, true)}</select></label>
+          <label>Rows<input data-section-rows type="number" min="1" max="500" value="${section.rows}" /></label>
+          <label>Seats per row<input data-section-seats type="number" min="1" max="500" value="${section.seats_per_row}" /></label>
+          <label>Display order<input data-section-order type="number" min="0" value="${section.display_order}" /></label>
+          <label class="admin-check"><input data-section-enabled type="checkbox" ${section.is_enabled ? "checked" : ""} /> Enabled</label>
+        </div>
+        <div class="admin-form-actions"><button class="admin-outline" data-save-section="${section.id}" type="button">Save section</button><button class="admin-outline admin-danger" data-delete-section="${section.id}" type="button">Remove section</button></div>
+      </article>`).join("") || '<p class="admin-message">No sections configured.</p>';
+    const selector = addSectionForm.querySelector('[name="ticket_type_id"]');
+    const previous = selector.value;
+    selector.innerHTML = '<option value="">Select ticket type</option>' + ticketTypeOptions(previous);
+    if (![...selector.options].some((option) => option.value === previous)) selector.value = "";
+    const tierSelector = addTicketTypeForm.querySelector('[name="name"]');
+    const canonicalNames = ["Cheap / Standard", "Medium / Premium", "Expensive", "VIP"];
+    const missingTiers = canonicalNames.filter((name) => !(seating.ticket_types || []).some((ticket) => ticket.name === name));
+    tierSelector.innerHTML = '<option value="">Select required tier</option>' + missingTiers
+      .map((name) => `<option value="${name}">${name}</option>`).join("");
+    addTicketTypeButton.disabled = missingTiers.length === 0;
+  }
+
+  async function loadSeatingConfiguration(eventId) {
+    if (!eventId) return;
+    const { data, error } = await client.rpc("get_admin_event_seating_configuration", { p_event_id: eventId });
+    if (error) throw error;
+    state.seating = data;
+    renderSeatingConfiguration();
+  }
+
   function resetForm() {
     form.reset();
     form.elements.id.value = "";
     renderVenuePreview("");
     document.querySelector("#eventFormTitle").textContent = "Add event";
     document.querySelector("#cancelEventEdit").hidden = true;
+    state.seating = null;
+    seatingConfiguration.hidden = true;
   }
   function fillForm(event) {
     Object.entries({
@@ -485,6 +603,9 @@
           panel.dataset.panel === "add-event",
         ),
       );
+    loadSeatingConfiguration(event.id).catch((error) =>
+      setMessage(seatingError(error, "Seating configuration could not be loaded."), "error"),
+    );
   }
 
   async function saveEvent(event) {
@@ -502,11 +623,12 @@
       status: values.get("status"),
     };
     const id = values.get("id");
+    if (!id && payload.status === "active") payload.status = "inactive";
     const result = id
       ? await client.from("events").update(payload).eq("id", id)
       : await client.from("events").insert(payload);
     if (result.error) throw result.error;
-    setMessage(id ? "Event updated." : "Event added.", "success");
+    setMessage(id ? "Event updated." : "Event added as inactive; add the four canonical ticket tiers and sections before publishing.", "success");
     resetForm();
     await loadData();
   }
@@ -579,6 +701,113 @@
     state.catalogVisibleCount = CATALOG_BATCH_SIZE;
     renderCatalog();
     catalogList.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+  addTicketTypeButton.addEventListener("click", async () => {
+    const eventId = activeSeatingEventId();
+    if (!eventId) return;
+    const name = addTicketTypeForm.querySelector('[name="name"]').value.trim();
+    const price = Number(addTicketTypeForm.querySelector('[name="price"]').value);
+    try {
+      const { error } = await client.rpc("admin_upsert_event_ticket_type", {
+        p_event_id: eventId,
+        p_ticket_type_id: null,
+        p_name: name,
+        p_price: price,
+        p_is_active: true,
+      });
+      if (error) throw error;
+      addTicketTypeForm.querySelector('[name="name"]').value = "";
+      addTicketTypeForm.querySelector('[name="price"]').value = "";
+      await Promise.all([loadSeatingConfiguration(eventId), loadData()]);
+      setMessage("Ticket type added.", "success");
+    } catch (error) {
+      setMessage(seatingError(error, "Ticket type could not be added."), "error");
+    }
+  });
+  seatingTicketTypes.addEventListener("click", async (event) => {
+    const button = event.target.closest("[data-save-ticket]");
+    if (!button) return;
+    const card = button.closest("[data-ticket-id]");
+    const eventId = activeSeatingEventId();
+    if (!card || !eventId) return;
+    try {
+      const { error } = await client.rpc("admin_upsert_event_ticket_type", {
+        p_event_id: eventId,
+        p_ticket_type_id: card.dataset.ticketId,
+        p_name: card.querySelector("[data-ticket-name]").value.trim(),
+        p_price: Number(card.querySelector("[data-ticket-price]").value),
+        p_is_active: card.querySelector("[data-ticket-active]").checked,
+      });
+      if (error) throw error;
+      const { error: colorError } = await client.rpc("admin_set_event_ticket_type_color", {
+        p_event_id: eventId,
+        p_ticket_type_id: card.dataset.ticketId,
+        p_display_color: card.querySelector("[data-ticket-color]").value,
+      });
+      if (colorError) throw colorError;
+      await Promise.all([loadSeatingConfiguration(eventId), loadData()]);
+      setMessage("Ticket type saved. Prices for sold or actively reserved seats remain protected.", "success");
+    } catch (error) {
+      setMessage(seatingError(error, "Ticket type could not be saved."), "error");
+    }
+  });
+  addSectionButton.addEventListener("click", async () => {
+    const eventId = activeSeatingEventId();
+    if (!eventId) return;
+    const value = (name) => addSectionForm.querySelector(`[name="${name}"]`).value;
+    try {
+      const { error } = await client.rpc("admin_upsert_event_zone", {
+        p_event_id: eventId, p_config_id: null,
+        p_name: value("name").trim(), p_code: value("code").trim(),
+        p_ticket_type_id: value("ticket_type_id"),
+        p_rows: Number(value("rows")), p_seats_per_row: Number(value("seats_per_row")),
+        p_display_order: Number(value("display_order")), p_is_enabled: true,
+      });
+      if (error) throw error;
+      addSectionForm.querySelectorAll("input").forEach((input) => {
+        input.value = input.name === "display_order" ? "0" : "";
+      });
+      await Promise.all([loadSeatingConfiguration(eventId), loadData()]);
+      setMessage("Section added with canonical event seats.", "success");
+    } catch (error) {
+      setMessage(seatingError(error, "Section could not be added."), "error");
+    }
+  });
+  seatingSections.addEventListener("click", async (event) => {
+    const save = event.target.closest("[data-save-section]");
+    const remove = event.target.closest("[data-delete-section]");
+    const button = save || remove;
+    const card = button?.closest("[data-section-id]");
+    const eventId = activeSeatingEventId();
+    if (!card || !eventId) return;
+    try {
+      if (remove) {
+        if (!window.confirm("Remove this section? Sold or active reservations will be protected and block the operation.")) return;
+        const { error } = await client.rpc("admin_delete_event_zone", { p_config_id: card.dataset.sectionId });
+        if (error) throw error;
+        setMessage("Section removed.", "success");
+      } else {
+        const section = state.seating.sections.find((item) => item.id === card.dataset.sectionId);
+        const { error } = await client.rpc("admin_upsert_event_zone", {
+          p_event_id: eventId, p_config_id: card.dataset.sectionId,
+          p_name: card.querySelector("[data-section-name]").value.trim(), p_code: section.code,
+          p_ticket_type_id: card.querySelector("[data-section-ticket]").value,
+          p_rows: Number(card.querySelector("[data-section-rows]").value),
+          p_seats_per_row: Number(card.querySelector("[data-section-seats]").value),
+          p_display_order: Number(card.querySelector("[data-section-order]").value),
+          p_is_enabled: card.querySelector("[data-section-enabled]").checked,
+        });
+        if (error) throw error;
+        setMessage("Section saved.", "success");
+      }
+      await Promise.all([loadSeatingConfiguration(eventId), loadData()]);
+    } catch (error) {
+      setMessage(seatingError(error, "Section could not be saved."), "error");
+    }
+  });
+  previewSeatMap.addEventListener("click", () => {
+    const eventId = activeSeatingEventId();
+    if (eventId) window.open(`getTickets.html?id=${encodeURIComponent(eventId)}`, "_blank", "noopener");
   });
   catalogForm.addEventListener("submit", async (event) => {
     event.preventDefault();

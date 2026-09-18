@@ -761,27 +761,6 @@ body.ticket-open .selectionCountdown {
   z-index: 20;
 }
 
-/* A */
-
-.stageMap .section-a .seat,
-.section-a .seat {
-  background: #2878ff;
-}
-
-/* B */
-
-.stageMap .section-b .seat,
-.section-b .seat {
-  background: #e63232;
-}
-
-/* C */
-
-.stageMap .section-c .seat,
-.section-c .seat {
-  background: #f5be1e;
-}
-
 /* SELECTED */
 
 .stageMap .seat.selected,
@@ -1051,8 +1030,7 @@ body.ticket-open .socIcons {
   overflow-x: hidden;
 }
 
-.fillterByTktType,
-.fillterByZone {
+.fillterByTktType {
   width: 50%;
   padding: 8px 10px;
   font-family: inherit;
@@ -1081,17 +1059,6 @@ body.ticket-open .socIcons {
   top: 0.2%;
   left: -2px;
   bottom: 4px;
-}
-.tktCard.section-a::before {
-  background: #2878ff;
-}
-
-.tktCard.section-b::before {
-  background: #e63232;
-}
-
-.tktCard.section-c::before {
-  background: #f5be1e;
 }
 /* =========================================================
    TICKET CONTENT
@@ -1396,5 +1363,235 @@ body.ticket-open .socIcons {
   .emptyBskt,
   .nonEmptyBskt {
     padding: 20px;
+  }
+}
+
+/* Database-driven venue canvas. Coordinates are normalized in the database, never pixels. */
+.stageMap {
+  overflow: auto;
+  padding: 0;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  background: #f5f4f1;
+}
+
+/* Temporary canonical presentation: no venue-specific geometry or guessed coordinates. */
+.canonical-seat-map-canvas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  align-items: start;
+  gap: 18px;
+  min-width: 760px;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.canonical-seat-section {
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid #b9b9b9;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.canonical-seat-section-label {
+  display: block;
+  margin-bottom: 10px;
+  color: #222;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.canonical-seat-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--seat-columns), 7px);
+  grid-auto-rows: 7px;
+  gap: 2px;
+  width: max-content;
+}
+
+.stageMap .canonical-seat-grid .seat {
+  position: static;
+  width: 7px;
+  height: 7px;
+  min-width: 7px;
+  min-height: 7px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+}
+
+.stageMap .canonical-seat-grid .seat:hover {
+  transform: scale(1.8);
+}
+.stageMap .canonical-seat-grid .seat.is-filter-muted {
+  opacity: 0.12;
+  filter: grayscale(1);
+}
+.stageMap .canonical-seat-grid .seat.selected {
+  transform: scale(1.25);
+  opacity: 0.7;
+}
+
+/* Black Sea Arena: the supplied 1600 × 1000 SVG blueprint is the layout authority. */
+.black-sea-arena-map-viewport {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  background: #f5f4f1;
+}
+
+.black-sea-arena-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+  user-select: none;
+  cursor: grab;
+}
+
+.black-sea-arena-svg.is-panning {
+  cursor: grabbing;
+}
+.black-sea-arena-section {
+  fill-opacity: 0.14;
+  stroke: currentColor;
+  stroke-width: 3;
+  vector-effect: non-scaling-stroke;
+}
+.black-sea-arena-stage {
+  fill: #151515;
+  stroke: #050505;
+  stroke-width: 4;
+  pointer-events: none;
+}
+.black-sea-arena-stage-label {
+  fill: #fff;
+  font-size: 34px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-anchor: middle;
+  pointer-events: none;
+}
+
+.stageMap .black-sea-arena-svg .seat {
+  position: static;
+  width: auto;
+  height: auto;
+  opacity: 1;
+  visibility: visible;
+  transform-box: fill-box;
+  transform-origin: center;
+  transform: none;
+  transition:
+    opacity 150ms ease,
+    transform 150ms ease,
+    filter 150ms ease;
+  cursor: pointer;
+}
+
+.stageMap .black-sea-arena-svg .seat:hover {
+  transform: scale(1.75);
+  filter: brightness(0.8);
+}
+.stageMap .black-sea-arena-svg .seat.selected {
+  fill: #111 !important;
+  opacity: 0.58;
+  pointer-events: none;
+}
+.stageMap .black-sea-arena-svg .seat.unavailable {
+  fill: #777 !important;
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.stageMap .black-sea-arena-svg .seat.is-filter-muted {
+  opacity: 0.11;
+  filter: grayscale(1);
+}
+
+.black-sea-arena-map-controls {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  z-index: 8;
+  display: inline-flex;
+  gap: 6px;
+  padding: 6px;
+  border: 1px solid #c8c8c8;
+  border-radius: 8px;
+  background: rgb(255 255 255 / 0.92);
+  box-shadow: 0 3px 14px rgb(0 0 0 / 0.12);
+}
+
+.black-sea-arena-map-controls button {
+  min-width: 30px;
+  height: 30px;
+  padding: 0 9px;
+  border: 1px solid #b9b9b9;
+  border-radius: 5px;
+  background: #fff;
+  color: #111;
+  font:
+    800 13px/1 Arial,
+    sans-serif;
+  cursor: pointer;
+}
+
+.seat-map-load-error {
+  margin: 24px;
+  color: #8b0000;
+  font-weight: 700;
+}
+
+.seat-map-tooltip {
+  position: fixed;
+  z-index: 9999;
+  max-width: min(300px, calc(100vw - 28px));
+  padding: 7px 9px;
+  border-radius: 6px;
+  background: #111;
+  color: #fff;
+  font-size: 12px;
+  line-height: 1.35;
+  pointer-events: none;
+}
+
+@media (max-width: 700px) {
+  .selectTktContainer {
+    flex-direction: column;
+  }
+  .selectTktAside {
+    flex: 0 0 44%;
+    width: 100%;
+    min-height: 0;
+  }
+  .selectTktMap {
+    display: block;
+    flex: 1 1 56%;
+    width: 100%;
+    min-height: 0;
+    overflow: hidden;
+  }
+  .mapLegend {
+    left: 12px;
+    bottom: 12px;
+    max-width: calc(100% - 24px);
+  }
+  .selectionCountdown {
+    top: 12px;
+    left: 12px;
+  }
+  .black-sea-arena-map-controls {
+    top: 10px;
+    right: 10px;
   }
 }

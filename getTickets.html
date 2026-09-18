@@ -313,18 +313,9 @@
                 <h2>ticket list</h2>
                 <div class="fillterList">
                   <select class="fillterByTktType">
-                    <option value="">Ticket Type</option>
-                    <option value="standard">Standard</option>
-                    <option value="medium">Medium</option>
-                    <option value="vip">VIP</option>
+                    <option value="">All Ticket Types</option>
                   </select>
 
-                  <select class="fillterByZone">
-                    <option value=""><span>Zone</span></option>
-                    <option value="zone-a"><span>Zone A</span></option>
-                    <option value="zone-b"><span>Zone B</span></option>
-                    <option value="zone-c"><span>Zone C</span></option>
-                  </select>
                 </div>
                 <div class="freeTkts">avaliable ticktets ()</div>
                 <div class="tktsInList">
@@ -440,18 +431,9 @@
                   <h2>ticket list</h2>
                   <div class="fillterList">
                     <select class="fillterByTktType">
-                      <option value="">Ticket Type</option>
-                      <option value="standard">Standard</option>
-                      <option value="medium">Medium</option>
-                      <option value="vip">VIP</option>
+                      <option value="">All Ticket Types</option>
                     </select>
 
-                    <select class="fillterByZone">
-                      <option value=""><span>Zone</span></option>
-                      <option value="zone-a"><span>Zone A</span></option>
-                      <option value="zone-b"><span>Zone B</span></option>
-                      <option value="zone-c"><span>Zone C</span></option>
-                    </select>
                   </div>
 
                   <div class="freeTkts">avaliable ticktets ()</div>
@@ -613,29 +595,8 @@
     <script src="cart-sync.js"></script>
     <script>
       const hallMap = {
-        sections: [
-          {
-            id: "A",
-            name: "A Section",
-            ticketType: "cheap",
-            rows: 5,
-            seatsPerRow: 30,
-          },
-          {
-            id: "B",
-            name: "B Section",
-            ticketType: "medium",
-            rows: 5,
-            seatsPerRow: 30,
-          },
-          {
-            id: "C",
-            name: "C Section",
-            ticketType: "vip",
-            rows: 5,
-            seatsPerRow: 30,
-          },
-        ],
+        // Populated from get_event_seat_map for the current event.
+        sections: [],
       };
     </script>
 
@@ -821,32 +782,9 @@
         }, 1000);
       }
 
-      restoreSelectionState();
+      // Database reservations are authoritative; never restore local-only seats.
+      clearStoredSelectionState();
       renderBasket();
-
-      if (
-        !eventState.countdownId &&
-        !localStorage.getItem(getReservationExpiryKey())
-      ) {
-        startSelectionCountdown();
-      }
-
-      if (
-        basketTickets.length > 0 &&
-        localStorage.getItem(getReservationExpiryKey())
-      ) {
-        const expiryTimestamp = Number(
-          localStorage.getItem(getReservationExpiryKey()) || 0,
-        );
-        const remainingSeconds = Math.max(
-          0,
-          Math.ceil((expiryTimestamp - Date.now()) / 1000),
-        );
-
-        if (remainingSeconds > 0 && !eventState.countdownId) {
-          startSelectionCountdown(remainingSeconds);
-        }
-      }
 
       selectTktBtns.forEach((btn) => {
         btn.addEventListener("click", async (event) => {
@@ -858,10 +796,6 @@
             return;
           }
           document.body.classList.add("ticket-open");
-
-          if (!eventState.countdownId) {
-            startSelectionCountdown();
-          }
 
           setTimeout(() => {
             renderHallMap();
@@ -1062,7 +996,7 @@
       window.addEventListener("resize", () => {
         if (document.body.classList.contains("ticket-open")) {
           renderHallMap();
-          attachSeatClickHandllers();
+          attachSeatClickHandlers();
         }
       });
     </script>
@@ -1080,58 +1014,6 @@
       });
     </script>
 
-    <script>
-      const ticketTypes = [
-        {
-          type: "cheap",
-          color: "#2878ff",
-        },
-        {
-          type: "medium",
-          color: "#e63232",
-        },
-        {
-          type: "vip",
-          color: "#f5be1e",
-        },
-      ];
-
-      const legendItems = document.querySelector("#legendItems");
-
-      function renderTicketLegend() {
-        if (!selectedBand || !legendItems) return;
-        legendItems.innerHTML = "";
-
-        ticketTypes.forEach((item) => {
-          const ticket = selectedBand.tickets[item.type];
-
-          if (!ticket) return;
-
-          const legendItem = document.createElement("div");
-
-          legendItem.className = "legendItem";
-
-          legendItem.innerHTML = `
-      <span
-        class="legendColor"
-        style="background:${item.color}"
-      ></span>
-
-      <span class="legendName">
-        ${ticket.name}
-      </span>
-
-      <span class="legendPrice">
-        ${ticket.price}${ticket.currency}
-      </span>
-    `;
-
-          legendItems.appendChild(legendItem);
-        });
-      }
-
-      renderTicketLegend();
-    </script>
     <script>
       //confirm dialog//
       const confirmDialog = document.querySelector("#confirmDialog");
@@ -1196,6 +1078,7 @@
         if (!ticket) return;
 
         const ticketData = {
+          eventSeatId: selectedSeat.dataset.eventSeatId,
           section: section.id,
           row,
           seat: seatNumber,
@@ -1205,7 +1088,10 @@
           serviceFee: Number(ticket.serviceFee || 0),
         };
 
-        addTicketToBasket(ticketData);
+        Promise.resolve(addTicketToBasket(ticketData)).catch((error) => {
+          console.error("Unable to reserve seat", error);
+          confirmDialog.style.display = "none";
+        });
         selectedSeat.classList.add("selected");
         confirmDialog.style.display = "none";
         eventState.selectedSeat = null;
@@ -1216,5 +1102,8 @@
         eventState.selectedSeat = null;
       });
     </script>
+    <script src="hall-maps/black-sea-arena-blueprint.js"></script>
+    <script src="hall-maps/black-sea-arena-seat-map.js"></script>
+    <script src="event-seat-map.js"></script>
   </body>
 </html>

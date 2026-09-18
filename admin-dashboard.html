@@ -184,7 +184,7 @@
             ><label
               >Status<select name="status">
                 <option value="active">Active</option>
-                <option value="inactive">Inactive</option>
+                <option value="inactive" selected>Inactive (not published)</option>
               </select></label
             >
           </div>
@@ -194,6 +194,41 @@
             </select>
           </label>
           <p class="admin-message" id="venuePreview" aria-live="polite" hidden></p>
+          <section class="admin-seating-config" id="seatingConfiguration" hidden>
+            <div class="admin-seating-heading">
+              <div>
+                <p class="admin-eyebrow">Database-backed inventory</p>
+                <h3>Seating &amp; Ticket Configuration</h3>
+              </div>
+              <button class="admin-outline" id="previewSeatMap" type="button">Preview Seat Map</button>
+            </div>
+            <p class="admin-message" id="seatingSummary"></p>
+            <div class="admin-seating-group">
+              <h4>Ticket types</h4>
+              <div id="seatingTicketTypes"></div>
+              <div class="admin-inline-form" id="addTicketTypeForm">
+                <label>Ticket tier<select name="name" required><option value="Cheap / Standard">Cheap / Standard</option><option value="Medium / Premium">Medium / Premium</option><option value="Expensive">Expensive</option><option value="VIP">VIP</option></select></label>
+                <label>Price (₾)<input name="price" type="number" min="0" step="0.01" required /></label>
+                <button class="admin-outline" id="addTicketType" type="button">Add ticket type</button>
+              </div>
+            </div>
+            <div class="admin-seating-group">
+              <h4>Seat sections</h4>
+              <div id="seatingSections"></div>
+              <div class="admin-section-form" id="addSectionForm">
+                <h5>Add section</h5>
+                <div class="admin-form-grid">
+                  <label>Section name<input name="name" required /></label>
+                  <label>Internal code<input name="code" pattern="[A-Za-z0-9_-]+" required /></label>
+                  <label>Ticket type<select name="ticket_type_id" required></select></label>
+                  <label>Rows<input name="rows" type="number" min="1" max="500" required /></label>
+                  <label>Seats per row<input name="seats_per_row" type="number" min="1" max="500" required /></label>
+                  <label>Display order<input name="display_order" type="number" min="0" value="0" required /></label>
+                </div>
+                <button class="admin-outline" id="addSection" type="button">Add section</button>
+              </div>
+            </div>
+          </section>
           <label>Image URL<input name="image_url" type="url" /></label
           ><label
             >Description<textarea name="description" rows="4"></textarea>
