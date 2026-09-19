@@ -1,6 +1,11 @@
 (() => {
   const PAGE_SIZE = 5;
+  const EVENTS_PAGE_SIZE = 8;
   const CATALOG_BATCH_SIZE = 10;
+  const PUBLIC_EVENTS_PER_PAGE = window.iVenueEventListing?.pageSize;
+  if (!Number.isInteger(PUBLIC_EVENTS_PER_PAGE) || PUBLIC_EVENTS_PER_PAGE < 1) {
+    throw new Error("The shared public event listing page size is unavailable.");
+  }
   const client = window.supabaseClient;
   const state = {
     events: [],
@@ -22,8 +27,15 @@
     wizardTickets: null,
     wizardDirty: false,
     wizardSaving: false,
+    saveSuccessTimeout: null,
     editorReturnPanel: "overview",
     editorReturnScrollY: 0,
+    heroConfig: { mode: "latest_added", display_limit: 3, event_ids: [] },
+    heroPreview: [],
+    heroPreviewMode: "latest_added",
+    upcomingShowsConfig: { mode: "latest_added", display_limit: 4, event_ids: [] },
+    upcomingShowsPreview: [],
+    upcomingShowsPreviewMode: "latest_added",
   };
   const status = document.querySelector("#adminStatus");
   const message = document.querySelector("#adminMessage");
@@ -56,10 +68,18 @@
   const eventImagePreviewImage = document.querySelector("#eventImagePreviewImage");
   const eventImageEmpty = document.querySelector("#eventImageEmpty");
   const eventReview = document.querySelector("#eventReview");
+  const placementMode = document.querySelector("#eventPlacementMode");
+  const placementCustom = document.querySelector("#eventPlacementCustom");
+  const placementPage = document.querySelector("#eventPlacementPage");
+  const placementPagePosition = document.querySelector("#eventPlacementPagePosition");
+  const placementPreview = document.querySelector("#eventPlacementPreview");
+  const placementError = document.querySelector("#eventPlacementError");
   const eventEditorShell = document.querySelector("#eventEditorShell");
   const eventEditor = document.querySelector("#eventEditor");
   const eventEditorBack = document.querySelector("#eventEditorBack");
   const eventEditorHome = document.querySelector("#eventEditorHome");
+  const eventSaveSuccess = document.querySelector("#eventSaveSuccess");
+  const eventSaveSuccessMessage = document.querySelector("#eventSaveSuccessMessage");
   const previewSeatMap = document.querySelector("#previewSeatMap");
   const eventMapPreviewDialog = document.querySelector("#eventMapPreviewDialog");
   const eventMapPreviewCanvas = document.querySelector("#eventMapPreviewCanvas");
@@ -73,6 +93,23 @@
   const catalogList = document.querySelector("#catalogList");
   const catalogMore = document.querySelector("#catalogMore");
   const catalogMoreButton = document.querySelector("#catalogMoreButton");
+  const heroForm = document.querySelector("#heroForm");
+  heroForm.innerHTML = `<fieldset class="admin-hero-mode"><legend>Hero Display Mode</legend><label class="admin-check"><input type="radio" name="hero_mode" value="latest_added" checked /> Latest Added</label><label class="admin-check"><input type="radio" name="hero_mode" value="most_added_to_cart" /> Most Added to Cart</label><label class="admin-check"><input type="radio" name="hero_mode" value="best_selling" /> Best Selling</label><label class="admin-check"><input type="radio" name="hero_mode" value="custom_selection" /> Custom Selection</label></fieldset><p class="admin-hero-help" id="heroHelp"></p><div id="heroAutomatic"></div><div id="heroSlots" hidden><label>Find eligible events<input id="heroSearch" type="search" placeholder="Search title, date, venue or category" autocomplete="off" /></label><div class="upcoming-shows-results" id="heroResults"></div><p class="admin-hero-help" id="heroCount"></p><div class="upcoming-shows-selected" id="heroSelected"></div></div><div class="admin-form-actions"><button class="auth-submit" type="submit">Save Hero</button></div>`;
+  const heroSlots = document.querySelector("#heroSlots");
+  const heroHelp = document.querySelector("#heroHelp");
+  const heroAutomatic = document.querySelector("#heroAutomatic");
+  const heroSearch = document.querySelector("#heroSearch");
+  const heroResults = document.querySelector("#heroResults");
+  const heroCount = document.querySelector("#heroCount");
+  const heroSelected = document.querySelector("#heroSelected");
+  const upcomingShowsForm = document.querySelector("#upcomingShowsForm");
+  const upcomingShowsHelp = document.querySelector("#upcomingShowsHelp");
+  const upcomingShowsAutomatic = document.querySelector("#upcomingShowsAutomatic");
+  const upcomingShowsCustom = document.querySelector("#upcomingShowsCustom");
+  const upcomingShowsSearch = document.querySelector("#upcomingShowsSearch");
+  const upcomingShowsResults = document.querySelector("#upcomingShowsResults");
+  const upcomingShowsCount = document.querySelector("#upcomingShowsCount");
+  const upcomingShowsSelected = document.querySelector("#upcomingShowsSelected");
 
   const escapeHtml = (value) =>
     String(value ?? "")
@@ -134,14 +171,15 @@
   };
 
   async function loadData() {
-    const [events, categories, tickets, orders, users, catalog, venues, inventory, eventCreationContext] =
+    const [events, categories, tickets, orders, users, catalog, venues, inventory, eventCreationContext, heroConfig, heroPreview, upcomingShowsConfig, upcomingShowsPreview] =
       await Promise.all([
         client
           .from("events")
           .select(
-            "id, performer, category_id, title, description, event_date, event_time, doors_open, venue_id, venue, city, country, image_url, status, venues:venues!events_venue_id_fkey(id, name, city_area, region, country, address, latitude, longitude, image_url), categories(id, name)",
+            "id, performer, category_id, title, description, event_date, event_time, doors_open, venue_id, venue, city, country, image_url, status, display_order, venues:venues!events_venue_id_fkey(id, name, city_area, region, country, address, latitude, longitude, image_url), categories(id, name)",
           )
-          .order("event_date", { ascending: true }),
+          .order("display_order", { ascending: true })
+          .order("id", { ascending: true }),
         client.from("categories").select("id, name").order("name"),
         client
           .from("ticket_types")
@@ -160,8 +198,12 @@
           .order("name"),
         client.rpc("get_admin_event_inventory"),
         client.rpc("get_admin_event_creation_context"),
+        client.rpc("get_admin_homepage_hero_config"),
+        client.rpc("get_homepage_hero_events"),
+        client.rpc("get_admin_homepage_upcoming_shows_config"),
+        client.rpc("get_homepage_upcoming_shows"),
       ]);
-    for (const result of [events, categories, tickets, orders, catalog, venues, inventory, eventCreationContext])
+    for (const result of [events, categories, tickets, orders, catalog, venues, inventory, eventCreationContext, heroConfig, heroPreview, upcomingShowsConfig, upcomingShowsPreview])
       if (result.error) throw result.error;
     state.events = events.data || [];
     state.categories = categories.data || [];
@@ -173,6 +215,14 @@
     state.venues = venues.data || [];
     state.inventory = inventory.data || [];
     state.eventCreationContext = eventCreationContext.data || { venues: [], ticket_colors: {} };
+    state.heroConfig = heroConfig.data || { mode: "latest_added", display_limit: 3, event_ids: [] };
+    state.heroConfig.event_ids = state.heroConfig.event_ids || [];
+    state.heroPreview = heroPreview.data || [];
+    state.heroPreviewMode = state.heroConfig.mode;
+    state.upcomingShowsConfig = upcomingShowsConfig.data || { mode: "latest_added", display_limit: 4, event_ids: [] };
+    state.upcomingShowsConfig.event_ids = state.upcomingShowsConfig.event_ids || [];
+    state.upcomingShowsPreview = upcomingShowsPreview.data || [];
+    state.upcomingShowsPreviewMode = state.upcomingShowsConfig.mode;
     state.eventPage = 1;
     state.statsPage = 1;
     await loadAnalytics();
@@ -180,6 +230,109 @@
     fillCategories();
     fillVenues();
     renderCatalog();
+    renderHeroForm();
+    renderUpcomingShowsForm();
+  }
+
+  function renderHeroForm() {
+    const config = state.heroConfig;
+    const mode = ["latest_added", "most_added_to_cart", "best_selling", "custom_selection"].includes(config.mode)
+      ? config.mode : "latest_added";
+    const limit = Number(config.display_limit) || 3;
+    heroForm.elements.hero_mode.value = mode;
+    heroSlots.hidden = mode !== "custom_selection";
+    heroAutomatic.hidden = mode === "custom_selection";
+    const help = {
+      latest_added: `Automatically shows the ${limit} newest active, upcoming events.`,
+      most_added_to_cart: "Automatically ranks active, upcoming events by recorded add-to-cart ticket units.",
+      best_selling: "Automatically ranks active, upcoming events by ticket quantities in paid orders.",
+      custom_selection: `Choose and order up to ${limit} active, upcoming events. Removing one here does not delete the event.`,
+    };
+    heroHelp.textContent = help[mode];
+    if (mode !== "custom_selection") {
+      heroAutomatic.innerHTML = mode !== state.heroPreviewMode
+        ? '<p class="admin-message">Save this display mode to update the current Hero preview.</p>'
+        : state.heroPreview.length
+          ? `<div class="upcoming-shows-preview">${state.heroPreview.map((event) => `<div><span>${formatUpcomingEvent(event)}</span><button type="button" data-hero-edit="${event.id}">Edit Event</button></div>`).join("")}</div>`
+          : '<p class="admin-message">No eligible events are available for this mode.</p>';
+      return;
+    }
+    const selectedIds = config.event_ids.map(String);
+    const selected = selectedIds.map((id) => state.events.find((event) => String(event.id) === id)).filter(Boolean);
+    heroCount.textContent = `${selected.length} of ${limit} events selected for the Hero.`;
+    heroSelected.innerHTML = selected.length
+      ? selected.map((event, index) => `<div class="upcoming-shows-row"><span>${index + 1}. ${formatUpcomingEvent(event)}</span><div><button type="button" data-hero-move="up" data-hero-id="${event.id}" ${index === 0 ? "disabled" : ""}>Move up</button><button type="button" data-hero-move="down" data-hero-id="${event.id}" ${index === selected.length - 1 ? "disabled" : ""}>Move down</button><button type="button" data-hero-edit="${event.id}">Edit Event</button><button type="button" data-hero-remove="${event.id}">Remove</button></div></div>`).join("")
+      : '<p class="admin-message">No custom Hero events selected.</p>';
+    const search = heroSearch.value.trim().toLowerCase();
+    const matches = state.events.filter((event) => {
+      const text = [event.title, event.performer, event.event_date, event.venues?.name || event.venue, event.categories?.name].join(" ").toLowerCase();
+      return event.status === "active" && event.event_date >= new Date().toISOString().slice(0, 10) && !selectedIds.includes(String(event.id)) && (!search || text.includes(search));
+    }).slice(0, 12);
+    heroResults.innerHTML = selected.length >= limit ? "" : matches.map((event) => `<div class="upcoming-shows-row"><span>${formatUpcomingEvent(event)}</span><button type="button" data-hero-add="${event.id}">Add</button></div>`).join("") || '<p class="admin-message">No eligible matching events found.</p>';
+    return;
+    /* const mode = state.heroConfig.mode === "manual" ? "manual" : "automatic";
+    heroForm.elements.hero_mode.value = mode;
+    heroSlots.hidden = mode !== "manual";
+    heroHelp.textContent = mode === "manual"
+      ? "Choose up to three active events. Empty or invalid slots are filled with the newest eligible events."
+      : "The three newest active events will be displayed automatically.";
+    const activeEvents = state.events.filter((event) => event.status === "active");
+    [1, 2, 3].forEach((slot) => {
+      const select = heroForm.elements[`hero_slot_${slot}`];
+      const selectedId = state.heroConfig.slots?.[slot] || "";
+      select.innerHTML = `<option value="">Automatic fallback</option>${activeEvents.map((event) => `<option value="${event.id}">${escapeHtml(event.title)} — ${escapeHtml(event.performer)}</option>`).join("")}`;
+      select.value = selectedId;
+    }); */
+  }
+
+  function formatUpcomingEvent(event) {
+    const venue = event.venues?.name || event.venue || "Venue TBA";
+    const category = event.categories?.name || event.category || "Uncategorized";
+    const date = event.event_date || "Date TBA";
+    return `${escapeHtml(event.title || event.performer || "Untitled event")} — ${escapeHtml(date)} · ${escapeHtml(venue)} · ${escapeHtml(category)}`;
+  }
+
+  function renderUpcomingShowsForm() {
+    const config = state.upcomingShowsConfig;
+    const mode = ["latest_added", "most_added_to_cart", "best_selling", "custom_selection"].includes(config.mode)
+      ? config.mode : "latest_added";
+    upcomingShowsForm.elements.upcoming_mode.value = mode;
+    upcomingShowsCustom.hidden = mode !== "custom_selection";
+    upcomingShowsAutomatic.hidden = mode === "custom_selection";
+    const limit = Number(config.display_limit) || 4;
+    const help = {
+      latest_added: `Automatically shows the ${limit} newest active, upcoming events.`,
+      most_added_to_cart: `Automatically ranks active, upcoming events by recorded add-to-cart ticket units.`,
+      best_selling: `Automatically ranks active, upcoming events by ticket quantities in paid orders.`,
+      custom_selection: `Choose and order up to ${limit} active, upcoming events. Removing one here does not delete the event.`,
+    };
+    upcomingShowsHelp.textContent = help[mode];
+
+    if (mode !== "custom_selection") {
+      if (mode !== state.upcomingShowsPreviewMode) {
+        upcomingShowsAutomatic.innerHTML = '<p class="admin-message">Save this display mode to update the current homepage preview.</p>';
+        return;
+      }
+      upcomingShowsAutomatic.innerHTML = state.upcomingShowsPreview.length
+        ? `<div class="upcoming-shows-preview">${state.upcomingShowsPreview.map((event) => `<div><span>${formatUpcomingEvent(event)}</span><button type="button" data-upcoming-edit="${event.id}">Edit Event</button></div>`).join("")}</div>`
+        : '<p class="admin-message">No eligible events are available for this mode.</p>';
+      return;
+    }
+
+    const selectedIds = config.event_ids.map(String);
+    const selected = selectedIds.map((id) => state.events.find((event) => String(event.id) === id)).filter(Boolean);
+    upcomingShowsCount.textContent = `${selected.length} of ${limit} events selected for the homepage accordion.`;
+    upcomingShowsSelected.innerHTML = selected.length
+      ? selected.map((event, index) => `<div class="upcoming-shows-row"><span>${index + 1}. ${formatUpcomingEvent(event)}</span><div><button type="button" data-upcoming-move="up" data-upcoming-id="${event.id}" ${index === 0 ? "disabled" : ""}>Move up</button><button type="button" data-upcoming-move="down" data-upcoming-id="${event.id}" ${index === selected.length - 1 ? "disabled" : ""}>Move down</button><button type="button" data-upcoming-edit="${event.id}">Edit Event</button><button type="button" data-upcoming-remove="${event.id}">Remove</button></div></div>`).join("")
+      : '<p class="admin-message">No custom events selected.</p>';
+    const search = upcomingShowsSearch.value.trim().toLowerCase();
+    const matches = state.events.filter((event) => {
+      const text = [event.title, event.performer, event.event_date, event.venues?.name || event.venue, event.categories?.name].join(" ").toLowerCase();
+      return event.status === "active" && event.event_date >= new Date().toISOString().slice(0, 10) && !selectedIds.includes(String(event.id)) && (!search || text.includes(search));
+    }).slice(0, 12);
+    upcomingShowsResults.innerHTML = selected.length >= limit
+      ? ""
+      : matches.map((event) => `<div class="upcoming-shows-row"><span>${formatUpcomingEvent(event)}</span><button type="button" data-upcoming-add="${event.id}">Add</button></div>`).join("") || '<p class="admin-message">No eligible matching events found.</p>';
   }
 
   function resetCatalogForm() {
@@ -228,8 +381,8 @@
     renderAnalytics();
   }
 
-  function renderPagination(container, currentPage, totalItems, onPageChange) {
-    const totalPages = Math.ceil(totalItems / PAGE_SIZE);
+  function renderPagination(container, currentPage, totalItems, onPageChange, itemsPerPage = PAGE_SIZE) {
+    const totalPages = Math.ceil(totalItems / itemsPerPage);
     if (totalPages <= 1) {
       container.innerHTML = "";
       return;
@@ -312,6 +465,12 @@
       (item) => `${item.tickets_sold} sold · ${formatRevenue(item.revenue)}`,
     );
 
+    renderAnalyticsList(
+      "topShared",
+      analytics.top_shared,
+      (item) => `${item.shares} shares`,
+    );
+
     const category = analytics.popular_category || {};
     document.querySelector("#popularCategory").innerHTML = category.category
       ? `<div class="popular-category"><strong>${escapeHtml(category.category)}</strong><span>${category.event_count} events · ${category.engagement} tickets sold</span></div>`
@@ -380,10 +539,10 @@
           (availability === "sold-out" ? stats.soldOut : !stats.soldOut))
       );
     });
-    const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+    const totalPages = Math.max(1, Math.ceil(filtered.length / EVENTS_PAGE_SIZE));
     state.eventPage = Math.min(state.eventPage, totalPages);
-    const pageStart = (state.eventPage - 1) * PAGE_SIZE;
-    const pageItems = filtered.slice(pageStart, pageStart + PAGE_SIZE);
+    const pageStart = (state.eventPage - 1) * EVENTS_PAGE_SIZE;
+    const pageItems = filtered.slice(pageStart, pageStart + EVENTS_PAGE_SIZE);
     eventList.innerHTML = pageItems.length
       ? pageItems
           .map((event) => {
@@ -393,6 +552,23 @@
           })
           .join("")
       : '<p class="admin-message">No matching events.</p>';
+    if (pageItems.length) {
+      const eventGroups = Array.from(
+        { length: Math.ceil(pageItems.length / 4) },
+        (_, index) => pageItems.slice(index * 4, index * 4 + 4),
+      );
+      eventList.innerHTML = eventGroups.map((group) => {
+        const cards = group.map((event) => {
+          const stats = eventStats(event);
+          const location = getEventLocation(event);
+          return {
+            image: `<div class="admin-event-group__image"><img src="${escapeHtml(event.image_url || "")}" alt="${escapeHtml(event.title)}" loading="lazy" /></div>`,
+            info: `<article class="admin-event-row admin-event-group__item"><div class="admin-event-group__details"><strong>${escapeHtml(event.title)}</strong><span>${escapeHtml(event.performer)} &middot; ${escapeHtml(event.categories?.name || "Uncategorized")}</span><span>${escapeHtml(location.text)}</span><time datetime="${escapeHtml(event.event_date)}">${escapeHtml(event.event_date)} &middot; ${escapeHtml(event.event_time)}</time><small>${stats.sold} sold / ${stats.remaining} available${stats.blocked ? ` / ${stats.blocked} blocked` : ""}</small></div><div class="admin-event-group__footer"><span class="admin-badge">${escapeHtml(event.status || "active")}</span><div class="admin-event-actions"><button data-edit="${event.id}" type="button">Edit</button><button data-delete="${event.id}" type="button">Delete</button></div></div></article>`,
+          };
+        });
+        return `<section class="admin-event-group"><div class="admin-event-group__images">${cards.map((card) => card.image).join("")}</div><div class="admin-event-group__information">${cards.map((card) => card.info).join("")}</div></section>`;
+      }).join("");
+    }
     renderPagination(
       eventsPagination,
       state.eventPage,
@@ -401,6 +577,7 @@
         state.eventPage = page;
         renderEvents();
       },
+      EVENTS_PAGE_SIZE,
     );
   }
 
@@ -446,6 +623,7 @@
     categoryFilter.innerHTML =
       '<option value="">All categories</option>' +
       state.categories
+        .filter((category) => category.name !== "Sports")
         .map(
           (category) =>
             `<option value="${category.id}">${escapeHtml(category.name)}</option>`,
@@ -537,13 +715,32 @@
     }));
   }
 
+  function ticketDraftValue(tier, field) {
+    const value = state.wizardTickets?.[tier]?.[field];
+    return value == null ? "" : String(value);
+  }
+
+  function nonNegativeDraftNumber(value) {
+    const parsed = Number(String(value ?? "").trim());
+    return Number.isFinite(parsed) && parsed >= 0 ? parsed : 0;
+  }
+
+  function isValidQuantityDraft(value) {
+    return value === "" || /^\d+$/.test(value);
+  }
+
+  function isValidPriceDraft(value) {
+    // Keep a trailing decimal point while it is being typed (for example, `29.`).
+    return value === "" || /^\d+(?:\.\d*)?$/.test(value);
+  }
+
   function currentTicketInventory() {
     if (!state.wizardTickets) state.wizardTickets = createTicketDraft();
     return TICKET_TIERS.map((tier) => ({
       canonical_tier: tier.id,
       name: tier.name,
-      quantity: Math.max(0, Number(state.wizardTickets[tier.id]?.quantity || 0)),
-      price: Math.max(0, Number(state.wizardTickets[tier.id]?.price || 0)),
+      quantity: nonNegativeDraftNumber(state.wizardTickets[tier.id]?.quantity),
+      price: nonNegativeDraftNumber(state.wizardTickets[tier.id]?.price),
       color: state.wizardTickets[tier.id]?.color || ticketColorForTier(tier.id),
     }));
   }
@@ -553,10 +750,16 @@
     wizardMessage.hidden = !text;
   }
 
-  function getInventoryValidation() {
+  function getInventoryValidation({ validateDraft = false } = {}) {
     const venue = selectedVenueContext();
     const inventory = currentTicketInventory();
     if (!venue) return { valid: false, message: "Choose a venue before configuring ticket inventory." };
+    if (validateDraft) {
+      const invalidQuantity = TICKET_TIERS.find((tier) => !isValidQuantityDraft(ticketDraftValue(tier.id, "quantity")));
+      if (invalidQuantity) return { valid: false, message: `${invalidQuantity.name} needs a whole, non-negative seat quantity.` };
+      const invalidPrice = TICKET_TIERS.find((tier) => !isValidPriceDraft(ticketDraftValue(tier.id, "price")));
+      if (invalidPrice) return { valid: false, message: `${invalidPrice.name} needs a non-negative price.` };
+    }
     const total = inventory.reduce((sum, tier) => sum + tier.quantity, 0);
     const tierOverage = inventory.find((tier) => tier.quantity > Number(venue.tier_capacities?.[tier.canonical_tier] || 0));
     if (tierOverage) {
@@ -574,7 +777,7 @@
     wizardBack.hidden = state.wizardStep === 1;
     wizardContinue.hidden = review;
     wizardSubmit.hidden = !review;
-    wizardContinue.disabled = state.wizardStep === 4 && !getInventoryValidation().valid;
+    wizardContinue.disabled = state.wizardStep === 4 && !getInventoryValidation({ validateDraft: true }).valid;
     wizardSubmit.textContent = form.elements.id.value ? "Save changes" : "Create event";
     wizardStepButtons.forEach((button) => {
       const step = Number(button.dataset.eventStep);
@@ -590,12 +793,20 @@
     const inventory = currentTicketInventory();
     ticketInventoryRows.innerHTML = inventory.map((tier) => {
       const capacity = Number(venue?.tier_capacities?.[tier.canonical_tier] || 0);
+      const quantityValue = ticketDraftValue(tier.canonical_tier, "quantity");
+      const priceValue = ticketDraftValue(tier.canonical_tier, "price");
       return `<div class="admin-ticket-row" role="row" data-ticket-tier="${tier.canonical_tier}">
         <div class="admin-ticket-row__tier" role="cell" style="--ticket-color: ${escapeHtml(tier.color)}"><i aria-hidden="true"></i><div><strong>${escapeHtml(tier.name)}</strong><span>${venue ? `${formatSeatNumber(capacity)} physical seats` : "Select a venue first"}</span></div></div>
-        <label role="cell"><span class="sr-only">${escapeHtml(tier.name)} sellable seats</span><input data-ticket-quantity type="number" min="0" max="${capacity}" step="1" value="${tier.quantity}" inputmode="numeric" /></label>
-        <label role="cell"><span class="sr-only">${escapeHtml(tier.name)} price</span><input data-ticket-price type="number" min="0" step="0.01" value="${tier.price}" inputmode="decimal" /></label>
+        <label role="cell"><span class="sr-only">${escapeHtml(tier.name)} sellable seats</span><input data-ticket-quantity type="number" min="0" max="${capacity}" step="1" value="${escapeHtml(quantityValue)}" inputmode="numeric" /></label>
+        <label role="cell"><span class="sr-only">${escapeHtml(tier.name)} price</span><input data-ticket-price type="text" inputmode="decimal" autocomplete="off" pattern="[0-9]*[.]?[0-9]*" value="${escapeHtml(priceValue)}" /></label>
       </div>`;
     }).join("");
+    updateTicketInventorySummary();
+  }
+
+  function updateTicketInventorySummary() {
+    const venue = selectedVenueContext();
+    const inventory = currentTicketInventory();
     const validation = getInventoryValidation();
     const physical = Number(venue?.physical_capacity || 0);
     const sellable = validation.total ?? inventory.reduce((sum, tier) => sum + tier.quantity, 0);
@@ -632,6 +843,129 @@
     eventImageEmpty.hidden = false;
   });
 
+  function listingPageDetails(overallPosition) {
+    const page = Math.ceil(overallPosition / PUBLIC_EVENTS_PER_PAGE);
+    const positionOnPage = ((overallPosition - 1) % PUBLIC_EVENTS_PER_PAGE) + 1;
+    return { page, positionOnPage, overallPosition };
+  }
+
+  function finalEventCount() {
+    return state.events.length + (form.elements.id.value ? 0 : 1);
+  }
+
+  function setPlacementInlineError(message) {
+    placementError.textContent = message;
+    placementError.hidden = !message;
+  }
+
+  function placementValidation({ showErrors = false } = {}) {
+    const mode = placementMode.value;
+    const currentTotal = finalEventCount();
+    const maxPage = Math.max(1, Math.ceil(currentTotal / PUBLIC_EVENTS_PER_PAGE));
+    placementPage.max = String(maxPage);
+    placementPagePosition.max = String(PUBLIC_EVENTS_PER_PAGE);
+
+    placementPage.classList.remove("is-invalid");
+    placementPagePosition.classList.remove("is-invalid");
+
+    if (mode === "automatic") {
+      setPlacementInlineError("");
+      return {
+        valid: true,
+        mode,
+        preview: "Automatic placement follows the existing chronological event order after saving.",
+      };
+    }
+
+    if (mode === "first") {
+      setPlacementInlineError("");
+      return {
+        valid: true,
+        mode,
+        position: 1,
+        preview: "This event will be first in the public list · Page 1 · Position 1.",
+      };
+    }
+
+    if (mode === "last") {
+      const details = listingPageDetails(currentTotal);
+      setPlacementInlineError("");
+      return {
+        valid: true,
+        mode,
+        position: details.overallPosition,
+        preview: `This event will be last in the public list · Page ${details.page} · Position ${details.positionOnPage}.`,
+      };
+    }
+
+    const pageValue = placementPage.value.trim();
+    const positionValue = placementPagePosition.value.trim();
+    const pageValid = /^[1-9]\d*$/.test(pageValue);
+    const positionValid = /^[1-9]\d*$/.test(positionValue);
+    const page = Number(pageValue);
+    const positionOnPage = Number(positionValue);
+    const overallPosition = (page - 1) * PUBLIC_EVENTS_PER_PAGE + positionOnPage;
+    let error = "";
+
+    if (!pageValid || page < 1) {
+      error = "Page must be a positive whole number.";
+      if (showErrors || pageValue) placementPage.classList.add("is-invalid");
+    } else if (!positionValid || positionOnPage < 1 || positionOnPage > PUBLIC_EVENTS_PER_PAGE) {
+      error = `Position on page must be between 1 and ${PUBLIC_EVENTS_PER_PAGE}.`;
+      if (showErrors || positionValue) placementPagePosition.classList.add("is-invalid");
+    } else if (overallPosition > currentTotal) {
+      error = `Choose a position between 1 and ${currentTotal} for this event list.`;
+      placementPage.classList.add("is-invalid");
+      placementPagePosition.classList.add("is-invalid");
+    }
+
+    if (error) {
+      setPlacementInlineError(showErrors || pageValue || positionValue ? error : "");
+      return { valid: false, mode, error, page, positionOnPage, overallPosition };
+    }
+
+    const details = listingPageDetails(overallPosition);
+    const editedEvent = state.events.find((event) => String(event.id) === String(form.elements.id.value));
+    const isCurrentPlacement = editedEvent && Number(editedEvent.display_order) === overallPosition;
+    setPlacementInlineError("");
+    return {
+      valid: true,
+      mode,
+      position: overallPosition,
+      page: details.page,
+      positionOnPage: details.positionOnPage,
+      preview: isCurrentPlacement
+        ? `Current placement · Page ${details.page} · Position ${details.positionOnPage} · Overall position ${details.overallPosition}.`
+        : `This event will appear approximately · Page ${details.page} · Position ${details.positionOnPage} · Overall position ${details.overallPosition}.`,
+    };
+  }
+
+  function updatePlacementControls(options) {
+    const custom = placementMode.value === "custom";
+    placementCustom.hidden = !custom;
+    placementPage.disabled = !custom;
+    placementPagePosition.disabled = !custom;
+    const placement = placementValidation(options);
+    placementPreview.textContent = placement.preview || "";
+    return placement;
+  }
+
+  function resetPlacement() {
+    placementMode.value = "automatic";
+    placementPage.value = "1";
+    placementPagePosition.value = "1";
+    updatePlacementControls();
+  }
+
+  function loadCurrentPlacement(event) {
+    const currentPosition = Math.max(1, Number(event.display_order) || 1);
+    const details = listingPageDetails(currentPosition);
+    placementMode.value = "custom";
+    placementPage.value = String(details.page);
+    placementPagePosition.value = String(details.positionOnPage);
+    updatePlacementControls();
+  }
+
   function validateStep(step) {
     const panel = wizardStepPanels.find((item) => Number(item.dataset.eventStepPanel) === step);
     let firstInvalid = null;
@@ -647,8 +981,13 @@
       firstInvalid.focus();
       return false;
     }
-    if (step === 4 && !getInventoryValidation().valid) {
-      setWizardMessage(getInventoryValidation().message);
+    if (step === 1 && !updatePlacementControls({ showErrors: true }).valid) {
+      setWizardMessage("Choose a valid public listing placement before continuing.");
+      (placementPage.classList.contains("is-invalid") ? placementPage : placementPagePosition).focus();
+      return false;
+    }
+    if (step === 4 && !getInventoryValidation({ validateDraft: true }).valid) {
+      setWizardMessage(getInventoryValidation({ validateDraft: true }).message);
       return false;
     }
     setWizardMessage("");
@@ -661,9 +1000,11 @@
     const category = state.categories.find((item) => item.id === values.get("category_id"));
     const inventory = currentTicketInventory();
     const totals = getInventoryValidation();
+    const placement = updatePlacementControls({ showErrors: true });
     const edit = (step, label) => `<button type="button" data-review-edit="${step}">Edit ${label}</button>`;
     eventReview.innerHTML = `
       <section class="admin-review-section"><div class="admin-review-section__head"><h4>Event</h4>${edit(1, "event")}</div><strong>${escapeHtml(values.get("title") || "Untitled event")}</strong><span>${escapeHtml(values.get("performer") || "No performer")} · ${escapeHtml(category?.name || "No category")}</span><span>${escapeHtml(values.get("description") || "No description")}</span></section>
+      <section class="admin-review-section"><div class="admin-review-section__head"><h4>Listing placement</h4>${edit(1, "placement")}</div><strong>${escapeHtml(placement.mode === "automatic" ? "Automatic" : placement.mode === "first" ? "First" : placement.mode === "last" ? "Last" : `Page ${placement.page} · Position ${placement.positionOnPage}`)}</strong><span>${escapeHtml(placement.preview || placement.error || "Choose a valid listing placement.")}</span></section>
       <section class="admin-review-section"><div class="admin-review-section__head"><h4>Schedule</h4>${edit(2, "schedule")}</div><strong>${escapeHtml(values.get("event_date") || "No date")} · ${escapeHtml(values.get("event_time") || "No time")}</strong><span>Doors open ${escapeHtml(values.get("doors_open") || "—")}</span></section>
       <section class="admin-review-section"><div class="admin-review-section__head"><h4>Venue</h4>${edit(2, "venue")}</div><strong>${escapeHtml(venue?.name || "No venue")}</strong><span>Hall map: ${escapeHtml(venue?.name || "—")} · ${formatSeatNumber(venue?.physical_capacity || 0)} physical seats</span></section>
       <section class="admin-review-section"><div class="admin-review-section__head"><h4>Media</h4>${edit(3, "media")}</div><div class="admin-review-media">${values.get("image_url") ? `<img src="${escapeHtml(values.get("image_url"))}" alt="" />` : ""}<span>${values.get("image_url") ? "Main event image selected." : "No image selected."}</span></div></section>
@@ -690,6 +1031,7 @@
     form.reset();
     form.elements.id.value = "";
     form.elements.status.value = "active";
+    resetPlacement();
     state.wizardTickets = createTicketDraft();
     state.wizardStep = 1;
     state.wizardHighestStep = 1;
@@ -723,6 +1065,7 @@
     Object.entries({ id: event.id, title: event.title, performer: event.performer, category_id: event.category_id, event_date: event.event_date, event_time: event.event_time, doors_open: event.doors_open, status: event.status || "active", venue_id: event.venue_id, image_url: event.image_url, description: event.description }).forEach(([key, value]) => {
       if (form.elements[key]) form.elements[key].value = value || "";
     });
+    loadCurrentPlacement(event);
     state.wizardStep = 1;
     state.wizardHighestStep = 5;
     state.wizardDirty = false;
@@ -739,24 +1082,42 @@
 
   async function saveEvent() {
     const values = new FormData(form);
+    const isEdit = Boolean(values.get("id"));
     const payload = Object.fromEntries(["title", "performer", "category_id", "description", "event_date", "event_time", "doors_open", "venue_id", "image_url", "status"].map((key) => [key, String(values.get(key) || "").trim()]));
+    const placement = updatePlacementControls({ showErrors: true });
+    if (!placement.valid) throw new Error(placement.error || "Choose a valid listing placement.");
+    payload.placement = {
+      mode: placement.mode,
+      ...(placement.mode === "custom" ? { position: String(placement.position) } : {}),
+    };
     state.wizardSaving = true;
     wizardSubmit.disabled = true;
     try {
-      const { data, error } = await client.rpc("admin_save_event_with_inventory", {
+      const { data, error } = await client.rpc("admin_save_event_with_display_order", {
         p_event_id: values.get("id") || null,
         p_event: payload,
         p_ticket_inventory: currentTicketInventory().map(({ canonical_tier, quantity, price }) => ({ canonical_tier, quantity, price })),
       });
       if (error) throw error;
-      setMessage(values.get("id") ? "Event and canonical inventory updated." : "Event and canonical inventory created.", "success");
-      resetForm();
       await loadData();
+      showEventSaveSuccess(isEdit);
       return data;
     } finally {
       state.wizardSaving = false;
       wizardSubmit.disabled = false;
     }
+  }
+
+  function showEventSaveSuccess(isEdit) {
+    window.clearTimeout(state.saveSuccessTimeout);
+    eventSaveSuccessMessage.textContent = isEdit ? "Successfully edited" : "Successfully added";
+    eventSaveSuccess.hidden = false;
+    state.saveSuccessTimeout = window.setTimeout(() => {
+      eventSaveSuccess.hidden = true;
+      resetForm();
+      leaveEventEditor("overview", 0);
+      setMessage(isEdit ? "Event and canonical inventory updated." : "Event and canonical inventory created.", "success");
+    }, 3000);
   }
 
   function blueprintForVenue(venue) {
@@ -865,6 +1226,118 @@
       setActiveDashboardPanel(button.dataset.panel);
     }),
   );
+  heroForm.addEventListener("change", (event) => {
+    if (event.target.name !== "hero_mode") return;
+    state.heroConfig.mode = heroForm.elements.hero_mode.value;
+    renderHeroForm();
+  });
+  heroSearch.addEventListener("input", renderHeroForm);
+  heroForm.addEventListener("click", (event) => {
+    const add = event.target.closest("[data-hero-add]");
+    const remove = event.target.closest("[data-hero-remove]");
+    const move = event.target.closest("[data-hero-move]");
+    const edit = event.target.closest("[data-hero-edit]");
+    const ids = state.heroConfig.event_ids.map(String);
+    if (add && !ids.includes(add.dataset.heroAdd)) state.heroConfig.event_ids = [...ids, add.dataset.heroAdd];
+    if (remove) state.heroConfig.event_ids = ids.filter((id) => id !== remove.dataset.heroRemove);
+    if (move) {
+      const index = ids.indexOf(move.dataset.heroId);
+      const nextIndex = move.dataset.heroMove === "up" ? index - 1 : index + 1;
+      if (index >= 0 && nextIndex >= 0 && nextIndex < ids.length) [ids[index], ids[nextIndex]] = [ids[nextIndex], ids[index]];
+      state.heroConfig.event_ids = ids;
+    }
+    if (edit) {
+      const item = state.events.find((candidate) => String(candidate.id) === edit.dataset.heroEdit);
+      if (item) fillForm(item);
+    }
+    if (add || remove || move) renderHeroForm();
+  });
+  heroForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const heroMode = heroForm.elements.hero_mode.value;
+    const heroIds = heroMode === "custom_selection" ? state.heroConfig.event_ids : [];
+    try {
+      const { error } = await client.rpc("admin_save_homepage_hero_config", { p_mode: heroMode, p_event_ids: heroIds });
+      if (error) throw error;
+      setMessage("Homepage Hero saved.", "success");
+      await loadData();
+    } catch (error) {
+      console.error(error);
+      setMessage("Homepage Hero could not be saved. Please review your selection and try again.", "error");
+    }
+    return;
+    const mode = heroForm.elements.hero_mode.value;
+    const ids = [1, 2, 3]
+      .map((slot) => heroForm.elements[`hero_slot_${slot}`].value || null);
+    const selectedIds = ids.filter(Boolean);
+    if (new Set(selectedIds).size !== selectedIds.length) {
+      setMessage("Choose each Hero event only once.", "error");
+      return;
+    }
+    try {
+      const { error } = await client.rpc("admin_save_homepage_hero_config", {
+        p_mode: mode,
+        p_event_ids: mode === "manual" ? ids : [],
+      });
+      if (error) throw error;
+      setMessage("Homepage Hero saved.", "success");
+      await loadData();
+    } catch (error) {
+      console.error(error);
+      setMessage("Homepage Hero could not be saved. Please review your selection and try again.", "error");
+    }
+  });
+  upcomingShowsForm.addEventListener("change", (event) => {
+    if (event.target.name !== "upcoming_mode") return;
+    state.upcomingShowsConfig.mode = upcomingShowsForm.elements.upcoming_mode.value;
+    renderUpcomingShowsForm();
+  });
+  upcomingShowsSearch.addEventListener("input", renderUpcomingShowsForm);
+  upcomingShowsForm.addEventListener("click", (event) => {
+    const add = event.target.closest("[data-upcoming-add]");
+    const remove = event.target.closest("[data-upcoming-remove]");
+    const move = event.target.closest("[data-upcoming-move]");
+    const edit = event.target.closest("[data-upcoming-edit]");
+    const ids = state.upcomingShowsConfig.event_ids.map(String);
+    if (add && !ids.includes(add.dataset.upcomingAdd)) {
+      state.upcomingShowsConfig.event_ids = [...ids, add.dataset.upcomingAdd];
+      renderUpcomingShowsForm();
+    }
+    if (remove) {
+      state.upcomingShowsConfig.event_ids = ids.filter((id) => id !== remove.dataset.upcomingRemove);
+      renderUpcomingShowsForm();
+    }
+    if (move) {
+      const index = ids.indexOf(move.dataset.upcomingId);
+      const nextIndex = move.dataset.upcomingMove === "up" ? index - 1 : index + 1;
+      if (index >= 0 && nextIndex >= 0 && nextIndex < ids.length) {
+        [ids[index], ids[nextIndex]] = [ids[nextIndex], ids[index]];
+        state.upcomingShowsConfig.event_ids = ids;
+        renderUpcomingShowsForm();
+      }
+    }
+    if (edit) {
+      const item = state.events.find((candidate) => String(candidate.id) === edit.dataset.upcomingEdit);
+      if (item) fillForm(item);
+    }
+  });
+  upcomingShowsForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const mode = upcomingShowsForm.elements.upcoming_mode.value;
+    const eventIds = mode === "custom_selection" ? state.upcomingShowsConfig.event_ids : [];
+    try {
+      const { error } = await client.rpc("admin_save_homepage_upcoming_shows_config", {
+        p_mode: mode,
+        p_event_ids: eventIds,
+      });
+      if (error) throw error;
+      setMessage("Upcoming Shows saved.", "success");
+      await loadData();
+    } catch (error) {
+      console.error(error);
+      setMessage(error.message || "Upcoming Shows could not be saved. Please review your selection and try again.", "error");
+    }
+  });
   ["eventSearch", "eventStatus", "eventCategory", "eventAvailability"].forEach(
     (id) =>
       document.querySelector(`#${id}`).addEventListener("input", () => {
@@ -899,7 +1372,10 @@
   document.querySelector("#cancelEventEdit").addEventListener("click", requestWizardCancel);
   document.querySelector("#cancelEventWizard").addEventListener("click", requestWizardCancel);
   eventEditorBack.addEventListener("click", () => requestEventEditorExit());
-  eventEditorHome.addEventListener("click", () => requestEventEditorExit("overview"));
+  eventEditorHome.addEventListener("click", () => {
+    if (state.wizardDirty && !window.confirm("Discard unsaved event changes?")) return;
+    window.location.href = "index.html#hero";
+  });
   venueSelect.addEventListener("change", () => {
     renderVenuePreview(venueSelect.value);
     renderTicketInventory();
@@ -910,10 +1386,15 @@
       showWizardStep(state.wizardStep + 1, true);
       return;
     }
-    if (!validateStep(4)) return;
+    if (!validateStep(1) || !validateStep(4)) return;
     saveEvent(event).catch((error) => {
-      console.error(error);
-      setWizardMessage(error.message || "Event could not be saved.");
+      console.error("Admin event save failed", {
+        code: error?.code || null,
+        message: error?.message || "Unknown error",
+        details: error?.details || null,
+        hint: error?.hint || null,
+      });
+      setWizardMessage("Could not save the event. Please review the form and try again.");
     });
   });
   wizardContinue.addEventListener("click", () => showWizardStep(state.wizardStep + 1, true));
@@ -922,16 +1403,24 @@
   form.addEventListener("input", (event) => {
     state.wizardDirty = true;
     if (event.target.name === "image_url") updateImagePreview();
+    if (event.target === placementPage || event.target === placementPagePosition) updatePlacementControls();
   });
   form.addEventListener("change", () => { state.wizardDirty = true; });
+  placementMode.addEventListener("change", () => {
+    if (placementMode.value === "custom") {
+      if (!placementPage.value) placementPage.value = "1";
+      if (!placementPagePosition.value) placementPagePosition.value = "1";
+    }
+    updatePlacementControls();
+  });
   ticketInventoryRows.addEventListener("input", (event) => {
     const row = event.target.closest("[data-ticket-tier]");
     if (!row || !state.wizardTickets) return;
     const tier = row.dataset.ticketTier;
-    if (event.target.matches("[data-ticket-quantity]")) state.wizardTickets[tier].quantity = Math.max(0, Number(event.target.value || 0));
-    if (event.target.matches("[data-ticket-price]")) state.wizardTickets[tier].price = Math.max(0, Number(event.target.value || 0));
+    if (event.target.matches("[data-ticket-quantity]")) state.wizardTickets[tier].quantity = event.target.value;
+    if (event.target.matches("[data-ticket-price]")) state.wizardTickets[tier].price = event.target.value;
     state.wizardDirty = true;
-    renderTicketInventory();
+    updateTicketInventorySummary();
   });
   eventReview.addEventListener("click", (event) => {
     const button = event.target.closest("[data-review-edit]");
@@ -1027,7 +1516,7 @@
       );
       if (!item || !window.confirm(`Delete ${item.title}?`)) return;
       try {
-        const result = await client.from("events").delete().eq("id", item.id);
+        const result = await client.rpc("admin_delete_event_with_display_order", { p_event_id: item.id });
         if (result.error) throw result.error;
         setMessage("Event deleted.", "success");
         await loadData();

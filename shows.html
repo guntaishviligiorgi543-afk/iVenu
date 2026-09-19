@@ -162,15 +162,53 @@
       justify-content: space-between;
       transition: 0.3s ease;
     }
-    .vntCrd img {
+    .eventCardImage {
       width: 100%;
       height: 50%;
+      position: relative;
+      overflow: hidden;
+    }
+    .eventCardImage img {
+      width: 100%;
+      height: 100%;
       object-fit: cover;
       transition: transform 0.5s ease;
     }
 
     .vntCrd:hover img {
       transform: scale(1.1);
+    }
+    .eventCardShareButton {
+      position: absolute;
+      right: 14px;
+      bottom: 14px;
+      display: grid;
+      place-items: center;
+      width: 42px;
+      height: 42px;
+      padding: 0;
+      border: 1px solid rgba(255, 255, 255, 0.65);
+      border-radius: 50%;
+      color: #fff;
+      background: rgba(0, 0, 0, 0.5);
+      cursor: pointer;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 0.22s ease, transform 0.22s ease, color 0.22s ease, background 0.22s ease;
+    }
+    .eventCardShareButton:hover,
+    .eventCardShareButton:focus-visible {
+      color: #ff9475;
+      background: rgba(0, 0, 0, 0.76);
+      outline: none;
+    }
+    .vntCrd:hover .eventCardShareButton,
+    .eventCardShareButton:focus-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    @media (hover: none), (pointer: coarse) {
+      .eventCardShareButton { opacity: 1; transform: translateY(0); }
     }
     .moreInfoBtn {
       color: #fff;
@@ -462,7 +500,9 @@
     </main>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-config.js"></script>
+    <script src="event-listing-config.js"></script>
     <script src="supabase-data.js"></script>
+    <script src="event-share.js"></script>
     <script src="auth.js"></script>
     <script src="event-cart.js"></script>
     <script src="auth-ui.js"></script>
@@ -471,7 +511,7 @@
       const pagination = document.querySelector(".pagination");
       const eventSearch = document.querySelector("#eventSearch");
       const eventCategory = document.querySelector("#eventCategory");
-      const EVENTS_PER_PAGE = 9;
+      const EVENTS_PER_PAGE = window.iVenueEventListing.pageSize;
       let loadedEvents = [];
       let filteredEvents = [];
       let currentPage = 1;
@@ -495,7 +535,15 @@
         card.innerHTML = `
     <div class="cardContent">
 
-      <img src="${event.image_url || band.image_url || ""}" alt="${performer}" />
+      <div class="eventCardImage">
+        <img src="${event.image_url || band.image_url || ""}" alt="${performer}" />
+        <button class="eventCardShareButton" type="button" data-show-share-event="${event.id}" aria-label="Share this event">
+          <svg xmlns="http://www.w3.org/2000/svg" width="1.69em" height="1.5em" viewBox="0 0 1792 1600" aria-hidden="true">
+            <path d="M0 0h1792v1600H0z" fill="none" />
+            <path fill="currentColor" d="M1792 576q0 26-19 45l-512 512q-19 19-45 19t-45-19t-19-45V832H928q-98 0-175.5 6t-154 21.5t-133 42.5T360 971.5t-80 101t-48.5 138.5t-17.5 181q0 55 5 123q0 6 2.5 23.5t2.5 26.5q0 15-8.5 25t-23.5 10q-16 0-28-17q-7-9-13-22t-13.5-30t-10.5-24Q0 1222 0 1056q0-199 53-333q162-403 875-403h224V64q0-26 19-45t45-19t45 19l512 512q19 19 19 45" />
+          </svg>
+        </button>
+      </div>
 
       <div>
         <p class="bandNam">${performer}</p>
@@ -635,6 +683,14 @@
 
       eventSearch.addEventListener("input", applyEventFilters);
       eventCategory.addEventListener("change", applyEventFilters);
+      eventCards.addEventListener("click", (clickEvent) => {
+        const shareButton = clickEvent.target.closest("[data-show-share-event]");
+        if (!shareButton) return;
+        clickEvent.preventDefault();
+        clickEvent.stopPropagation();
+        const event = loadedEvents.find((item) => item.id === shareButton.dataset.showShareEvent);
+        window.iVenueEventShare?.open(event, shareButton);
+      });
 
       async function loadEvents() {
         showEventsMessage("Loading events...");

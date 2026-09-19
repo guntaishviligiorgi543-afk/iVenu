@@ -32,7 +32,7 @@
       >
     </header>
     <main>
-      <section class="hero">
+      <section class="hero" id="hero">
         <div class="socIcons">
           <a href="#"
             ><svg
@@ -138,135 +138,7 @@
           </svg>
         </a>
 
-        <div class="heroSlider">
-          <!-- SLIDE 1 -->
-          <div class="heroSlide active">
-            <img
-              src="https://static.wixstatic.com/media/ea71bb_6d3c8118e6004a599d795a76c7c4573c~mv2.jpg/v1/fill/w_1225,h_716,al_t,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/ea71bb_6d3c8118e6004a599d795a76c7c4573c~mv2.jpg"
-              alt="the generators"
-            />
-
-            <div class="SlideContent">
-              <h1>the <br />generators.</h1>
-
-              <div class="dates-Btn">
-                <div class="dates">
-                  <p>friday apr. 4</p>
-                  <p>7.00pm</p>
-                  <p>ft.goldcountry</p>
-                </div>
-                <div class="buytktBtn">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="2em"
-                    height="2em"
-                    viewBox="0 0 24 24"
-                  >
-                    <path d="M0 0h24v24H0z" fill="none" />
-                    <path
-                      fill="currentColor"
-                      d="m1.027 11.993l4.235 4.25L6.68 14.83l-1.821-1.828L22.974 13v-2l-18.12.002L6.69 9.174L5.277 7.757z"
-                    />
-                  </svg>
-
-                  <button>
-                    <a href="shows.html"><span>get tickets</span></a>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- SLIDE 2 -->
-          <div class="heroSlide">
-            <img
-              src="https://static.wixstatic.com/media/ea71bb_7122ae50f1d94e319a672f70ee15c02f~mv2_d_6000_4000_s_4_2.jpg/v1/fill/w_1225,h_716,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/ea71bb_7122ae50f1d94e319a672f70ee15c02f~mv2_d_6000_4000_s_4_2.jpg"
-              alt="balands bound"
-            />
-
-            <div class="SlideContent">
-              <h1>
-                badlands <br />
-                bound.
-              </h1>
-
-              <div class="dates-Btn">
-                <div class="dates">
-                  <p>saturday</p>
-                  <p>8.00pm</p>
-                </div>
-
-                <div class="buytktBtn">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="2em"
-                    height="2em"
-                    viewBox="0 0 24 24"
-                  >
-                    <path d="M0 0h24v24H0z" fill="none" />
-                    <path
-                      fill="currentColor"
-                      d="m1.027 11.993l4.235 4.25L6.68 14.83l-1.821-1.828L22.974 13v-2l-18.12.002L6.69 9.174L5.277 7.757z"
-                    />
-                  </svg>
-
-                  <button>
-                    <a href="shows.html"><span>get tickets</span></a>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- SLIDE 3 -->
-          <div class="heroSlide">
-            <img
-              src="https://static.wixstatic.com/media/ea71bb_6d3c8118e6004a599d795a76c7c4573c~mv2.jpg/v1/fill/w_1225,h_716,al_t,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/ea71bb_6d3c8118e6004a599d795a76c7c4573c~mv2.jpg"
-              alt="smoking gun"
-            />
-
-            <div class="SlideContent">
-              <h1>
-                smoking <br />
-                gun.
-              </h1>
-
-              <div class="dates-Btn">
-                <div class="dates">
-                  <p>sunday apr. 7</p>
-                  <p>8.00pm</p>
-                  <p>ft.stonesmith</p>
-                </div>
-
-                <div class="buytktBtn">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="2em"
-                    height="2em"
-                    viewBox="0 0 24 24"
-                  >
-                    <path d="M0 0h24v24H0z" fill="none" />
-                    <path
-                      fill="currentColor"
-                      d="m1.027 11.993l4.235 4.25L6.68 14.83l-1.821-1.828L22.974 13v-2l-18.12.002L6.69 9.174L5.277 7.757z"
-                    />
-                  </svg>
-
-                  <button>
-                    <a href="shows.html"><span>get tickets</span></a>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- DOTS -->
-          <div class="heroDots">
-            <button class="heroDot active" data-slide="0"></button>
-            <button class="heroDot" data-slide="1"></button>
-            <button class="heroDot" data-slide="2"></button>
-          </div>
-        </div>
+        <div class="heroSlider" aria-live="polite"></div>
       </section>
       <section class="sec2" aria-labelledby="upcoming-shows-title">
         <div class="shows-inner">
@@ -341,271 +213,101 @@
       </section>
     </main>
     <footer></footer>
+    <div class="event-share-dialog" id="eventShareDialog" hidden>
+      <div class="event-share-dialog__overlay" data-share-close></div>
+      <section
+        class="event-share-dialog__content"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="eventShareDialogTitle"
+      >
+        <button
+          class="event-share-dialog__close"
+          type="button"
+          data-share-close
+          aria-label="Close share dialog"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="m6 6 12 12M18 6 6 18" />
+          </svg>
+        </button>
+        <h2 id="eventShareDialogTitle">Share this event</h2>
+        <div class="event-share-dialog__actions">
+          <button
+            type="button"
+            data-share-platform="instagram"
+            aria-label="Copy event link for Instagram"
+            title="Copy link for Instagram"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="1em"
+              height="1em"
+              viewBox="0 0 24 24"
+            >
+              <path d="M0 0h24v24H0z" fill="none" />
+              <path
+                fill="currentColor"
+                fill-rule="evenodd"
+                d="M7.465 1.066C8.638 1.012 9.012 1 12 1s3.362.013 4.534.066s1.972.24 2.672.511c.733.277 1.398.71 1.948 1.27c.56.549.992 1.213 1.268 1.947c.272.7.458 1.5.512 2.67C22.988 8.639 23 9.013 23 12s-.013 3.362-.066 4.535c-.053 1.17-.24 1.97-.512 2.67a5.4 5.4 0 0 1-1.268 1.949c-.55.56-1.215.992-1.948 1.268c-.7.272-1.5.458-2.67.512c-1.174.054-1.548.066-4.536.066s-3.362-.013-4.535-.066c-1.17-.053-1.97-.24-2.67-.512a5.4 5.4 0 0 1-1.949-1.268a5.4 5.4 0 0 1-1.269-1.948c-.271-.7-.457-1.5-.511-2.67C1.012 15.361 1 14.987 1 12s.013-3.362.066-4.534s.24-1.972.511-2.672a5.4 5.4 0 0 1 1.27-1.948a5.4 5.4 0 0 1 1.947-1.269c.7-.271 1.5-.457 2.67-.511m8.98 1.98c-1.16-.053-1.508-.064-4.445-.064s-3.285.011-4.445.064c-1.073.049-1.655.228-2.043.379c-.513.2-.88.437-1.265.822a3.4 3.4 0 0 0-.822 1.265c-.151.388-.33.97-.379 2.043c-.053 1.16-.064 1.508-.064 4.445s.011 3.285.064 4.445c.049 1.073.228 1.655.379 2.043c.176.477.457.91.822 1.265c.355.365.788.646 1.265.822c.388.151.97.33 2.043.379c1.16.053 1.507.064 4.445.064s3.285-.011 4.445-.064c1.073-.049 1.655-.228 2.043-.379c.513-.2.88-.437 1.265-.822c.365-.355.646-.788.822-1.265c.151-.388.33-.97.379-2.043c.053-1.16.064-1.508.064-4.445s-.011-3.285-.064-4.445c-.049-1.073-.228-1.655-.379-2.043c-.2-.513-.437-.88-.822-1.265a3.4 3.4 0 0 0-1.265-.822c-.388-.151-.97-.33-2.043-.379m-5.85 12.345a3.669 3.669 0 0 0 4-5.986a3.67 3.67 0 1 0-4 5.986M8.002 8.002a5.654 5.654 0 1 1 7.996 7.996a5.654 5.654 0 0 1-7.996-7.996m10.906-.814a1.337 1.337 0 1 0-1.89-1.89a1.337 1.337 0 0 0 1.89 1.89"
+                clip-rule="evenodd"
+              />
+            </svg>
+          </button>
+          <button
+            type="button"
+            data-share-platform="facebook"
+            aria-label="Share on Facebook"
+            title="Share on Facebook"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                fill="currentColor"
+                d="M9.602 21.026v-7.274H6.818a.545.545 0 0 1-.545-.545V10.33a.545.545 0 0 1 .545-.545h2.773V7a4.547 4.547 0 0 1 4.86-4.989h2.32a.556.556 0 0 1 .557.546v2.436a.557.557 0 0 1-.557.545h-1.45c-1.566 0-1.867.742-1.867 1.833v2.413h3.723a.533.533 0 0 1 .546.603l-.337 2.888a.545.545 0 0 1-.545.476h-3.364v7.274a.96.96 0 0 1-.975.974h-1.937a.96.96 0 0 1-.963-.974"
+              />
+            </svg>
+          </button>
+          <button
+            type="button"
+            data-share-platform="x"
+            aria-label="Share on X"
+            title="Share on X"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                fill="currentColor"
+                d="M18.9 2H22l-6.77 7.74L23.2 22h-6.24l-4.89-7.27L5.7 22H2.6l7.24-8.28L2.2 2h6.4l4.42 6.6zm-1.09 18h1.72L7.66 3.9H5.81z"
+              />
+            </svg>
+          </button>
+          <button
+            type="button"
+            data-share-platform="youtube"
+            aria-label="Copy event link for YouTube"
+            title="Copy link for YouTube"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                fill="currentColor"
+                d="M23.5 6.507a2.8 2.8 0 0 0-.766-1.27a3.05 3.05 0 0 0-1.338-.742C19.518 4 11.994 4 11.994 4a77 77 0 0 0-9.39.47a3.16 3.16 0 0 0-1.338.76c-.37.356-.638.795-.778 1.276A29 29 0 0 0 0 12c-.012 1.841.151 3.68.488 5.494c.137.479.404.916.775 1.269s.833.608 1.341.743c1.903.494 9.39.494 9.39.494a77 77 0 0 0 9.402-.47a3.05 3.05 0 0 0 1.338-.742a2.8 2.8 0 0 0 .765-1.27A28.4 28.4 0 0 0 24 12.023a26.6 26.6 0 0 0-.5-5.517M9.602 15.424V8.577l6.26 3.424z"
+              />
+            </svg>
+          </button>
+        </div>
+        <p
+          class="event-share-dialog__feedback"
+          id="eventShareFeedback"
+          aria-live="polite"
+        ></p>
+      </section>
+    </div>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-config.js"></script>
     <script src="supabase-data.js"></script>
+    <script src="event-share.js"></script>
     <script src="auth.js"></script>
     <script src="event-cart.js"></script>
     <script src="auth-ui.js"></script>
     <script src="index.js"></script>
-    <script>
-      const heroSlider = document.querySelector(".heroSlider");
-      const slides = document.querySelectorAll(".heroSlide");
-      const dots = document.querySelectorAll(".heroDot");
-
-      let currentSlide = 0;
-
-      let autoSlide;
-      let isAnimating = false;
-      let wheelLocked = false;
-
-      const slideDuration = 1300;
-      const autoSlideTime = 7000;
-
-      /* =========================
-     SHOW SLIDE
-  ========================= */
-
-      function showSlide(index) {
-        if (isAnimating) return;
-
-        isAnimating = true;
-
-        /* LOOP */
-
-        if (index >= slides.length) {
-          index = 0;
-        }
-
-        if (index < 0) {
-          index = slides.length - 1;
-        }
-
-        /* OLD SLIDE */
-
-        slides[currentSlide].classList.remove("active");
-
-        if (dots[currentSlide]) {
-          dots[currentSlide].classList.remove("active");
-        }
-
-        /* NEW SLIDE */
-
-        slides[index].classList.add("active");
-
-        if (dots[index]) {
-          dots[index].classList.add("active");
-        }
-
-        currentSlide = index;
-
-        /* Animation lock */
-
-        setTimeout(() => {
-          isAnimating = false;
-        }, slideDuration);
-      }
-
-      /* =========================
-     NEXT
-  ========================= */
-
-      function nextSlide() {
-        let next = currentSlide + 1;
-
-        if (next >= slides.length) {
-          next = 0;
-        }
-
-        showSlide(next);
-      }
-
-      /* =========================
-     PREVIOUS
-  ========================= */
-
-      function previousSlide() {
-        let previous = currentSlide - 1;
-
-        if (previous < 0) {
-          previous = slides.length - 1;
-        }
-
-        showSlide(previous);
-      }
-
-      /* =========================
-     AUTO SLIDER
-  ========================= */
-
-      function startAutoSlide() {
-        clearInterval(autoSlide);
-
-        autoSlide = setInterval(() => {
-          if (!isAnimating) {
-            nextSlide();
-          }
-        }, autoSlideTime);
-      }
-
-      /* =========================
-     DOTS
-  ========================= */
-
-      dots.forEach((dot, index) => {
-        dot.addEventListener("click", () => {
-          if (isAnimating) return;
-
-          showSlide(index);
-
-          startAutoSlide();
-        });
-      });
-
-      /* =========================
-     MOUSE / TRACKPAD
-  ========================= */
-
-      heroSlider.addEventListener(
-        "wheel",
-        (event) => {
-          /*
-      Horizontal scroll
-      ყოველთვის slider-ის შეცვლა
-    */
-
-          const horizontalScroll =
-            Math.abs(event.deltaX) > Math.abs(event.deltaY);
-
-          /*
-      Horizontal movement
-    */
-
-          if (horizontalScroll) {
-            event.preventDefault();
-
-            if (wheelLocked || isAnimating) return;
-
-            wheelLocked = true;
-
-            if (event.deltaX > 0) {
-              nextSlide();
-            } else {
-              previousSlide();
-            }
-
-            startAutoSlide();
-
-            setTimeout(() => {
-              wheelLocked = false;
-            }, slideDuration);
-
-            return;
-          }
-
-          /*
-      Vertical movement
-    */
-
-          if (Math.abs(event.deltaY) > 0) {
-            /*
-        თუ ზემოთ/ქვემოთ page-ს კიდევ აქვს
-        გასასქროლი ადგილი, slider არ უნდა
-        დაბლოკოს მთლიანად.
-      */
-
-            const atTop = window.scrollY <= 0;
-
-            const atBottom =
-              window.innerHeight + window.scrollY >=
-              document.documentElement.scrollHeight - 2;
-
-            /*
-        DOWN
-      */
-
-            if (event.deltaY > 0) {
-              /*
-          თუ page-ის ბოლოში არ ვართ,
-          ჩვეულებრივი page scroll
-          გაგრძელდეს.
-        */
-
-              if (!atBottom) {
-                return;
-              }
-            }
-
-            /*
-        UP
-      */
-
-            if (event.deltaY < 0) {
-              /*
-          თუ page-ის თავში არ ვართ,
-          ჩვეულებრივი page scroll
-          გაგრძელდეს.
-        */
-
-              if (!atTop) {
-                return;
-              }
-            }
-
-            /*
-        მხოლოდ page-ის კიდეზე
-        ვცვლით slider-ს
-      */
-
-            if (wheelLocked || isAnimating) return;
-
-            event.preventDefault();
-
-            wheelLocked = true;
-
-            if (event.deltaY > 0) {
-              nextSlide();
-            } else {
-              previousSlide();
-            }
-
-            startAutoSlide();
-
-            setTimeout(() => {
-              wheelLocked = false;
-            }, slideDuration);
-          }
-        },
-        {
-          passive: false,
-        },
-      );
-
-      /* =========================
-     INITIAL SLIDE
-  ========================= */
-
-      slides.forEach((slide) => {
-        slide.classList.remove("active");
-      });
-
-      dots.forEach((dot) => {
-        dot.classList.remove("active");
-      });
-
-      if (slides.length > 0) {
-        slides[0].classList.add("active");
-      }
-
-      if (dots.length > 0) {
-        dots[0].classList.add("active");
-      }
-
-      /* =========================
-     START
-  ========================= */
-
-      startAutoSlide();
-    </script>
   </body>
 </html>

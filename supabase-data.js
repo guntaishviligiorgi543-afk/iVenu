@@ -46,10 +46,10 @@
     const { data, error } = await client
       .from("events")
       .select(
-        "id, performer, band_id, category_id, title, description, event_date, event_time, doors_open, venue_id, venue, city, country, image_url, status, created_at, venues:venues!events_venue_id_fkey(id, name, city_area, region, country, address, latitude, longitude, image_url), categories(id, name), bands(id, name, description, genre, country, image_url)",
+        "id, performer, band_id, category_id, title, description, event_date, event_time, doors_open, venue_id, venue, city, country, image_url, status, created_at, display_order, venues:venues!events_venue_id_fkey(id, name, city_area, region, country, address, latitude, longitude, image_url), categories(id, name), bands(id, name, description, genre, country, image_url)",
       )
-      .order("event_date", { ascending: true })
-      .order("event_time", { ascending: true });
+      .order("display_order", { ascending: true })
+      .order("id", { ascending: true });
 
     if (error) throw new Error(getErrorMessage(error));
     return data || [];
@@ -59,13 +59,25 @@
     const { data, error } = await client
       .from("events")
       .select(
-        "id, performer, band_id, category_id, title, description, event_date, event_time, doors_open, venue_id, venue, city, country, image_url, status, created_at, venues:venues!events_venue_id_fkey(id, name, city_area, region, country, address, latitude, longitude, image_url), categories(id, name), bands(id, name, description, genre, country, image_url)",
+        "id, performer, band_id, category_id, title, description, event_date, event_time, doors_open, venue_id, venue, city, country, image_url, status, created_at, display_order, venues:venues!events_venue_id_fkey(id, name, city_area, region, country, address, latitude, longitude, image_url), categories(id, name), bands(id, name, description, genre, country, image_url)",
       )
       .eq("id", eventId)
       .maybeSingle();
 
     if (error) throw new Error(getErrorMessage(error));
     return data;
+  }
+
+  async function getHomepageHeroEvents() {
+    const { data, error } = await client.rpc("get_homepage_hero_events");
+    if (error) throw new Error(getErrorMessage(error));
+    return data || [];
+  }
+
+  async function getHomepageUpcomingShows() {
+    const { data, error } = await client.rpc("get_homepage_upcoming_shows");
+    if (error) throw new Error(getErrorMessage(error));
+    return data || [];
   }
 
   async function getTicketTypes(eventId) {
@@ -84,6 +96,14 @@
   async function recordEventView(eventId) {
     const { error } = await client.rpc("record_event_view", {
       p_event_id: eventId,
+    });
+    if (error) throw new Error(getErrorMessage(error));
+  }
+
+  async function recordEventShare(eventId, platform) {
+    const { error } = await client.rpc("record_event_share", {
+      p_event_id: eventId,
+      p_platform: platform,
     });
     if (error) throw new Error(getErrorMessage(error));
   }
@@ -108,9 +128,12 @@
     getBands,
     getEvents,
     getEvent,
+    getHomepageHeroEvents,
+    getHomepageUpcomingShows,
     getEventLocation,
     getTicketTypes,
     recordEventView,
+    recordEventShare,
     toggleFavorite,
     isEventFavorited,
   };
