@@ -1103,6 +1103,32 @@ header nav .authNavLink[hidden] {
   background: rgba(255, 148, 117, 0.06);
 }
 
+.dashboard-cart-remove {
+  justify-self: end;
+  border: 1px solid rgba(255, 148, 117, 0.55);
+  border-radius: 6px;
+  padding: 8px 11px;
+  color: #ff9475;
+  background: transparent;
+  font: inherit;
+  font-size: 0.74rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.dashboard-cart-remove:hover,
+.dashboard-cart-remove:focus-visible {
+  color: #000;
+  background: #ff9475;
+  outline: none;
+}
+
+.dashboard-cart-remove:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
 .dashboard-row span {
   color: rgba(255, 255, 255, 0.54);
   font-size: 0.83rem;
@@ -2471,5 +2497,346 @@ header nav .authNavLink[hidden] {
 @media (max-width: 560px) {
   .account-page .security-otp {
     padding: 18px;
+  }
+}
+
+/* Global cart aside only. The dashboard cart deliberately keeps its own layout. */
+#eventCartPanel {
+  height: 100dvh;
+  padding: 0;
+  border-left-color: rgba(255, 148, 117, 0.4);
+  color: #fff;
+  background: #121212;
+  box-shadow: -12px 0 36px rgba(0, 0, 0, 0.24);
+}
+
+#eventCartPanel .event-cart-panel-head,
+#eventCartPanel .event-cart-summary {
+  position: relative;
+}
+
+#eventCartPanel .event-cart-panel-head::after,
+#eventCartPanel .event-cart-summary::after,
+#eventCartPanel .event-cart-go::before {
+  position: absolute;
+  right: 28px;
+  left: 28px;
+  height: 1px;
+  content: "";
+  background: rgba(255, 255, 255, 0.24);
+}
+
+#eventCartPanel .event-cart-panel-head {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  min-height: 108px;
+  padding: 26px 28px;
+}
+
+#eventCartPanel .event-cart-panel-head::after,
+#eventCartPanel .event-cart-summary::after {
+  bottom: 0;
+}
+
+#eventCartPanel .event-cart-panel-head h2 {
+  margin: 0;
+  color: #ff9475;
+  font-family: "Fjalla One", Impact, sans-serif;
+  font-size: clamp(2rem, 3vw, 2.65rem);
+  font-weight: 400;
+}
+
+#eventCartPanel .event-cart-panel-head button {
+  width: auto;
+  height: auto;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  color: #fff;
+  background: transparent;
+  font: 700 2.35rem/0.8 Arial, sans-serif;
+}
+
+#eventCartPanel .event-cart-panel-head button:hover,
+#eventCartPanel .event-cart-panel-head button:focus-visible {
+  color: #ff9475;
+  outline: none;
+}
+
+#eventCartPanel .event-cart-summary {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: flex-end;
+  min-height: 78px;
+  margin: 0;
+  padding: 24px 28px;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 0;
+  font-weight: 500;
+}
+
+#eventCartPanel .event-cart-summary span {
+  margin: 0;
+  color: #ff9475;
+}
+
+#eventCartPanel .event-cart-summary > span:first-child {
+  order: 1;
+  font-size: 1.3rem;
+  font-weight: 800;
+}
+
+#eventCartPanel .event-cart-summary > span:first-child::after {
+  margin: 0 10px;
+  content: "·";
+  color: #fff;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+#eventCartPanel .event-cart-summary::before {
+  order: 3;
+  content: "quantity";
+  font-size: 1.05rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+#eventCartPanel .event-cart-list {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  align-items: stretch;
+  min-height: 0;
+  margin: 0;
+  padding: 14px 28px 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 148, 117, 0.7) transparent;
+}
+
+#eventCartPanel .event-cart-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+#eventCartPanel .event-cart-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 148, 117, 0.7);
+}
+
+#eventCartPanel .event-cart-row {
+  display: grid;
+  flex: 0 0 246px;
+  box-sizing: border-box;
+  height: 246px;
+  max-height: 246px;
+  grid-template-areas:
+    "image info"
+    "image tickets"
+    "image remove";
+  grid-template-columns: 35% minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr) 46px 46px;
+  gap: 8px 5%;
+  align-items: stretch;
+  min-height: 246px;
+  padding: 22px 0;
+  overflow: hidden;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.24);
+}
+
+#eventCartPanel .event-cart-row img {
+  grid-area: image;
+  width: 100%;
+  height: auto;
+  min-height: 0;
+  align-self: stretch;
+  border-radius: 0;
+  object-fit: cover;
+}
+
+#eventCartPanel .event-cart-row > div {
+  grid-area: info;
+  min-width: 0;
+  min-height: 0;
+  padding: 2px 0 0;
+  overflow: hidden;
+}
+
+#eventCartPanel .event-cart-row strong {
+  display: -webkit-box;
+  color: #fff;
+  font-family: "Fjalla One", Impact, sans-serif;
+  font-size: clamp(1.25rem, 2.1vw, 1.65rem);
+  font-weight: 400;
+  line-height: 1.12;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+}
+
+#eventCartPanel .event-cart-row span {
+  display: block;
+  margin-top: 7px;
+  min-height: 1.2em;
+  overflow: hidden;
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 0.95rem;
+  font-weight: 500;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#eventCartPanel .event-cart-tickets,
+#eventCartPanel .event-cart-remove {
+  grid-column: auto;
+  justify-self: stretch;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  height: 46px;
+  min-height: 46px;
+  padding: 10px 12px;
+  border-radius: 0;
+  font-family: "Cabin", sans-serif;
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: 1.1;
+  text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+#eventCartPanel .event-cart-tickets {
+  grid-area: tickets;
+  border: 1px solid #ff9475;
+  color: #000;
+  background: #ff9475;
+}
+
+#eventCartPanel .event-cart-tickets:hover,
+#eventCartPanel .event-cart-tickets:focus-visible {
+  border-color: #fff;
+  color: #000;
+  background: #fff;
+  outline: none;
+}
+
+#eventCartPanel .event-cart-remove {
+  grid-area: remove;
+  border: 1px solid rgba(255, 255, 255, 0.62);
+  color: #fff;
+  background: transparent;
+}
+
+#eventCartPanel .event-cart-remove:hover,
+#eventCartPanel .event-cart-remove:focus-visible {
+  border-color: #ff9475;
+  color: #000;
+  background: #ff9475;
+  outline: none;
+}
+
+#eventCartPanel .event-cart-empty {
+  margin: 30px 0;
+  color: rgba(255, 255, 255, 0.62);
+  text-align: center;
+}
+
+#eventCartPanel .event-cart-go {
+  position: relative;
+  display: block;
+  flex: 0 0 auto;
+  width: calc(100% - 56px);
+  margin: 52px 28px 30px;
+  padding: 17px 14px;
+  border-radius: 0;
+  color: #000;
+  background: #ff9475;
+  font-family: "Cabin", sans-serif;
+  font-size: 1.02rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-align: center;
+  text-transform: none;
+}
+
+#eventCartPanel .event-cart-go::before {
+  top: -27px;
+  right: 0;
+  left: 0;
+}
+
+#eventCartPanel .event-cart-go:hover,
+#eventCartPanel .event-cart-go:focus-visible {
+  color: #000;
+  background: #fff;
+  outline: none;
+}
+
+@media (max-width: 560px) {
+  #eventCartPanel {
+    width: min(92vw, 420px);
+  }
+
+  #eventCartPanel .event-cart-panel-head,
+  #eventCartPanel .event-cart-summary {
+    padding-right: 20px;
+    padding-left: 20px;
+  }
+
+  #eventCartPanel .event-cart-panel-head::after,
+  #eventCartPanel .event-cart-summary::after {
+    right: 20px;
+    left: 20px;
+  }
+
+  #eventCartPanel .event-cart-panel-head {
+    min-height: 88px;
+    padding-top: 21px;
+    padding-bottom: 21px;
+  }
+
+  #eventCartPanel .event-cart-list {
+    padding: 12px 20px 0;
+  }
+
+  #eventCartPanel .event-cart-row {
+    flex-basis: 220px;
+    height: 220px;
+    max-height: 220px;
+    grid-template-columns: 35% minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) 42px 42px;
+    gap: 8px 5%;
+    min-height: 220px;
+    padding: 18px 0;
+  }
+
+  #eventCartPanel .event-cart-row img {
+    min-height: 0;
+  }
+
+  #eventCartPanel .event-cart-row strong {
+    font-size: 1.18rem;
+  }
+
+  #eventCartPanel .event-cart-row span {
+    margin-top: 6px;
+    font-size: 0.82rem;
+  }
+
+  #eventCartPanel .event-cart-tickets,
+  #eventCartPanel .event-cart-remove {
+    height: 42px;
+    min-height: 42px;
+    font-size: 0.76rem;
+  }
+
+  #eventCartPanel .event-cart-go {
+    width: calc(100% - 40px);
+    margin: 46px 20px 24px;
   }
 }

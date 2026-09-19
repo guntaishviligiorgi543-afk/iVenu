@@ -1368,10 +1368,10 @@ body.ticket-open .socIcons {
 
 /* Database-driven venue canvas. Coordinates are normalized in the database, never pixels. */
 .stageMap {
-  overflow: auto;
+  overflow: hidden;
   padding: 0;
   overscroll-behavior: contain;
-  scrollbar-gutter: stable;
+  scrollbar-gutter: auto;
   background: #f5f4f1;
 }
 
@@ -1437,6 +1437,89 @@ body.ticket-open .socIcons {
 .stageMap .canonical-seat-grid .seat.selected {
   transform: scale(1.25);
   opacity: 0.7;
+}
+
+/* Shared 2D viewport: it moves only map content, never ticket-page chrome. */
+.hall-map-viewport {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  touch-action: none;
+  user-select: none;
+  background: #f5f4f1;
+  cursor: grab;
+}
+
+.hall-map-viewport:focus-visible {
+  outline: 3px solid #2878ff;
+  outline-offset: -3px;
+}
+
+.hall-map-viewport.is-panning,
+.hall-map-viewport.is-panning .hall-map-surface {
+  cursor: grabbing;
+}
+
+.hall-map-surface {
+  touch-action: none;
+  user-select: none;
+}
+
+.hall-map-html-content {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: 0 0;
+  will-change: transform;
+}
+
+.hall-map-controls {
+  position: absolute;
+  bottom: 60px;
+  right: 18px;
+  z-index: 20;
+  display: grid;
+  gap: 5px;
+  padding: 5px;
+  border: 1px solid rgb(17 24 39 / 0.22);
+  border-radius: 9px;
+  background: rgb(255 255 255 / 0.92);
+  box-shadow: 0 3px 14px rgb(0 0 0 / 0.14);
+  cursor: default;
+  touch-action: manipulation;
+}
+
+.hall-map-zoom-controls {
+  display: grid;
+  grid-template-columns: repeat(3, 32px);
+  gap: 3px;
+}
+
+.hall-map-controls button {
+  width: 32px;
+  height: 30px;
+  padding: 0;
+  border: 1px solid #b9b9b9;
+  border-radius: 5px;
+  background: #fff;
+  color: #111;
+  font: 800 15px/1 Arial, sans-serif;
+  cursor: pointer;
+}
+
+.hall-map-controls button[data-map-action="fit"] {
+  font-size: 11px;
+  letter-spacing: 0.02em;
+}
+
+.hall-map-controls button:hover,
+.hall-map-controls button:focus-visible {
+  border-color: #2878ff;
+  background: #eef5ff;
+  outline: none;
 }
 
 /* Black Sea Arena: the supplied 1600 × 1000 SVG blueprint is the layout authority. */
@@ -1518,32 +1601,195 @@ body.ticket-open .socIcons {
   filter: grayscale(1);
 }
 
-.black-sea-arena-map-controls {
-  position: absolute;
-  bottom: 16px;
-  right: 16px;
-  z-index: 8;
-  display: inline-flex;
-  gap: 6px;
-  padding: 6px;
-  border: 1px solid #c8c8c8;
-  border-radius: 8px;
-  background: rgb(255 255 255 / 0.92);
-  box-shadow: 0 3px 14px rgb(0 0 0 / 0.12);
+/* Dinamo Arena: fixed blueprint geometry with live, canonical event-seat circles. */
+.dinamo-arena-map-viewport {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  background: #f5f4f1;
 }
 
-.black-sea-arena-map-controls button {
-  min-width: 30px;
-  height: 30px;
-  padding: 0 9px;
-  border: 1px solid #b9b9b9;
-  border-radius: 5px;
-  background: #fff;
-  color: #111;
-  font:
-    800 13px/1 Arial,
-    sans-serif;
+.dinamo-arena-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+  user-select: none;
+  cursor: grab;
+}
+
+.dinamo-arena-svg.is-panning {
+  cursor: grabbing;
+}
+
+.dinamo-arena-boundary {
+  fill: none;
+  stroke: #141a22;
+  stroke-width: 3;
+  vector-effect: non-scaling-stroke;
+  pointer-events: none;
+}
+
+.dinamo-arena-section {
+  fill-opacity: 0.13;
+  stroke: currentColor;
+  stroke-width: 3;
+  vector-effect: non-scaling-stroke;
+  pointer-events: none;
+}
+
+.dinamo-arena-restricted {
+  fill: #2f3440;
+  fill-opacity: 0.34;
+  stroke: #747b86;
+  stroke-width: 3;
+  vector-effect: non-scaling-stroke;
+  pointer-events: none;
+}
+
+.dinamo-arena-field {
+  fill: #1f5a3c;
+  stroke: #113d27;
+  stroke-width: 4;
+  vector-effect: non-scaling-stroke;
+  pointer-events: none;
+}
+
+.dinamo-arena-field-label {
+  fill: #fff;
+  font-size: 34px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-anchor: middle;
+  pointer-events: none;
+}
+
+.stageMap .dinamo-arena-svg .seat {
+  position: static;
+  width: auto;
+  height: auto;
+  opacity: 1;
+  visibility: visible;
+  transform-box: fill-box;
+  transform-origin: center;
+  transform: none;
+  transition:
+    opacity 150ms ease,
+    transform 150ms ease,
+    filter 150ms ease;
   cursor: pointer;
+}
+
+.stageMap .dinamo-arena-svg .seat:hover {
+  transform: scale(1.75);
+  filter: brightness(0.8);
+}
+
+.stageMap .dinamo-arena-svg .seat.selected {
+  fill: #111 !important;
+  opacity: 0.58;
+  pointer-events: none;
+}
+
+.stageMap .dinamo-arena-svg .seat.unavailable {
+  fill: #777 !important;
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.stageMap .dinamo-arena-svg .seat.is-filter-muted {
+  opacity: 0.11;
+  filter: grayscale(1);
+}
+
+/* Theatre: supplied 1600 × 1100 geometry with canonical seat dots only. */
+.theatre-map-viewport {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  background: #f5f4f1;
+}
+
+.theatre-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+  user-select: none;
+  cursor: grab;
+}
+
+.theatre-svg.is-panning {
+  cursor: grabbing;
+}
+
+.theatre-section {
+  fill-opacity: 0.13;
+  stroke: currentColor;
+  stroke-width: 3;
+  vector-effect: non-scaling-stroke;
+  pointer-events: none;
+}
+
+.theatre-stage {
+  fill: #151515;
+  stroke: #050505;
+  stroke-width: 4;
+  vector-effect: non-scaling-stroke;
+  pointer-events: none;
+}
+
+.theatre-stage-label {
+  fill: #fff;
+  font-size: 34px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-anchor: middle;
+  pointer-events: none;
+}
+
+.stageMap .theatre-svg .seat {
+  position: static;
+  width: auto;
+  height: auto;
+  opacity: 1;
+  visibility: visible;
+  transform-box: fill-box;
+  transform-origin: center;
+  transform: none;
+  transition:
+    opacity 150ms ease,
+    transform 150ms ease,
+    filter 150ms ease;
+  cursor: pointer;
+}
+
+.stageMap .theatre-svg .seat:hover {
+  transform: scale(1.75);
+  filter: brightness(0.8);
+}
+
+.stageMap .theatre-svg .seat.selected {
+  fill: #111 !important;
+  opacity: 0.58;
+  pointer-events: none;
+}
+
+.stageMap .theatre-svg .seat.unavailable {
+  fill: #777 !important;
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.stageMap .theatre-svg .seat.is-filter-muted {
+  opacity: 0.11;
+  filter: grayscale(1);
 }
 
 .seat-map-load-error {
@@ -1590,8 +1836,10 @@ body.ticket-open .socIcons {
     top: 12px;
     left: 12px;
   }
-  .black-sea-arena-map-controls {
-    top: 10px;
-    right: 10px;
+  .hall-map-controls {
+    top: 8px;
+    right: 8px;
+    transform: scale(0.92);
+    transform-origin: top right;
   }
 }

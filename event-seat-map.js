@@ -46,6 +46,21 @@
     return colors;
   }
 
+  // The Theatre renderer must never conceal a missing canonical colour with the
+  // generic fallback used by the legacy/fallback map. Its visual tier colours
+  // are part of the active Ticket Types configuration, so fail closed instead.
+  function strictCanonicalTicketColors(ticketTypes = canonicalTicketTypes()) {
+    const colors = new Map();
+    ticketTypes.forEach((ticket) => {
+      const color = ticket.display_color || ticket.ticket_color;
+      if (!ticket.ticket_type_id || !validColor(color)) {
+        throw new Error(`Theatre ticket type ${ticket.ticket_type_id || "(missing UUID)"} is missing a valid canonical display color.`);
+      }
+      colors.set(ticket.ticket_type_id, color);
+    });
+    return colors;
+  }
+
   function countRowsByTicketType(rows) {
     const counts = new Map();
     rows.forEach((row) => {
@@ -101,6 +116,14 @@
   function isBlackSeaArenaEvent() {
     const venueName = selectedBand?.venueName || selectedBand?.location?.venue || "";
     return Boolean(selectedBand?.venueId) && venueName.trim().toLowerCase().replace(/\s+/g, " ") === "black sea arena";
+  }
+  function isDinamoArenaEvent() {
+    return Boolean(selectedBand?.venueId)
+      && selectedBand.venueId === window.dinamoArenaBlueprint?.venueId;
+  }
+  function isTheatreEvent() {
+    return Boolean(selectedBand?.venueId)
+      && selectedBand.venueId === window.theatreBlueprint?.venueId;
   }
 
   function mapRowsToHallMap() {
@@ -262,8 +285,62 @@
         return;
       }
     }
+    if (isDinamoArenaEvent() && window.dinamoArenaSeatMap) {
+      try {
+        const mapResult = window.dinamoArenaSeatMap.render({
+          stageMap,
+          rows: seatState.rows,
+          ticketTypes: canonicalTicketTypes(),
+          colors: colorsByTicketType(),
+          selectedIds: seatState.selectedIds,
+        });
+        if (seatState.runtimeDiagnostics) {
+          seatState.runtimeDiagnostics.mapAllocation = mapResult.diagnostics.perTier;
+          console.info("Dinamo Arena map allocation runtime counts", seatState.runtimeDiagnostics.mapAllocation);
+        }
+        applyMapFilters();
+        window.attachSeatClickHandlers();
+        return;
+      } catch (error) {
+        console.error("Dinamo Arena map could not bind canonical event seats", error);
+        stageMap.replaceChildren();
+        const message = document.createElement("p");
+        message.className = "seat-map-load-error";
+        message.textContent = "The Dinamo Arena seat map could not be loaded without risking an incomplete seat binding.";
+        stageMap.appendChild(message);
+        return;
+      }
+    }
+    if (isTheatreEvent() && window.theatreSeatMap) {
+      try {
+        const mapResult = window.theatreSeatMap.render({
+          stageMap,
+          rows: seatState.rows,
+          ticketTypes: canonicalTicketTypes(),
+          colors: strictCanonicalTicketColors(),
+          selectedIds: seatState.selectedIds,
+        });
+        if (seatState.runtimeDiagnostics) {
+          seatState.runtimeDiagnostics.mapAllocation = mapResult.diagnostics.perTier;
+          console.info("Theatre map allocation runtime counts", seatState.runtimeDiagnostics.mapAllocation);
+        }
+        applyMapFilters();
+        window.attachSeatClickHandlers();
+        return;
+      } catch (error) {
+        console.error("Theatre map could not bind canonical event seats", error);
+        stageMap.replaceChildren();
+        const message = document.createElement("p");
+        message.className = "seat-map-load-error";
+        message.textContent = "The Theatre seat map could not be loaded without risking an incomplete seat binding.";
+        stageMap.appendChild(message);
+        return;
+      }
+    }
     stageMap.replaceChildren();
     const colors = colorsByTicketType();
+    const viewport = document.createElement("div");
+    viewport.className = "canonical-seat-map-viewport";
     const canvas = document.createElement("div");
     canvas.className = "canonical-seat-map-canvas";
     canonicalSeatGroups().forEach((sectionRows) => {
@@ -300,7 +377,10 @@
     tooltip.className = "seat-map-tooltip";
     tooltip.setAttribute("role", "tooltip");
     tooltip.hidden = true;
-    stageMap.append(canvas, tooltip);
+    viewport.appendChild(canvas);
+    stageMap.append(viewport, tooltip);
+    if (!window.HallMapViewportController) throw new Error("Hall map viewport controller is unavailable.");
+    window.HallMapViewportController.attachHtml({ viewport, content: canvas });
     applyMapFilters();
     window.attachSeatClickHandlers();
   };
@@ -334,7 +414,7 @@
     const node = document.querySelector(`.seat[data-event-seat-id="${row.event_seat_id}"]`);
     if (!node) return;
     const selected = seatState.selectedIds.has(row.event_seat_id);
-    node.className = `seat is-visible${selected ? " selected" : ""}${row.status !== "available" && !selected ? " unavailable" : ""}`;
+    node.setAttribute("class", `seat is-visible${selected ? " selected" : ""}${row.status !== "available" && !selected ? " unavailable" : ""}`);
     node.dataset.status = row.status;
   }
   function refreshTicketLists() { document.querySelectorAll(".tktListContainer").forEach((container) => window.renderTicketListForContainer(container)); applyMapFilters(); }

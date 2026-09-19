@@ -15,6 +15,7 @@
       .from("cart_items")
       .select("id, ticket_type_id, quantity")
       .eq("user_id", session.user.id)
+      .is("event_seat_id", null)
       .order("updated_at", { ascending: false });
     if (cartError) throw cartError;
     const ticketIds = [
@@ -120,6 +121,7 @@
       .from("cart_items")
       .delete()
       .eq("user_id", session.user.id)
+      .is("event_seat_id", null)
       .in("ticket_type_id", ticketIds);
     const { error } = await query;
     if (error) throw error;
@@ -140,6 +142,7 @@
         .from("cart_items")
         .delete()
         .eq("user_id", session.user.id)
+        .is("event_seat_id", null)
         .in("ticket_type_id", ticketIds);
       if (error) throw error;
     }

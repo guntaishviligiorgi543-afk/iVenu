@@ -73,7 +73,7 @@
             <h3>Most popular category</h3>
             <div id="popularCategory"></div>
           </section>
-          <section class="analytics-card">
+          <section class="analytics-card analytics-card--recent">
             <h3>Recent activity</h3>
             <div class="analytics-list" id="recentActivity"></div>
           </section>
@@ -149,102 +149,136 @@
         ></div>
       </section>
 
-      <section class="admin-panel" data-panel="add-event">
-        <div class="admin-panel-heading">
-          <div>
-            <p class="admin-eyebrow">Publish to the calendar</p>
-            <h2 id="eventFormTitle">Add event</h2>
-          </div>
-        </div>
-        <form class="admin-form" id="eventForm">
-          <input type="hidden" name="id" /><label
-            >Title<input name="title" required /></label
-          ><label
-            >Performer / Performers<input
-              name="performer"
-              id="eventPerformer"
-              placeholder="e.g. Bruno Mars, Dua Lipa"
-              required
-            />
-          </label>
-          <label
-            >Category<select
-              name="category_id"
-              id="eventCategorySelect"
-              required
-            >
-              <option value="">Select category</option>
-            </select>
-          </label>
-          <div class="admin-form-grid">
-            <label>Date<input name="event_date" type="date" required /></label
-            ><label>Time<input name="event_time" type="time" required /></label
-            ><label
-              >Doors open<input name="doors_open" type="time" required /></label
-            ><label
-              >Status<select name="status">
-                <option value="active">Active</option>
-                <option value="inactive" selected>Inactive (not published)</option>
-              </select></label
-            >
-          </div>
-          <label
-            >Venue<select name="venue_id" id="eventVenueSelect" required>
-              <option value="">Select venue</option>
-            </select>
-          </label>
-          <p class="admin-message" id="venuePreview" aria-live="polite" hidden></p>
-          <section class="admin-seating-config" id="seatingConfiguration" hidden>
-            <div class="admin-seating-heading">
-              <div>
-                <p class="admin-eyebrow">Database-backed inventory</p>
-                <h3>Seating &amp; Ticket Configuration</h3>
-              </div>
-              <button class="admin-outline" id="previewSeatMap" type="button">Preview Seat Map</button>
+      <section class="admin-panel event-editor-panel" data-panel="add-event">
+        <div class="event-editor-shell" id="eventEditorShell">
+          <nav class="event-editor-nav" aria-label="Event editor navigation">
+            <button class="event-editor-nav__back" id="eventEditorBack" type="button" aria-label="Back to dashboard">
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M14.5 4.5 7 12l7.5 7.5M8 12h10" /></svg>
+            </button>
+            <button class="event-editor-nav__home" id="eventEditorHome" type="button">Home</button>
+          </nav>
+          <div class="event-editor-stage">
+            <div class="event-editor" id="eventEditor">
+              <form class="admin-event-wizard" id="eventForm" novalidate>
+          <input type="hidden" name="id" />
+          <input type="hidden" name="status" value="active" />
+          <header class="admin-event-wizard__header">
+            <div>
+              <p class="admin-eyebrow" id="eventFormEyebrow">Publish to the calendar</p>
+              <h2 id="eventFormTitle">Add new event</h2>
+              <p id="eventFormSubtitle">Create and configure a new iVenue event.</p>
             </div>
-            <p class="admin-message" id="seatingSummary"></p>
-            <div class="admin-seating-group">
-              <h4>Ticket types</h4>
-              <div id="seatingTicketTypes"></div>
-              <div class="admin-inline-form" id="addTicketTypeForm">
-                <label>Ticket tier<select name="name" required><option value="Cheap / Standard">Cheap / Standard</option><option value="Medium / Premium">Medium / Premium</option><option value="Expensive">Expensive</option><option value="VIP">VIP</option></select></label>
-                <label>Price (₾)<input name="price" type="number" min="0" step="0.01" required /></label>
-                <button class="admin-outline" id="addTicketType" type="button">Add ticket type</button>
-              </div>
+            <button class="admin-event-wizard__cancel" id="cancelEventWizard" type="button">Cancel</button>
+          </header>
+
+          <nav class="admin-event-steps" aria-label="Event creation progress">
+            <button class="is-active" data-event-step="1" type="button" aria-current="step"><span>1</span>Details</button>
+            <button data-event-step="2" type="button" disabled><span>2</span>Schedule</button>
+            <button data-event-step="3" type="button" disabled><span>3</span>Media</button>
+            <button data-event-step="4" type="button" disabled><span>4</span>Tickets</button>
+            <button data-event-step="5" type="button" disabled><span>5</span>Review</button>
+          </nav>
+
+          <p class="admin-event-wizard__message" id="eventWizardMessage" role="alert" aria-live="polite" hidden></p>
+
+          <section class="admin-event-step is-active" data-event-step-panel="1" aria-labelledby="eventDetailsHeading">
+            <div class="admin-event-step__heading">
+              <p class="admin-eyebrow">Step 1 of 5</p>
+              <h3 id="eventDetailsHeading">Event details</h3>
+              <p>Basic information about the event.</p>
             </div>
-            <div class="admin-seating-group">
-              <h4>Seat sections</h4>
-              <div id="seatingSections"></div>
-              <div class="admin-section-form" id="addSectionForm">
-                <h5>Add section</h5>
-                <div class="admin-form-grid">
-                  <label>Section name<input name="name" required /></label>
-                  <label>Internal code<input name="code" pattern="[A-Za-z0-9_-]+" required /></label>
-                  <label>Ticket type<select name="ticket_type_id" required></select></label>
-                  <label>Rows<input name="rows" type="number" min="1" max="500" required /></label>
-                  <label>Seats per row<input name="seats_per_row" type="number" min="1" max="500" required /></label>
-                  <label>Display order<input name="display_order" type="number" min="0" value="0" required /></label>
-                </div>
-                <button class="admin-outline" id="addSection" type="button">Add section</button>
-              </div>
+            <div class="admin-event-fields">
+              <label class="admin-event-field--wide">Event title<input name="title" required autocomplete="off" /></label>
+              <label>Performer / performers<input name="performer" id="eventPerformer" placeholder="e.g. Bruno Mars, Dua Lipa" required autocomplete="off" /></label>
+              <label>Category<select name="category_id" id="eventCategorySelect" required><option value="">Select category</option></select></label>
+              <label class="admin-event-field--wide">Description<textarea name="description" rows="5" required></textarea></label>
             </div>
           </section>
-          <label>Image URL<input name="image_url" type="url" /></label
-          ><label
-            >Description<textarea name="description" rows="4"></textarea>
-          </label>
-          <div class="admin-form-actions">
-            <button class="auth-submit" type="submit">Save event</button
-            ><button
-              class="admin-outline"
-              id="cancelEventEdit"
-              type="button"
-              hidden
-            >
-              Cancel edit
-            </button>
+
+          <section class="admin-event-step" data-event-step-panel="2" aria-labelledby="eventScheduleHeading" hidden>
+            <div class="admin-event-step__heading">
+              <p class="admin-eyebrow">Step 2 of 5</p>
+              <h3 id="eventScheduleHeading">Schedule &amp; venue</h3>
+              <p>Set when and where the event takes place.</p>
+            </div>
+            <fieldset class="admin-event-fieldset">
+              <legend>Date &amp; time</legend>
+              <div class="admin-event-fields admin-event-fields--three">
+                <label>Event date<input name="event_date" type="date" required /></label>
+                <label>Event time<input name="event_time" type="time" required /></label>
+                <label>Doors open<input name="doors_open" type="time" required /></label>
+              </div>
+            </fieldset>
+            <fieldset class="admin-event-fieldset">
+              <legend>Venue</legend>
+              <div class="admin-event-fields">
+                <label class="admin-event-field--wide">Venue<select name="venue_id" id="eventVenueSelect" required><option value="">Select venue</option></select></label>
+              </div>
+              <div class="admin-venue-summary" id="venuePreview" aria-live="polite" hidden></div>
+            </fieldset>
+          </section>
+
+          <section class="admin-event-step" data-event-step-panel="3" aria-labelledby="eventMediaHeading" hidden>
+            <div class="admin-event-step__heading">
+              <p class="admin-eyebrow">Step 3 of 5</p>
+              <h3 id="eventMediaHeading">Media</h3>
+              <p>Check the event image before it is published.</p>
+            </div>
+            <div class="admin-event-fields">
+              <label class="admin-event-field--wide">Main event image URL<input name="image_url" type="url" inputmode="url" placeholder="https://…" required /></label>
+            </div>
+            <figure class="admin-event-image-preview" id="eventImagePreview" hidden>
+              <img id="eventImagePreviewImage" alt="Selected event preview" />
+              <figcaption>Event image preview</figcaption>
+            </figure>
+            <p class="admin-event-image-empty" id="eventImageEmpty">Enter a valid image URL to preview it here.</p>
+          </section>
+
+          <section class="admin-event-step" data-event-step-panel="4" aria-labelledby="eventTicketsHeading" hidden>
+            <div class="admin-event-step__heading admin-event-step__heading--split">
+              <div>
+                <p class="admin-eyebrow">Step 4 of 5</p>
+                <h3 id="eventTicketsHeading">Tickets &amp; seating</h3>
+                <p>Configure sellable inventory. Unused canonical seats remain blocked.</p>
+              </div>
+              <button class="admin-outline" id="previewSeatMap" type="button">Preview hall map</button>
+            </div>
+            <div class="admin-ticket-venue" id="ticketVenueSummary">Select a venue to configure its ticket inventory.</div>
+            <div class="admin-ticket-grid" role="table" aria-label="Ticket inventory configuration">
+              <div class="admin-ticket-grid__head" role="row"><span role="columnheader">Ticket type</span><span role="columnheader">Sellable seats</span><span role="columnheader">Price</span></div>
+              <div id="ticketInventoryRows"></div>
+            </div>
+            <p class="admin-event-wizard__message" id="ticketInventoryError" role="alert" hidden></p>
+            <section class="admin-capacity-summary" aria-label="Capacity summary">
+              <div><span>Physical capacity</span><strong id="ticketPhysicalCapacity">—</strong></div>
+              <div><span>Sellable seats</span><strong id="ticketSellableCapacity">0</strong></div>
+              <div><span>Blocked seats</span><strong id="ticketBlockedCapacity">—</strong></div>
+              <div><span>Potential revenue</span><strong id="ticketPotentialRevenue">₾0.00</strong></div>
+            </section>
+            <div class="admin-capacity-progress" aria-label="Configured capacity"><span id="ticketCapacityLabel">Choose a venue to see its capacity.</span><i><b id="ticketCapacityBar"></b></i></div>
+          </section>
+
+          <section class="admin-event-step" data-event-step-panel="5" aria-labelledby="eventReviewHeading" hidden>
+            <div class="admin-event-step__heading">
+              <p class="admin-eyebrow">Step 5 of 5</p>
+              <h3 id="eventReviewHeading">Review event</h3>
+              <p>Confirm the event and inventory before publishing.</p>
+            </div>
+            <div class="admin-event-review" id="eventReview"></div>
+          </section>
+
+          <footer class="admin-event-wizard__footer">
+            <button class="admin-event-wizard__cancel" id="cancelEventEdit" type="button" hidden>Cancel edit</button>
+            <div class="admin-event-wizard__nav-actions">
+              <button class="admin-outline" id="wizardBack" type="button" hidden>Back</button>
+              <button class="auth-submit" id="wizardContinue" type="button">Continue</button>
+              <button class="auth-submit" id="wizardSubmit" type="submit" hidden>Create event</button>
+            </div>
+          </footer>
+              </form>
+            </div>
           </div>
-        </form>
+        </div>
       </section>
 
       <section class="admin-panel" data-panel="stats">
@@ -299,9 +333,23 @@
         </div>
       </section>
     </main>
+    <dialog class="admin-map-preview" id="eventMapPreviewDialog" aria-labelledby="eventMapPreviewTitle">
+      <div class="admin-map-preview__header">
+        <div>
+          <p class="admin-eyebrow">Draft only</p>
+          <h2 id="eventMapPreviewTitle">Hall map preview</h2>
+        </div>
+        <button class="admin-map-preview__close" id="eventMapPreviewClose" type="button" aria-label="Close hall map preview">×</button>
+      </div>
+      <p id="eventMapPreviewDescription"></p>
+      <div class="admin-map-preview__canvas" id="eventMapPreviewCanvas"></div>
+    </dialog>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-config.js"></script>
     <script src="auth.js"></script>
+    <script src="hall-maps/black-sea-arena-blueprint.js"></script>
+    <script src="hall-maps/dinamo-arena-blueprint.js"></script>
+    <script src="hall-maps/theatre-blueprint.js"></script>
     <script src="admin-dashboard.js"></script>
   </body>
 </html>

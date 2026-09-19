@@ -126,6 +126,38 @@
           `<article class="dashboard-row"><div><strong>${escapeHtml(ticketMap.get(item.ticket_type_id)?.name || "Ticket")}</strong><span>Quantity ${Number(item.quantity || 0)}</span></div><strong>${(Number(ticketMap.get(item.ticket_type_id)?.price || 0) * Number(item.quantity || 0)).toFixed(2)}₾</strong></article>`,
       )
       .join("");
+
+    cartList.querySelectorAll(".dashboard-row").forEach((row, index) => {
+      const item = items[index];
+      const ticketName = ticketMap.get(item.ticket_type_id)?.name || "Ticket";
+      row.insertAdjacentHTML(
+        "beforeend",
+        `<button class="dashboard-cart-remove" type="button" data-cart-item-id="${escapeHtml(item.id)}" data-event-seat-id="${escapeHtml(item.event_seat_id || "")}" aria-label="Remove ${escapeHtml(ticketName)} from cart">Remove</button>`,
+      );
+    });
+  }
+
+  async function removeCartItem({ cartItemId, eventSeatId }) {
+    const session = await window.authApi.getSession();
+    if (!session?.user) throw new Error("Please sign in to manage your cart.");
+
+    if (eventSeatId) {
+      // Exact-seat rows must release their reservation, not be deleted directly.
+      const { error } = await client.rpc("release_event_seat", {
+        p_event_seat_id: eventSeatId,
+      });
+      if (error) throw error;
+    } else {
+      const { error } = await client
+        .from("cart_items")
+        .delete()
+        .eq("id", cartItemId)
+        .eq("user_id", session.user.id)
+        .is("event_seat_id", null);
+      if (error) throw error;
+    }
+
+    await loadAccount();
   }
 
   function updateProfilePreview(profile) {
@@ -266,6 +298,24 @@
       .querySelector('.account-sidebar-item[data-section="cart"]')
       ?.click();
   }
+
+  cartList.addEventListener("click", async (event) => {
+    const button = event.target.closest(".dashboard-cart-remove");
+    if (!button || !cartList.contains(button)) return;
+    button.disabled = true;
+    button.textContent = "Removing...";
+    try {
+      await removeCartItem({
+        cartItemId: button.dataset.cartItemId,
+        eventSeatId: button.dataset.eventSeatId,
+      });
+    } catch (error) {
+      console.error("Unable to remove cart item", error);
+      button.disabled = false;
+      button.textContent = "Remove";
+      setMessage(error.message || "This cart item could not be removed.", "error");
+    }
+  });
 
   logoutButton.addEventListener("click", async () => {
     logoutButton.disabled = true;

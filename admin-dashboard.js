@@ -6,7 +6,6 @@
     events: [],
     categories: [],
     ticketTypes: [],
-    seating: null,
     orderItems: [],
     inventory: [],
     users: 0,
@@ -17,6 +16,14 @@
     catalog: [],
     catalogVisibleCount: CATALOG_BATCH_SIZE,
     venues: [],
+    eventCreationContext: { venues: [], ticket_colors: {} },
+    wizardStep: 1,
+    wizardHighestStep: 1,
+    wizardTickets: null,
+    wizardDirty: false,
+    wizardSaving: false,
+    editorReturnPanel: "overview",
+    editorReturnScrollY: 0,
   };
   const status = document.querySelector("#adminStatus");
   const message = document.querySelector("#adminMessage");
@@ -30,15 +37,33 @@
   const categorySelect = document.querySelector("#eventCategorySelect");
   const venueSelect = document.querySelector("#eventVenueSelect");
   const venuePreview = document.querySelector("#venuePreview");
-  const seatingConfiguration = document.querySelector("#seatingConfiguration");
-  const seatingSummary = document.querySelector("#seatingSummary");
-  const seatingTicketTypes = document.querySelector("#seatingTicketTypes");
-  const seatingSections = document.querySelector("#seatingSections");
-  const addTicketTypeForm = document.querySelector("#addTicketTypeForm");
-  const addSectionForm = document.querySelector("#addSectionForm");
-  const addTicketTypeButton = document.querySelector("#addTicketType");
-  const addSectionButton = document.querySelector("#addSection");
+  const wizardMessage = document.querySelector("#eventWizardMessage");
+  const wizardStepButtons = [...document.querySelectorAll("[data-event-step]")];
+  const wizardStepPanels = [...document.querySelectorAll("[data-event-step-panel]")];
+  const wizardBack = document.querySelector("#wizardBack");
+  const wizardContinue = document.querySelector("#wizardContinue");
+  const wizardSubmit = document.querySelector("#wizardSubmit");
+  const ticketInventoryRows = document.querySelector("#ticketInventoryRows");
+  const ticketInventoryError = document.querySelector("#ticketInventoryError");
+  const ticketVenueSummary = document.querySelector("#ticketVenueSummary");
+  const ticketPhysicalCapacity = document.querySelector("#ticketPhysicalCapacity");
+  const ticketSellableCapacity = document.querySelector("#ticketSellableCapacity");
+  const ticketBlockedCapacity = document.querySelector("#ticketBlockedCapacity");
+  const ticketPotentialRevenue = document.querySelector("#ticketPotentialRevenue");
+  const ticketCapacityLabel = document.querySelector("#ticketCapacityLabel");
+  const ticketCapacityBar = document.querySelector("#ticketCapacityBar");
+  const eventImagePreview = document.querySelector("#eventImagePreview");
+  const eventImagePreviewImage = document.querySelector("#eventImagePreviewImage");
+  const eventImageEmpty = document.querySelector("#eventImageEmpty");
+  const eventReview = document.querySelector("#eventReview");
+  const eventEditorShell = document.querySelector("#eventEditorShell");
+  const eventEditor = document.querySelector("#eventEditor");
+  const eventEditorBack = document.querySelector("#eventEditorBack");
+  const eventEditorHome = document.querySelector("#eventEditorHome");
   const previewSeatMap = document.querySelector("#previewSeatMap");
+  const eventMapPreviewDialog = document.querySelector("#eventMapPreviewDialog");
+  const eventMapPreviewCanvas = document.querySelector("#eventMapPreviewCanvas");
+  const eventMapPreviewDescription = document.querySelector("#eventMapPreviewDescription");
   const categoryFilter = document.querySelector("#eventCategory");
   const analyticsPeriod = document.querySelector("#analyticsPeriod");
   const performanceSort = document.querySelector("#performanceSort");
@@ -109,7 +134,7 @@
   };
 
   async function loadData() {
-    const [events, categories, tickets, orders, users, catalog, venues, inventory] =
+    const [events, categories, tickets, orders, users, catalog, venues, inventory, eventCreationContext] =
       await Promise.all([
         client
           .from("events")
@@ -120,7 +145,7 @@
         client.from("categories").select("id, name").order("name"),
         client
           .from("ticket_types")
-          .select("id, event_id, name, price, is_active, total_quantity, available_quantity"),
+          .select("id, event_id, name, canonical_tier, display_color, price, is_active, total_quantity, available_quantity"),
         client.from("order_items").select("ticket_type_id, quantity"),
         client.from("profiles").select("id", { count: "exact", head: true }),
         client
@@ -134,8 +159,9 @@
           )
           .order("name"),
         client.rpc("get_admin_event_inventory"),
+        client.rpc("get_admin_event_creation_context"),
       ]);
-    for (const result of [events, categories, tickets, orders, catalog, venues, inventory])
+    for (const result of [events, categories, tickets, orders, catalog, venues, inventory, eventCreationContext])
       if (result.error) throw result.error;
     state.events = events.data || [];
     state.categories = categories.data || [];
@@ -146,6 +172,7 @@
     state.catalogVisibleCount = CATALOG_BATCH_SIZE;
     state.venues = venues.data || [];
     state.inventory = inventory.data || [];
+    state.eventCreationContext = eventCreationContext.data || { venues: [], ticket_colors: {} };
     state.eventPage = 1;
     state.statsPage = 1;
     await loadAnalytics();
@@ -291,8 +318,11 @@
       : '<p class="analytics-empty">No category sales yet.</p>';
 
     const recent = document.querySelector("#recentActivity");
-    recent.innerHTML = analytics.recent_activity?.length
-      ? analytics.recent_activity
+    const fiveMostRecentActivities = [...(analytics.recent_activity || [])]
+      .sort((left, right) => new Date(right.created_at || 0) - new Date(left.created_at || 0))
+      .slice(0, 5);
+    recent.innerHTML = fiveMostRecentActivities.length
+      ? fiveMostRecentActivities
           .map(
             (item) =>
               `<div class="analytics-activity"><strong>${escapeHtml(item.activity_type)}</strong><span>${escapeHtml(item.event_title || "")}</span><time>${escapeHtml(formatActivityDate(item.created_at))}</time></div>`,
@@ -441,9 +471,10 @@
   }
 
   function renderVenuePreview(venueId) {
-    const venue = state.venues.find((item) => item.id === venueId);
+    const venue = state.eventCreationContext.venues.find((item) => item.id === venueId)
+      || state.venues.find((item) => item.id === venueId);
     if (!venue) {
-      venuePreview.textContent = "";
+      venuePreview.replaceChildren();
       venuePreview.hidden = true;
       return;
     }
@@ -451,9 +482,7 @@
     const location = [
       ...new Set([venue.city_area, venue.region, venue.country].filter(Boolean)),
     ].join(", ");
-    venuePreview.textContent = [venue.name, location, venue.address]
-      .filter(Boolean)
-      .join(" — ");
+    venuePreview.innerHTML = `<strong>${escapeHtml(venue.name)}</strong><span>${escapeHtml(location || venue.address || "Venue details unavailable")}</span><span>Hall map: ${escapeHtml(venue.name)} · Capacity: ${formatSeatNumber(venue.physical_capacity || 0)}</span>`;
     venuePreview.hidden = false;
   }
 
@@ -476,173 +505,364 @@
   }
 
   const formatSeatNumber = (value) => Number(value || 0).toLocaleString();
-  const seatingError = (error, fallback) => {
-    const message = error?.message || "";
-    if (/Administrator access|required|not belong|not found|name is required|price cannot|Rows must|Seats per row|Cannot (modify|remove)|still assigned|unused physical|Section code|Display color/i.test(message)) return message;
-    return fallback;
-  };
+  // Legacy standalone ticket and section CRUD is intentionally retired.
 
-  function activeSeatingEventId() {
-    return state.seating?.event_id || form.elements.id.value || null;
+  // The wizard keeps its draft only in browser state until this single final RPC.
+  const TICKET_TIERS = Object.freeze([
+    { id: "cheap", name: "Cheap / Standard" },
+    { id: "medium", name: "Medium / Premium" },
+    { id: "expensive", name: "Expensive" },
+    { id: "vip", name: "VIP" },
+  ]);
+
+  function selectedVenueContext() {
+    return state.eventCreationContext.venues.find((venue) => venue.id === venueSelect.value)
+      || state.venues.find((venue) => venue.id === venueSelect.value)
+      || null;
   }
 
-  function ticketTypeOptions(selectedId, includeInactive = false) {
-    const ticketTypes = state.seating?.ticket_types || [];
-    return ticketTypes
-      .filter((ticket) => ticket.is_active || includeInactive || ticket.id === selectedId)
-      .map((ticket) => `<option value="${ticket.id}" ${ticket.id === selectedId ? "selected" : ""}>${escapeHtml(ticket.name)} — ${formatRevenue(ticket.price)}</option>`)
-      .join("");
+  function ticketColorForTier(tier) {
+    const existing = state.ticketTypes.find((ticket) => ticket.canonical_tier === tier);
+    return state.eventCreationContext.ticket_colors?.[tier] || existing?.display_color || "#ff9475";
   }
 
-  function ticketWarningsHtml(ticket) {
-    const warnings = [];
-    if (!ticket.is_active) warnings.push("Tier is inactive.");
-    if (!ticket.has_valid_price) warnings.push("Set a valid non-negative price.");
-    if (!ticket.has_valid_color) warnings.push("Set a valid map color.");
-    if (!Number(ticket.capacity)) warnings.push("No canonical seats are assigned.");
-    return warnings.length
-      ? `<p class="admin-message error">${escapeHtml(warnings.join(" "))}</p>`
-      : "";
+  function createTicketDraft() {
+    return Object.fromEntries(TICKET_TIERS.map((tier) => {
+      const existing = state.ticketTypes.find((ticket) => ticket.canonical_tier === tier.id);
+      return [tier.id, {
+        quantity: 0,
+        price: Number(existing?.price || 0),
+        color: ticketColorForTier(tier.id),
+      }];
+    }));
   }
 
-  function renderSeatingConfiguration() {
-    const seating = state.seating;
-    if (!seating) {
-      seatingConfiguration.hidden = true;
-      return;
+  function currentTicketInventory() {
+    if (!state.wizardTickets) state.wizardTickets = createTicketDraft();
+    return TICKET_TIERS.map((tier) => ({
+      canonical_tier: tier.id,
+      name: tier.name,
+      quantity: Math.max(0, Number(state.wizardTickets[tier.id]?.quantity || 0)),
+      price: Math.max(0, Number(state.wizardTickets[tier.id]?.price || 0)),
+      color: state.wizardTickets[tier.id]?.color || ticketColorForTier(tier.id),
+    }));
+  }
+
+  function setWizardMessage(text = "") {
+    wizardMessage.textContent = text;
+    wizardMessage.hidden = !text;
+  }
+
+  function getInventoryValidation() {
+    const venue = selectedVenueContext();
+    const inventory = currentTicketInventory();
+    if (!venue) return { valid: false, message: "Choose a venue before configuring ticket inventory." };
+    const total = inventory.reduce((sum, tier) => sum + tier.quantity, 0);
+    const tierOverage = inventory.find((tier) => tier.quantity > Number(venue.tier_capacities?.[tier.canonical_tier] || 0));
+    if (tierOverage) {
+      const capacity = Number(venue.tier_capacities?.[tierOverage.canonical_tier] || 0);
+      return { valid: false, message: `${tierOverage.name} exceeds its physical venue inventory by ${formatSeatNumber(tierOverage.quantity - capacity)} seats.` };
     }
-    seatingConfiguration.hidden = false;
-    const inventory = seating.inventory || {};
-    const configuration = seating.validation || {};
-    seatingSummary.textContent = `${seating.event_title} · ${seating.venue_name} · ${formatSeatNumber(inventory.total)} total · ${formatSeatNumber(inventory.available)} available · ${formatSeatNumber(inventory.reserved)} reserved · ${formatSeatNumber(inventory.sold)} sold${Number(inventory.blocked) ? ` · ${formatSeatNumber(inventory.blocked)} blocked` : ""}`;
-    seatingSummary.classList.toggle("error", configuration.is_complete === false);
-    if (configuration.is_complete === false) {
-      seatingSummary.textContent += ` - configuration incomplete${(configuration.issues || []).length ? `: ${(configuration.issues || []).map((issue) => issue.message).join(" ")}` : ""}`;
+    if (total > Number(venue.physical_capacity || 0)) {
+      return { valid: false, message: `Configured ticket quantity exceeds venue capacity by ${formatSeatNumber(total - Number(venue.physical_capacity || 0))} seats.` };
     }
-    seatingTicketTypes.innerHTML = (seating.ticket_types || []).map((ticket) => `
-      <article class="admin-seat-card" data-ticket-id="${ticket.id}">
-        <div class="admin-seat-card-grid">
-          <label>Canonical tier<input data-ticket-name value="${escapeHtml(ticket.name)}" readonly /></label>
-          <label>Price (₾)<input data-ticket-price type="number" min="0" step="0.01" value="${Number(ticket.price)}" /></label>
-          <label>Map color<input data-ticket-color type="color" value="${escapeHtml(ticket.display_color || "#2878ff")}" /></label>
-          <label class="admin-check"><input data-ticket-active type="checkbox" ${ticket.is_active ? "checked" : ""} /> Active</label>
-        </div>
-        <p>${formatSeatNumber(ticket.capacity)} seats · ${formatSeatNumber(ticket.available)} available</p>
-        ${ticketWarningsHtml(ticket)}
-        <button class="admin-outline" data-save-ticket="${ticket.id}" type="button">Save ticket type</button>
-      </article>`).join("") || '<p class="admin-message">No ticket types configured.</p>';
-    seatingSections.innerHTML = (seating.sections || []).map((section) => `
-      <article class="admin-seat-card" data-section-id="${section.id}">
-        <div class="admin-seat-card-heading"><strong>${escapeHtml(section.name)}</strong><span>${formatSeatNumber(section.capacity)} seats · ${formatSeatNumber(section.available)} available · ${formatSeatNumber(section.reserved)} reserved · ${formatSeatNumber(section.sold)} sold</span></div>
-        <div class="admin-seat-card-grid">
-          <label>Section name<input data-section-name value="${escapeHtml(section.name)}" /></label>
-          <label>Ticket type<select data-section-ticket>${ticketTypeOptions(section.ticket_type_id, true)}</select></label>
-          <label>Rows<input data-section-rows type="number" min="1" max="500" value="${section.rows}" /></label>
-          <label>Seats per row<input data-section-seats type="number" min="1" max="500" value="${section.seats_per_row}" /></label>
-          <label>Display order<input data-section-order type="number" min="0" value="${section.display_order}" /></label>
-          <label class="admin-check"><input data-section-enabled type="checkbox" ${section.is_enabled ? "checked" : ""} /> Enabled</label>
-        </div>
-        <div class="admin-form-actions"><button class="admin-outline" data-save-section="${section.id}" type="button">Save section</button><button class="admin-outline admin-danger" data-delete-section="${section.id}" type="button">Remove section</button></div>
-      </article>`).join("") || '<p class="admin-message">No sections configured.</p>';
-    const selector = addSectionForm.querySelector('[name="ticket_type_id"]');
-    const previous = selector.value;
-    selector.innerHTML = '<option value="">Select ticket type</option>' + ticketTypeOptions(previous);
-    if (![...selector.options].some((option) => option.value === previous)) selector.value = "";
-    const tierSelector = addTicketTypeForm.querySelector('[name="name"]');
-    const canonicalNames = ["Cheap / Standard", "Medium / Premium", "Expensive", "VIP"];
-    const missingTiers = canonicalNames.filter((name) => !(seating.ticket_types || []).some((ticket) => ticket.name === name));
-    tierSelector.innerHTML = '<option value="">Select required tier</option>' + missingTiers
-      .map((name) => `<option value="${name}">${name}</option>`).join("");
-    addTicketTypeButton.disabled = missingTiers.length === 0;
+    return { valid: true, venue, inventory, total };
   }
 
-  async function loadSeatingConfiguration(eventId) {
-    if (!eventId) return;
-    const { data, error } = await client.rpc("get_admin_event_seating_configuration", { p_event_id: eventId });
-    if (error) throw error;
-    state.seating = data;
-    renderSeatingConfiguration();
+  function updateWizardControls() {
+    const review = state.wizardStep === 5;
+    wizardBack.hidden = state.wizardStep === 1;
+    wizardContinue.hidden = review;
+    wizardSubmit.hidden = !review;
+    wizardContinue.disabled = state.wizardStep === 4 && !getInventoryValidation().valid;
+    wizardSubmit.textContent = form.elements.id.value ? "Save changes" : "Create event";
+    wizardStepButtons.forEach((button) => {
+      const step = Number(button.dataset.eventStep);
+      button.classList.toggle("is-active", step === state.wizardStep);
+      button.classList.toggle("is-complete", step < state.wizardHighestStep);
+      button.toggleAttribute("aria-current", step === state.wizardStep);
+      button.disabled = step > state.wizardHighestStep;
+    });
+  }
+
+  function renderTicketInventory() {
+    const venue = selectedVenueContext();
+    const inventory = currentTicketInventory();
+    ticketInventoryRows.innerHTML = inventory.map((tier) => {
+      const capacity = Number(venue?.tier_capacities?.[tier.canonical_tier] || 0);
+      return `<div class="admin-ticket-row" role="row" data-ticket-tier="${tier.canonical_tier}">
+        <div class="admin-ticket-row__tier" role="cell" style="--ticket-color: ${escapeHtml(tier.color)}"><i aria-hidden="true"></i><div><strong>${escapeHtml(tier.name)}</strong><span>${venue ? `${formatSeatNumber(capacity)} physical seats` : "Select a venue first"}</span></div></div>
+        <label role="cell"><span class="sr-only">${escapeHtml(tier.name)} sellable seats</span><input data-ticket-quantity type="number" min="0" max="${capacity}" step="1" value="${tier.quantity}" inputmode="numeric" /></label>
+        <label role="cell"><span class="sr-only">${escapeHtml(tier.name)} price</span><input data-ticket-price type="number" min="0" step="0.01" value="${tier.price}" inputmode="decimal" /></label>
+      </div>`;
+    }).join("");
+    const validation = getInventoryValidation();
+    const physical = Number(venue?.physical_capacity || 0);
+    const sellable = validation.total ?? inventory.reduce((sum, tier) => sum + tier.quantity, 0);
+    ticketVenueSummary.innerHTML = venue
+      ? `<strong>${escapeHtml(venue.name)}</strong><span>Hall map: ${escapeHtml(venue.name)} · Physical capacity: ${formatSeatNumber(physical)}</span>`
+      : "Select a venue to configure its ticket inventory.";
+    ticketPhysicalCapacity.textContent = venue ? formatSeatNumber(physical) : "—";
+    ticketSellableCapacity.textContent = formatSeatNumber(sellable);
+    ticketBlockedCapacity.textContent = venue ? formatSeatNumber(Math.max(0, physical - sellable)) : "—";
+    ticketPotentialRevenue.textContent = `₾${inventory.reduce((sum, tier) => sum + tier.quantity * tier.price, 0).toFixed(2)}`;
+    ticketCapacityLabel.textContent = venue
+      ? `${formatSeatNumber(sellable)} / ${formatSeatNumber(physical)} seats configured`
+      : "Choose a venue to see its capacity.";
+    ticketCapacityBar.style.width = venue && physical ? `${Math.min(100, (sellable / physical) * 100)}%` : "0%";
+    ticketInventoryError.textContent = validation.valid ? "" : validation.message;
+    ticketInventoryError.hidden = validation.valid;
+    updateWizardControls();
+  }
+
+  function updateImagePreview() {
+    const imageUrl = form.elements.image_url.value.trim();
+    eventImagePreview.hidden = true;
+    eventImageEmpty.hidden = false;
+    eventImagePreviewImage.removeAttribute("src");
+    if (imageUrl && form.elements.image_url.checkValidity()) eventImagePreviewImage.src = imageUrl;
+  }
+
+  eventImagePreviewImage.addEventListener("load", () => {
+    eventImagePreview.hidden = false;
+    eventImageEmpty.hidden = true;
+  });
+  eventImagePreviewImage.addEventListener("error", () => {
+    eventImagePreview.hidden = true;
+    eventImageEmpty.hidden = false;
+  });
+
+  function validateStep(step) {
+    const panel = wizardStepPanels.find((item) => Number(item.dataset.eventStepPanel) === step);
+    let firstInvalid = null;
+    if (step < 4) {
+      panel.querySelectorAll("input[required], select[required], textarea[required]").forEach((field) => {
+        const valid = field.checkValidity();
+        field.classList.toggle("is-invalid", !valid);
+        if (!valid && !firstInvalid) firstInvalid = field;
+      });
+    }
+    if (firstInvalid) {
+      setWizardMessage("Complete the required fields before continuing.");
+      firstInvalid.focus();
+      return false;
+    }
+    if (step === 4 && !getInventoryValidation().valid) {
+      setWizardMessage(getInventoryValidation().message);
+      return false;
+    }
+    setWizardMessage("");
+    return true;
+  }
+
+  function renderReview() {
+    const values = new FormData(form);
+    const venue = selectedVenueContext();
+    const category = state.categories.find((item) => item.id === values.get("category_id"));
+    const inventory = currentTicketInventory();
+    const totals = getInventoryValidation();
+    const edit = (step, label) => `<button type="button" data-review-edit="${step}">Edit ${label}</button>`;
+    eventReview.innerHTML = `
+      <section class="admin-review-section"><div class="admin-review-section__head"><h4>Event</h4>${edit(1, "event")}</div><strong>${escapeHtml(values.get("title") || "Untitled event")}</strong><span>${escapeHtml(values.get("performer") || "No performer")} · ${escapeHtml(category?.name || "No category")}</span><span>${escapeHtml(values.get("description") || "No description")}</span></section>
+      <section class="admin-review-section"><div class="admin-review-section__head"><h4>Schedule</h4>${edit(2, "schedule")}</div><strong>${escapeHtml(values.get("event_date") || "No date")} · ${escapeHtml(values.get("event_time") || "No time")}</strong><span>Doors open ${escapeHtml(values.get("doors_open") || "—")}</span></section>
+      <section class="admin-review-section"><div class="admin-review-section__head"><h4>Venue</h4>${edit(2, "venue")}</div><strong>${escapeHtml(venue?.name || "No venue")}</strong><span>Hall map: ${escapeHtml(venue?.name || "—")} · ${formatSeatNumber(venue?.physical_capacity || 0)} physical seats</span></section>
+      <section class="admin-review-section"><div class="admin-review-section__head"><h4>Media</h4>${edit(3, "media")}</div><div class="admin-review-media">${values.get("image_url") ? `<img src="${escapeHtml(values.get("image_url"))}" alt="" />` : ""}<span>${values.get("image_url") ? "Main event image selected." : "No image selected."}</span></div></section>
+      <section class="admin-review-section admin-review-section--wide"><div class="admin-review-section__head"><h4>Tickets</h4>${edit(4, "tickets")}</div>${inventory.map((tier) => `<span class="admin-review-ticket-row">${escapeHtml(tier.name)} · ${formatSeatNumber(tier.quantity)} × ₾${tier.price.toFixed(2)}</span>`).join("")}</section>
+      <section class="admin-review-section admin-review-section--wide"><div class="admin-review-section__head"><h4>Inventory</h4>${edit(4, "inventory")}</div><strong>${formatSeatNumber(venue?.physical_capacity || 0)} physical · ${formatSeatNumber(totals.total || 0)} sellable · ${formatSeatNumber(Math.max(0, Number(venue?.physical_capacity || 0) - Number(totals.total || 0)))} blocked</strong><span>Potential revenue ₾${inventory.reduce((sum, tier) => sum + tier.quantity * tier.price, 0).toFixed(2)}</span></section>`;
+  }
+
+  function showWizardStep(step, validateCurrent = false) {
+    if (step < 1 || step > 5 || step > state.wizardHighestStep + 1) return;
+    if (validateCurrent && step > state.wizardStep && !validateStep(state.wizardStep)) return;
+    state.wizardHighestStep = Math.max(state.wizardHighestStep, step);
+    state.wizardStep = step;
+    wizardStepPanels.forEach((panel) => {
+      const active = Number(panel.dataset.eventStepPanel) === step;
+      panel.hidden = !active;
+      panel.classList.toggle("is-active", active);
+    });
+    if (step === 4) renderTicketInventory();
+    if (step === 5) renderReview();
+    updateWizardControls();
   }
 
   function resetForm() {
     form.reset();
     form.elements.id.value = "";
+    form.elements.status.value = "active";
+    state.wizardTickets = createTicketDraft();
+    state.wizardStep = 1;
+    state.wizardHighestStep = 1;
+    state.wizardDirty = false;
     renderVenuePreview("");
-    document.querySelector("#eventFormTitle").textContent = "Add event";
+    updateImagePreview();
+    document.querySelector("#eventFormTitle").textContent = "Add new event";
+    document.querySelector("#eventFormEyebrow").textContent = "Publish to the calendar";
+    document.querySelector("#eventFormSubtitle").textContent = "Create and configure a new iVenue event.";
     document.querySelector("#cancelEventEdit").hidden = true;
-    state.seating = null;
-    seatingConfiguration.hidden = true;
-  }
-  function fillForm(event) {
-    Object.entries({
-      id: event.id,
-      title: event.title,
-      performer: event.performer,
-      category_id: event.category_id,
-      event_date: event.event_date,
-      event_time: event.event_time,
-      doors_open: event.doors_open,
-      status: event.status || "active",
-      venue_id: event.venue_id,
-      image_url: event.image_url,
-      description: event.description,
-    }).forEach(([key, value]) => {
-      if (form.elements[key]) form.elements[key].value = value || "";
-    });
-    renderVenuePreview(venueSelect.value);
-    document.querySelector("#eventFormTitle").textContent = "Edit event";
-    document.querySelector("#cancelEventEdit").hidden = false;
-    document
-      .querySelector('[data-panel="add-event"]')
-      .classList.add("is-active");
-    document
-      .querySelectorAll(".admin-panel")
-      .forEach((panel) =>
-        panel.classList.toggle(
-          "is-active",
-          panel.dataset.panel === "add-event",
-        ),
-      );
-    loadSeatingConfiguration(event.id).catch((error) =>
-      setMessage(seatingError(error, "Seating configuration could not be loaded."), "error"),
-    );
+    showWizardStep(1);
   }
 
-  async function saveEvent(event) {
+  async function loadExistingWizardInventory(eventId) {
+    const { data, error } = await client.rpc("get_admin_event_seating_configuration", { p_event_id: eventId });
+    if (error) throw error;
+    const existing = new Map((data?.ticket_types || []).map((ticket) => [ticket.canonical_tier, ticket]));
+    state.wizardTickets = Object.fromEntries(TICKET_TIERS.map((tier) => {
+      const ticket = existing.get(tier.id);
+      // `capacity` includes blocked canonical seats. Only seats that are
+      // available, reserved, or sold are part of the sellable inventory.
+      const sellableQuantity = Number(ticket?.available || 0)
+        + Number(ticket?.reserved || 0)
+        + Number(ticket?.sold || 0);
+      return [tier.id, { quantity: sellableQuantity, price: Number(ticket?.price || 0), color: ticket?.display_color || ticketColorForTier(tier.id) }];
+    }));
+    renderTicketInventory();
+  }
+
+  function fillForm(event) {
+    Object.entries({ id: event.id, title: event.title, performer: event.performer, category_id: event.category_id, event_date: event.event_date, event_time: event.event_time, doors_open: event.doors_open, status: event.status || "active", venue_id: event.venue_id, image_url: event.image_url, description: event.description }).forEach(([key, value]) => {
+      if (form.elements[key]) form.elements[key].value = value || "";
+    });
+    state.wizardStep = 1;
+    state.wizardHighestStep = 5;
+    state.wizardDirty = false;
+    renderVenuePreview(venueSelect.value);
+    updateImagePreview();
+    document.querySelector("#eventFormTitle").textContent = "Edit event";
+    document.querySelector("#eventFormEyebrow").textContent = "Event management";
+    document.querySelector("#eventFormSubtitle").textContent = "Review details and inventory without changing sold or reserved seats.";
+    document.querySelector("#cancelEventEdit").hidden = false;
+    loadExistingWizardInventory(event.id).catch((error) => setWizardMessage(error.message || "Ticket inventory could not be loaded."));
+    showWizardStep(1);
+    enterEventEditor();
+  }
+
+  async function saveEvent() {
     const values = new FormData(form);
-    const payload = {
-      title: values.get("title").trim(),
-      performer: values.get("performer").trim(),
-      category_id: values.get("category_id"),
-      description: values.get("description").trim(),
-      event_date: values.get("event_date"),
-      event_time: values.get("event_time"),
-      doors_open: values.get("doors_open"),
-      venue_id: values.get("venue_id"),
-      image_url: values.get("image_url").trim(),
-      status: values.get("status"),
-    };
-    const id = values.get("id");
-    if (!id && payload.status === "active") payload.status = "inactive";
-    const result = id
-      ? await client.from("events").update(payload).eq("id", id)
-      : await client.from("events").insert(payload);
-    if (result.error) throw result.error;
-    setMessage(id ? "Event updated." : "Event added as inactive; add the four canonical ticket tiers and sections before publishing.", "success");
+    const payload = Object.fromEntries(["title", "performer", "category_id", "description", "event_date", "event_time", "doors_open", "venue_id", "image_url", "status"].map((key) => [key, String(values.get(key) || "").trim()]));
+    state.wizardSaving = true;
+    wizardSubmit.disabled = true;
+    try {
+      const { data, error } = await client.rpc("admin_save_event_with_inventory", {
+        p_event_id: values.get("id") || null,
+        p_event: payload,
+        p_ticket_inventory: currentTicketInventory().map(({ canonical_tier, quantity, price }) => ({ canonical_tier, quantity, price })),
+      });
+      if (error) throw error;
+      setMessage(values.get("id") ? "Event and canonical inventory updated." : "Event and canonical inventory created.", "success");
+      resetForm();
+      await loadData();
+      return data;
+    } finally {
+      state.wizardSaving = false;
+      wizardSubmit.disabled = false;
+    }
+  }
+
+  function blueprintForVenue(venue) {
+    if (!venue) return null;
+    if (venue.name === "Black Sea Arena") return window.blackSeaArenaBlueprint || null;
+    if (venue.id === window.dinamoArenaBlueprint?.venueId) return window.dinamoArenaBlueprint;
+    if (venue.id === window.theatreBlueprint?.venueId) return window.theatreBlueprint;
+    return null;
+  }
+
+  function renderHallMapPreview() {
+    const venue = selectedVenueContext();
+    const blueprint = blueprintForVenue(venue);
+    eventMapPreviewCanvas.replaceChildren();
+    if (!venue || !blueprint) {
+      eventMapPreviewDescription.textContent = venue ? `${venue.name} has no approved draft geometry available for preview.` : "Choose a venue before previewing the hall map.";
+      eventMapPreviewCanvas.innerHTML = '<p class="admin-map-preview__empty">No geometry has been invented for this venue. Canonical inventory is still configured from its physical capacity.</p>';
+      return;
+    }
+    eventMapPreviewDescription.textContent = `${venue.name} geometry with draft ticket-tier colors. This preview does not create, reserve, or sell seats.`;
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("viewBox", blueprint.viewBox.join(" "));
+    svg.setAttribute("role", "img");
+    svg.setAttribute("aria-label", `${venue.name} draft hall map`);
+    const tierByLabel = { "Cheap / Standard": "cheap", "Medium / Premium": "medium", Expensive: "expensive", VIP: "vip" };
+    if (blueprint.outerBoundary) {
+      const ellipse = document.createElementNS(svg.namespaceURI, "ellipse");
+      Object.entries(blueprint.outerBoundary).filter(([key]) => key !== "type").forEach(([key, value]) => ellipse.setAttribute(key, value));
+      ellipse.setAttribute("class", "preview-focal");
+      svg.appendChild(ellipse);
+    }
+    if (blueprint.stage) {
+      const stage = document.createElementNS(svg.namespaceURI, "ellipse");
+      Object.entries(blueprint.stage).forEach(([key, value]) => stage.setAttribute(key, value));
+      stage.setAttribute("class", "preview-focal");
+      svg.appendChild(stage);
+    }
+    const focal = blueprint.field || blueprint.focalElement;
+    if (focal) {
+      const rect = document.createElementNS(svg.namespaceURI, "rect");
+      ["x", "y", "width", "height", "rx"].forEach((key) => focal[key] != null && rect.setAttribute(key, focal[key]));
+      rect.setAttribute("class", "preview-focal");
+      svg.appendChild(rect);
+    }
+    (blueprint.sections || []).filter((section) => section.selectable !== false).forEach((section) => {
+      const polygon = document.createElementNS(svg.namespaceURI, "polygon");
+      const tier = tierByLabel[section.ticketTier];
+      polygon.setAttribute("points", section.polygon.map((point) => point.join(",")).join(" "));
+      polygon.setAttribute("fill", state.wizardTickets?.[tier]?.color || ticketColorForTier(tier));
+      polygon.setAttribute("fill-opacity", "0.72");
+      polygon.setAttribute("class", "preview-seat-section");
+      svg.appendChild(polygon);
+    });
+    eventMapPreviewCanvas.appendChild(svg);
+  }
+
+  function activeDashboardPanel() {
+    return document.querySelector(".admin-panel.is-active")?.dataset.panel || "overview";
+  }
+
+  function setActiveDashboardPanel(panel) {
+    document.querySelectorAll(".admin-nav button, .admin-panel").forEach((element) => {
+      element.classList.toggle("is-active", element.dataset.panel === panel);
+    });
+  }
+
+  function playEventEditorEntrance() {
+    eventEditor.classList.remove("is-entering");
+    void eventEditor.offsetWidth;
+    window.requestAnimationFrame(() => eventEditor.classList.add("is-entering"));
+  }
+
+  function enterEventEditor() {
+    if (!document.body.classList.contains("event-editor-mode")) {
+      const currentPanel = activeDashboardPanel();
+      state.editorReturnPanel = currentPanel === "add-event" ? "overview" : currentPanel;
+      state.editorReturnScrollY = window.scrollY;
+    }
+    setActiveDashboardPanel("add-event");
+    document.body.classList.add("event-editor-mode");
+    eventEditorShell.scrollTop = 0;
+    playEventEditorEntrance();
+  }
+
+  function leaveEventEditor(destination = state.editorReturnPanel, scrollY = state.editorReturnScrollY) {
+    if (eventMapPreviewDialog.open) eventMapPreviewDialog.close();
+    eventEditor.classList.remove("is-entering");
+    document.body.classList.remove("event-editor-mode");
+    setActiveDashboardPanel(destination || "overview");
+    window.requestAnimationFrame(() => window.scrollTo({ top: scrollY, left: 0 }));
+  }
+
+  function requestEventEditorExit(destination) {
+    if (state.wizardDirty && !window.confirm("Discard unsaved event changes?")) return;
     resetForm();
-    await loadData();
+    leaveEventEditor(destination, destination ? 0 : state.editorReturnScrollY);
   }
 
   document.querySelectorAll(".admin-nav button").forEach((button) =>
     button.addEventListener("click", () => {
-      document
-        .querySelectorAll(".admin-nav button, .admin-panel")
-        .forEach((element) =>
-          element.classList.toggle(
-            "is-active",
-            element.dataset.panel === button.dataset.panel,
-          ),
-        );
+      if (button.dataset.panel === "add-event") {
+        resetForm();
+        enterEventEditor();
+        return;
+      }
+      setActiveDashboardPanel(button.dataset.panel);
     }),
   );
   ["eventSearch", "eventStatus", "eventCategory", "eventAvailability"].forEach(
@@ -672,19 +892,56 @@
         : 10;
     renderPerformanceTable();
   });
-  document
-    .querySelector("#cancelEventEdit")
-    .addEventListener("click", resetForm);
-  venueSelect.addEventListener("change", () =>
-    renderVenuePreview(venueSelect.value),
-  );
+  function requestWizardCancel() {
+    requestEventEditorExit();
+  }
+
+  document.querySelector("#cancelEventEdit").addEventListener("click", requestWizardCancel);
+  document.querySelector("#cancelEventWizard").addEventListener("click", requestWizardCancel);
+  eventEditorBack.addEventListener("click", () => requestEventEditorExit());
+  eventEditorHome.addEventListener("click", () => requestEventEditorExit("overview"));
+  venueSelect.addEventListener("change", () => {
+    renderVenuePreview(venueSelect.value);
+    renderTicketInventory();
+  });
   form.addEventListener("submit", (event) => {
     event.preventDefault();
+    if (state.wizardStep !== 5) {
+      showWizardStep(state.wizardStep + 1, true);
+      return;
+    }
+    if (!validateStep(4)) return;
     saveEvent(event).catch((error) => {
       console.error(error);
-      setMessage(error.message || "Event could not be saved.", "error");
+      setWizardMessage(error.message || "Event could not be saved.");
     });
   });
+  wizardContinue.addEventListener("click", () => showWizardStep(state.wizardStep + 1, true));
+  wizardBack.addEventListener("click", () => showWizardStep(state.wizardStep - 1));
+  wizardStepButtons.forEach((button) => button.addEventListener("click", () => showWizardStep(Number(button.dataset.eventStep))));
+  form.addEventListener("input", (event) => {
+    state.wizardDirty = true;
+    if (event.target.name === "image_url") updateImagePreview();
+  });
+  form.addEventListener("change", () => { state.wizardDirty = true; });
+  ticketInventoryRows.addEventListener("input", (event) => {
+    const row = event.target.closest("[data-ticket-tier]");
+    if (!row || !state.wizardTickets) return;
+    const tier = row.dataset.ticketTier;
+    if (event.target.matches("[data-ticket-quantity]")) state.wizardTickets[tier].quantity = Math.max(0, Number(event.target.value || 0));
+    if (event.target.matches("[data-ticket-price]")) state.wizardTickets[tier].price = Math.max(0, Number(event.target.value || 0));
+    state.wizardDirty = true;
+    renderTicketInventory();
+  });
+  eventReview.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-review-edit]");
+    if (button) showWizardStep(Number(button.dataset.reviewEdit));
+  });
+  previewSeatMap.addEventListener("click", () => {
+    renderHallMapPreview();
+    if (typeof eventMapPreviewDialog.showModal === "function") eventMapPreviewDialog.showModal();
+  });
+  document.querySelector("#eventMapPreviewClose").addEventListener("click", () => eventMapPreviewDialog.close());
   document
     .querySelector("#cancelCatalogEdit")
     .addEventListener("click", resetCatalogForm);
@@ -701,113 +958,6 @@
     state.catalogVisibleCount = CATALOG_BATCH_SIZE;
     renderCatalog();
     catalogList.scrollIntoView({ behavior: "smooth", block: "start" });
-  });
-  addTicketTypeButton.addEventListener("click", async () => {
-    const eventId = activeSeatingEventId();
-    if (!eventId) return;
-    const name = addTicketTypeForm.querySelector('[name="name"]').value.trim();
-    const price = Number(addTicketTypeForm.querySelector('[name="price"]').value);
-    try {
-      const { error } = await client.rpc("admin_upsert_event_ticket_type", {
-        p_event_id: eventId,
-        p_ticket_type_id: null,
-        p_name: name,
-        p_price: price,
-        p_is_active: true,
-      });
-      if (error) throw error;
-      addTicketTypeForm.querySelector('[name="name"]').value = "";
-      addTicketTypeForm.querySelector('[name="price"]').value = "";
-      await Promise.all([loadSeatingConfiguration(eventId), loadData()]);
-      setMessage("Ticket type added.", "success");
-    } catch (error) {
-      setMessage(seatingError(error, "Ticket type could not be added."), "error");
-    }
-  });
-  seatingTicketTypes.addEventListener("click", async (event) => {
-    const button = event.target.closest("[data-save-ticket]");
-    if (!button) return;
-    const card = button.closest("[data-ticket-id]");
-    const eventId = activeSeatingEventId();
-    if (!card || !eventId) return;
-    try {
-      const { error } = await client.rpc("admin_upsert_event_ticket_type", {
-        p_event_id: eventId,
-        p_ticket_type_id: card.dataset.ticketId,
-        p_name: card.querySelector("[data-ticket-name]").value.trim(),
-        p_price: Number(card.querySelector("[data-ticket-price]").value),
-        p_is_active: card.querySelector("[data-ticket-active]").checked,
-      });
-      if (error) throw error;
-      const { error: colorError } = await client.rpc("admin_set_event_ticket_type_color", {
-        p_event_id: eventId,
-        p_ticket_type_id: card.dataset.ticketId,
-        p_display_color: card.querySelector("[data-ticket-color]").value,
-      });
-      if (colorError) throw colorError;
-      await Promise.all([loadSeatingConfiguration(eventId), loadData()]);
-      setMessage("Ticket type saved. Prices for sold or actively reserved seats remain protected.", "success");
-    } catch (error) {
-      setMessage(seatingError(error, "Ticket type could not be saved."), "error");
-    }
-  });
-  addSectionButton.addEventListener("click", async () => {
-    const eventId = activeSeatingEventId();
-    if (!eventId) return;
-    const value = (name) => addSectionForm.querySelector(`[name="${name}"]`).value;
-    try {
-      const { error } = await client.rpc("admin_upsert_event_zone", {
-        p_event_id: eventId, p_config_id: null,
-        p_name: value("name").trim(), p_code: value("code").trim(),
-        p_ticket_type_id: value("ticket_type_id"),
-        p_rows: Number(value("rows")), p_seats_per_row: Number(value("seats_per_row")),
-        p_display_order: Number(value("display_order")), p_is_enabled: true,
-      });
-      if (error) throw error;
-      addSectionForm.querySelectorAll("input").forEach((input) => {
-        input.value = input.name === "display_order" ? "0" : "";
-      });
-      await Promise.all([loadSeatingConfiguration(eventId), loadData()]);
-      setMessage("Section added with canonical event seats.", "success");
-    } catch (error) {
-      setMessage(seatingError(error, "Section could not be added."), "error");
-    }
-  });
-  seatingSections.addEventListener("click", async (event) => {
-    const save = event.target.closest("[data-save-section]");
-    const remove = event.target.closest("[data-delete-section]");
-    const button = save || remove;
-    const card = button?.closest("[data-section-id]");
-    const eventId = activeSeatingEventId();
-    if (!card || !eventId) return;
-    try {
-      if (remove) {
-        if (!window.confirm("Remove this section? Sold or active reservations will be protected and block the operation.")) return;
-        const { error } = await client.rpc("admin_delete_event_zone", { p_config_id: card.dataset.sectionId });
-        if (error) throw error;
-        setMessage("Section removed.", "success");
-      } else {
-        const section = state.seating.sections.find((item) => item.id === card.dataset.sectionId);
-        const { error } = await client.rpc("admin_upsert_event_zone", {
-          p_event_id: eventId, p_config_id: card.dataset.sectionId,
-          p_name: card.querySelector("[data-section-name]").value.trim(), p_code: section.code,
-          p_ticket_type_id: card.querySelector("[data-section-ticket]").value,
-          p_rows: Number(card.querySelector("[data-section-rows]").value),
-          p_seats_per_row: Number(card.querySelector("[data-section-seats]").value),
-          p_display_order: Number(card.querySelector("[data-section-order]").value),
-          p_is_enabled: card.querySelector("[data-section-enabled]").checked,
-        });
-        if (error) throw error;
-        setMessage("Section saved.", "success");
-      }
-      await Promise.all([loadSeatingConfiguration(eventId), loadData()]);
-    } catch (error) {
-      setMessage(seatingError(error, "Section could not be saved."), "error");
-    }
-  });
-  previewSeatMap.addEventListener("click", () => {
-    const eventId = activeSeatingEventId();
-    if (eventId) window.open(`getTickets.html?id=${encodeURIComponent(eventId)}`, "_blank", "noopener");
   });
   catalogForm.addEventListener("submit", async (event) => {
     event.preventDefault();
@@ -923,6 +1073,7 @@
       document.body.classList.remove("admin-gated");
       status.textContent = "Authorized administrator";
       await loadData();
+      resetForm();
       resetCatalogForm();
     } catch (error) {
       console.error(error);

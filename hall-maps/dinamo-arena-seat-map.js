@@ -2,21 +2,19 @@
   "use strict";
 
   const SVG_NS = "http://www.w3.org/2000/svg";
-  const blueprint = window.blackSeaArenaBlueprint;
+  const blueprint = window.dinamoArenaBlueprint;
   if (!blueprint) return;
 
-  const normalizeTier = (value) => String(value || "").trim().toLowerCase().replace(/\s+/g, " ");
-  const numeric = (value) => Number(value) || 0;
-  const createSvg = (name) => document.createElementNS(SVG_NS, name);
-  const setAttributes = (node, attributes) => Object.entries(attributes).forEach(([name, value]) => node.setAttribute(name, String(value)));
-  // This is a geometry-label-to-canonical-tier lookup only. Once resolved,
-  // every seat is grouped and assigned strictly by ticket_type_id UUID.
   const blueprintTierToCanonicalTier = Object.freeze({
     "cheap / standard": "cheap",
     "medium / premium": "medium",
     expensive: "expensive",
     vip: "vip",
   });
+  const normalizeTier = (value) => String(value || "").trim().toLowerCase().replace(/\s+/g, " ");
+  const numeric = (value) => Number(value) || 0;
+  const createSvg = (name) => document.createElementNS(SVG_NS, name);
+  const setAttributes = (node, attributes) => Object.entries(attributes).forEach(([name, value]) => node.setAttribute(name, String(value)));
 
   function polygonArea(polygon) {
     return Math.abs(polygon.reduce((sum, point, index) => {
@@ -40,9 +38,7 @@
   }
 
   function stableSeatSort(left, right) {
-    return numeric(left.section_order) - numeric(right.section_order)
-      || String(left.section_code || "").localeCompare(String(right.section_code || ""))
-      || numeric(left.row_number) - numeric(right.row_number)
+    return numeric(left.row_number) - numeric(right.row_number)
       || numeric(left.seat_number) - numeric(right.seat_number)
       || String(left.event_seat_id).localeCompare(String(right.event_seat_id));
   }
@@ -67,7 +63,7 @@
       center[0] + u * axis[0] + v * normal[0],
       center[1] + u * axis[1] + v * normal[1],
     ];
-    return { points: polygon.map(toLocal), toWorld, rotation: Math.atan2(axis[1], axis[0]) * 180 / Math.PI };
+    return { points: polygon.map(toLocal), toWorld };
   }
 
   function scanlineIntervals(polygon, v) {
@@ -85,17 +81,16 @@
   function seatPositions(section, rows) {
     const geometry = localPolygon(section.polygon);
     const vs = geometry.points.map(([, v]) => v);
+    const us = geometry.points.map(([u]) => u);
     const minV = Math.min(...vs);
     const maxV = Math.max(...vs);
     const height = maxV - minV;
-    const uniqueCanonicalRows = new Set(rows.map((row) => `${row.section_id}:${row.row_number}`)).size;
-    const us = geometry.points.map(([u]) => u);
     const width = Math.max(...us) - Math.min(...us);
+    const uniqueCanonicalRows = new Set(rows.map((row) => `${row.section_id}:${row.row_number}`)).size;
     const densityRows = Math.ceil(Math.sqrt(rows.length * Math.max(height / Math.max(width, 1), 0.35)));
-    const visualRows = Math.max(1, Math.min(Math.max(rows.length, 1), Math.max(section.previewRows, uniqueCanonicalRows, densityRows)));
-    const edgePadding = Math.min(12, height * 0.08);
-    const labelBand = Math.min(30, height * 0.2);
-    const usableMinV = minV + edgePadding + labelBand;
+    const visualRows = Math.max(1, Math.min(rows.length, Math.max(uniqueCanonicalRows, densityRows)));
+    const edgePadding = Math.min(8, Math.max(1.5, height * 0.055));
+    const usableMinV = minV + edgePadding;
     const usableMaxV = Math.max(usableMinV + 1, maxV - edgePadding);
     const lineSpacing = (usableMaxV - usableMinV) / visualRows;
     const lines = Array.from({ length: visualRows }, (_, index) => {
@@ -123,13 +118,14 @@
       });
     });
     if (seatIndex !== rows.length) throw new Error(`Could not place every canonical seat in ${section.id}.`);
-    return { positions, radius: Math.max(0.85, Math.min(5, smallestGap * 0.34)) };
+    return { positions, radius: Math.max(0.42, Math.min(4.5, smallestGap * 0.32)) };
   }
 
-  function renderSeats(svg, section, seats, color, selectedIds) {
-    const placement = seatPositions(section, seats);
+  function renderSeats(svg, section, rows, color, selectedIds) {
+    const placement = seatPositions(section, rows);
     const group = createSvg("g");
-    group.classList.add("black-sea-arena-seats");
+    group.classList.add("dinamo-arena-seats");
+    const fragment = document.createDocumentFragment();
     placement.positions.forEach(({ row, x, y }) => {
       const seat = createSvg("circle");
       const selected = selectedIds.has(row.event_seat_id);
@@ -146,10 +142,11 @@
         "data-section": row.section_id,
         "data-status": row.status,
         role: "button",
-        "aria-label": `${row.section_name}, row ${row.row_number}, seat ${row.seat_number}, ${row.ticket_type_name}, ₾${row.price}`,
+        "aria-label": `${row.section_name}, row ${row.row_number}, seat ${row.seat_number}, ${row.ticket_type_name}, ₾${row.price}, ${row.status}`,
       });
-      group.appendChild(seat);
+      fragment.appendChild(seat);
     });
+    group.appendChild(fragment);
     svg.appendChild(group);
     return placement.positions.length;
   }
@@ -158,16 +155,16 @@
     const expectedIds = new Set(rows.map((row) => row.event_seat_id));
     const ticketById = new Map(ticketTypes.map((ticket) => [ticket.ticket_type_id, ticket]));
     const perTier = {};
-    blueprint.sections.forEach((section) => {
+    blueprint.sections.filter((section) => section.selectable).forEach((section) => {
       if (!perTier[section.ticketTier]) perTier[section.ticketTier] = { canonical: 0, generatedPositions: 0, assigned: 0 };
     });
     rows.forEach((row) => {
       const ticket = ticketById.get(row.ticket_type_id);
       const canonicalTier = normalizeTier(ticket?.canonical_tier);
-      const blueprintTier = Object.entries(blueprintTierToCanonicalTier)
+      const displayTier = Object.entries(blueprintTierToCanonicalTier)
         .find(([, tier]) => tier === canonicalTier)?.[0];
-      const displayTier = blueprint.sections.find((section) => normalizeTier(section.ticketTier) === blueprintTier)?.ticketTier;
-      if (displayTier && perTier[displayTier]) perTier[displayTier].canonical += 1;
+      const sectionTier = blueprint.sections.find((section) => section.selectable && normalizeTier(section.ticketTier) === displayTier)?.ticketTier;
+      if (sectionTier && perTier[sectionTier]) perTier[sectionTier].canonical += 1;
     });
     return {
       canonicalEventSeats: rows.length,
@@ -182,7 +179,7 @@
   }
 
   function bindingError(message, diagnostics) {
-    console.error("Black Sea Arena canonical seat-binding diagnostics", diagnostics);
+    console.error("Dinamo Arena canonical seat-binding diagnostics", diagnostics);
     const error = new Error(message);
     error.bindingDiagnostics = diagnostics;
     throw error;
@@ -194,16 +191,14 @@
     ticketTypes.forEach((ticket) => {
       const canonicalTier = normalizeTier(ticket.canonical_tier);
       if (ticket.ticket_type_id) ticketById.set(ticket.ticket_type_id, ticket);
-      if (ticket.ticket_type_id && canonicalTier && !ticketByCanonicalTier.has(canonicalTier)) {
-        ticketByCanonicalTier.set(canonicalTier, ticket);
-      }
+      if (ticket.ticket_type_id && canonicalTier && !ticketByCanonicalTier.has(canonicalTier)) ticketByCanonicalTier.set(canonicalTier, ticket);
     });
     const sectionsByTicketType = new Map();
-    blueprint.sections.forEach((section) => {
+    blueprint.sections.filter((section) => section.selectable).forEach((section) => {
       const canonicalTier = blueprintTierToCanonicalTier[normalizeTier(section.ticketTier)];
       const ticket = ticketByCanonicalTier.get(canonicalTier);
       if (!canonicalTier || !ticket?.ticket_type_id) {
-        bindingError(`No canonical ticket type could be resolved for Black Sea Arena geometry tier ${section.ticketTier}.`, diagnostics);
+        bindingError(`No canonical ticket type could be resolved for Dinamo Arena geometry tier ${section.ticketTier}.`, diagnostics);
       }
       if (!sectionsByTicketType.has(ticket.ticket_type_id)) sectionsByTicketType.set(ticket.ticket_type_id, []);
       sectionsByTicketType.get(ticket.ticket_type_id).push(section);
@@ -226,13 +221,41 @@
     return diagnostics;
   }
 
+  function renderFixedGeometry(svg) {
+    const boundary = createSvg("ellipse");
+    boundary.classList.add("dinamo-arena-boundary");
+    setAttributes(boundary, { cx: blueprint.outerBoundary.cx, cy: blueprint.outerBoundary.cy, rx: blueprint.outerBoundary.rx, ry: blueprint.outerBoundary.ry, "aria-hidden": "true" });
+    svg.appendChild(boundary);
+
+    const restricted = blueprint.sections.find((section) => section.id === blueprint.restrictedSection.id);
+    const restrictedPolygon = createSvg("polygon");
+    restrictedPolygon.classList.add("dinamo-arena-restricted");
+    setAttributes(restrictedPolygon, {
+      points: restricted.polygon.map(([x, y]) => `${x},${y}`).join(" "),
+      "data-section-template-id": restricted.id,
+      "aria-label": "Restricted seating area",
+      "aria-hidden": "true",
+    });
+    svg.appendChild(restrictedPolygon);
+
+    const field = createSvg("rect");
+    field.classList.add("dinamo-arena-field");
+    setAttributes(field, { x: blueprint.field.x, y: blueprint.field.y, width: blueprint.field.width, height: blueprint.field.height, rx: blueprint.field.rx, "aria-hidden": "true" });
+    svg.appendChild(field);
+    const fieldLabel = createSvg("text");
+    fieldLabel.classList.add("dinamo-arena-field-label");
+    setAttributes(fieldLabel, { x: blueprint.field.x + blueprint.field.width / 2, y: blueprint.field.y + blueprint.field.height / 2 + 10, "aria-hidden": "true" });
+    fieldLabel.textContent = "FIELD";
+    svg.appendChild(fieldLabel);
+  }
+
   function render({ stageMap, rows, ticketTypes, colors, selectedIds }) {
     const diagnostics = buildBindingDiagnostics(rows, ticketTypes);
     const { sectionsByTicketType, ticketById } = resolveSectionsByTicketType(ticketTypes, diagnostics);
     const rowsByTicketType = new Map();
     rows.forEach((row) => {
       if (!sectionsByTicketType.has(row.ticket_type_id)) {
-        bindingError(`No Black Sea Arena polygon exists for canonical ticket type UUID ${row.ticket_type_id}.`, diagnostics);
+        bindingError(`No Dinamo Arena polygon exists for canonical ticket type UUID ${row.ticket_type_id}.`, diagnostics);
       }
       if (!rowsByTicketType.has(row.ticket_type_id)) rowsByTicketType.set(row.ticket_type_id, []);
       rowsByTicketType.get(row.ticket_type_id).push(row);
@@ -240,35 +263,26 @@
     const expectedIds = new Set(rows.map((row) => row.event_seat_id));
     const assignedIds = [];
     const viewport = document.createElement("div");
-    viewport.className = "black-sea-arena-map-viewport";
+    viewport.className = "dinamo-arena-map-viewport";
     const svg = createSvg("svg");
-    svg.classList.add("black-sea-arena-svg");
-    setAttributes(svg, { viewBox: blueprint.viewBox.join(" "), role: "group", "aria-label": "Black Sea Arena interactive seat map", "data-seat-interaction-root": "true" });
-    const stage = createSvg("ellipse");
-    stage.classList.add("black-sea-arena-stage");
-    setAttributes(stage, { cx: blueprint.stage.cx, cy: blueprint.stage.cy, rx: blueprint.stage.rx, ry: blueprint.stage.ry, "aria-hidden": "true" });
-    svg.appendChild(stage);
-    const stageLabel = createSvg("text");
-    stageLabel.classList.add("black-sea-arena-stage-label");
-    setAttributes(stageLabel, { x: blueprint.stage.cx, y: blueprint.stage.cy + 7, "aria-hidden": "true" });
-    stageLabel.textContent = "STAGE";
-    svg.appendChild(stageLabel);
+    svg.classList.add("dinamo-arena-svg");
+    setAttributes(svg, { viewBox: blueprint.viewBox.join(" "), role: "group", "aria-label": "Dinamo Arena interactive seat map", "data-seat-interaction-root": "true" });
 
     [...sectionsByTicketType.entries()].forEach(([ticketTypeId, sections]) => {
       const canonicalRows = (rowsByTicketType.get(ticketTypeId) || []).sort(stableSeatSort);
       const allocations = allocateByWeight(canonicalRows.length, sections.map((section) => polygonArea(section.polygon)));
       if (allocations.reduce((sum, allocation) => sum + allocation, 0) !== canonicalRows.length) {
-        bindingError(`Black Sea Arena allocation did not total the canonical seat count for ticket type UUID ${ticketTypeId}.`, diagnostics);
+        bindingError(`Dinamo Arena allocation did not total the canonical seat count for ticket type UUID ${ticketTypeId}.`, diagnostics);
       }
       let offset = 0;
       sections.forEach((section, index) => {
         const seats = canonicalRows.slice(offset, offset + allocations[index]);
         offset += allocations[index];
-        const ticket = ticketById.get(ticketTypeId);
-        const color = colors.get(ticket?.ticket_type_id) || blueprint.tierColors[section.ticketTier];
+        const color = colors.get(ticketTypeId);
+        if (!color) bindingError(`No runtime ticket color exists for canonical ticket type UUID ${ticketTypeId}.`, diagnostics);
         const polygon = createSvg("polygon");
-        polygon.classList.add("black-sea-arena-section");
-        setAttributes(polygon, { points: section.polygon.map(([x, y]) => `${x},${y}`).join(" "), fill: color, "data-section-template-id": section.id, "data-ticket-type-id": ticket?.ticket_type_id || "" });
+        polygon.classList.add("dinamo-arena-section");
+        setAttributes(polygon, { points: section.polygon.map(([x, y]) => `${x},${y}`).join(" "), fill: color, "data-section-template-id": section.id, "data-ticket-type-id": ticketTypeId, "aria-hidden": "true" });
         polygon.style.color = color;
         svg.appendChild(polygon);
         let generatedPositions;
@@ -286,6 +300,8 @@
         });
       });
     });
+
+    renderFixedGeometry(svg);
     finalizeDiagnostics(diagnostics, expectedIds, assignedIds);
     if (
       diagnostics.generatedPositions !== diagnostics.canonicalEventSeats
@@ -295,9 +311,9 @@
       || diagnostics.unassignedSeats.length
       || diagnostics.inventedUnknownIds.length
     ) {
-      bindingError("Black Sea Arena map binding did not render every canonical event seat exactly once.", diagnostics);
+      bindingError("Dinamo Arena map binding did not render every canonical event seat exactly once.", diagnostics);
     }
-    console.info("Black Sea Arena canonical seat-binding diagnostics", diagnostics);
+    console.info("Dinamo Arena canonical seat-binding diagnostics", diagnostics);
 
     viewport.appendChild(svg);
     const tooltip = document.createElement("div");
@@ -311,5 +327,5 @@
     return { svg, assignedSeatCount: diagnostics.assignedSeats, diagnostics };
   }
 
-  window.blackSeaArenaSeatMap = { render, blueprint };
+  window.dinamoArenaSeatMap = { render, blueprint };
 })();
