@@ -1,0 +1,32 @@
+{
+  "venue": "ExpoGeorgia Pavilion 11",
+  "venueId": "b464dca3-b5bd-4c77-9c2b-8a4c5051ba6a",
+  "slug": "expo-georgia-pavilion-11",
+  "viewBox": "0 0 1600 1000",
+  "stage": {
+    "key": "stage",
+    "type": "rect",
+    "x": 520,
+    "y": 60,
+    "width": 560,
+    "height": 170,
+    "rx": 32,
+    "selectable": false,
+    "label": "STAGE"
+  },
+  "sections": [
+    { "key": "expensive_left_top", "tier": "expensive", "type": "rect", "x": 90, "y": 270, "width": 270, "height": 110, "rx": 25 },
+    { "key": "expensive_right_top", "tier": "expensive", "type": "rect", "x": 1240, "y": 270, "width": 270, "height": 110, "rx": 25 },
+    { "key": "expensive_left_middle", "tier": "expensive", "type": "rect", "x": 270, "y": 420, "width": 280, "height": 105, "rx": 25 },
+    { "key": "vip_center", "tier": "vip", "type": "rect", "x": 610, "y": 420, "width": 380, "height": 105, "rx": 25 },
+    { "key": "expensive_right_middle", "tier": "expensive", "type": "rect", "x": 1050, "y": 420, "width": 280, "height": 105, "rx": 25 },
+    { "key": "medium_left", "tier": "medium", "type": "rect", "x": 170, "y": 590, "width": 260, "height": 105, "rx": 25 },
+    { "key": "medium_center_left", "tier": "medium", "type": "rect", "x": 490, "y": 590, "width": 260, "height": 105, "rx": 25 },
+    { "key": "medium_center_right", "tier": "medium", "type": "rect", "x": 850, "y": 590, "width": 260, "height": 105, "rx": 25 },
+    { "key": "medium_right", "tier": "medium", "type": "rect", "x": 1170, "y": 590, "width": 260, "height": 105, "rx": 25 },
+    { "key": "cheap_left", "tier": "cheap", "type": "rect", "x": 170, "y": 770, "width": 260, "height": 105, "rx": 25 },
+    { "key": "cheap_center_left", "tier": "cheap", "type": "rect", "x": 490, "y": 770, "width": 260, "height": 105, "rx": 25 },
+    { "key": "cheap_center_right", "tier": "cheap", "type": "rect", "x": 850, "y": 770, "width": 260, "height": 105, "rx": 25 },
+    { "key": "cheap_right", "tier": "cheap", "type": "rect", "x": 1170, "y": 770, "width": 260, "height": 105, "rx": 25 }
+  ]
+}

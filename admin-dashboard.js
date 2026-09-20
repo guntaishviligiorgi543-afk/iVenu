@@ -37,6 +37,7 @@
     upcomingShowsPreview: [],
     upcomingShowsPreviewMode: "latest_added",
   };
+  let expoGeorgiaPavilion11BlueprintPromise = null;
   const status = document.querySelector("#adminStatus");
   const message = document.querySelector("#adminMessage");
   const form = document.querySelector("#eventForm");
@@ -1120,28 +1121,198 @@
     }, 3000);
   }
 
-  function blueprintForVenue(venue) {
+  async function expoGeorgiaPavilion11Blueprint() {
+    if (!expoGeorgiaPavilion11BlueprintPromise) {
+      expoGeorgiaPavilion11BlueprintPromise = fetch("hall-maps/expo-georgia-pavilion-11.json")
+        .then((response) => {
+          if (!response.ok) throw new Error("ExpoGeorgia Pavilion 11 blueprint could not be loaded.");
+          return response.json();
+        })
+        .then((blueprint) => {
+          const valid = blueprint?.slug === "expo-georgia-pavilion-11"
+            && typeof blueprint.venueId === "string"
+            && typeof blueprint.viewBox === "string"
+            && blueprint.stage?.type === "rect"
+            && Array.isArray(blueprint.sections)
+            && blueprint.sections.length === 13;
+          if (!valid) throw new Error("ExpoGeorgia Pavilion 11 blueprint is invalid.");
+          return blueprint;
+        })
+        .catch((error) => {
+          expoGeorgiaPavilion11BlueprintPromise = null;
+          throw error;
+        });
+    }
+    return expoGeorgiaPavilion11BlueprintPromise;
+  }
+
+  async function blueprintForVenue(venue) {
     if (!venue) return null;
     if (venue.name === "Black Sea Arena") return window.blackSeaArenaBlueprint || null;
     if (venue.id === window.dinamoArenaBlueprint?.venueId) return window.dinamoArenaBlueprint;
     if (venue.id === window.theatreBlueprint?.venueId) return window.theatreBlueprint;
+    const expoBlueprint = await expoGeorgiaPavilion11Blueprint();
+    if (venue.id === expoBlueprint.venueId) return expoBlueprint;
     return null;
   }
 
-  function renderHallMapPreview() {
+  function createPreviewSvgElement(svg, name, attributes = {}) {
+    const element = document.createElementNS(svg.namespaceURI, name);
+    Object.entries(attributes).forEach(([key, value]) => element.setAttribute(key, String(value)));
+    return element;
+  }
+
+  function allocatePreviewSeats(total, weights) {
+    const weightTotal = weights.reduce((sum, weight) => sum + weight, 0);
+    const allocation = weights.map((weight) => Math.floor(total * weight / weightTotal));
+    const remaining = total - allocation.reduce((sum, value) => sum + value, 0);
+    weights
+      .map((weight, index) => ({ index, remainder: total * weight / weightTotal - allocation[index] }))
+      .sort((left, right) => right.remainder - left.remainder || left.index - right.index)
+      .slice(0, remaining)
+      .forEach(({ index }) => { allocation[index] += 1; });
+    return allocation;
+  }
+
+  function expoPreviewSeatPositions(section, rows) {
+    if (!rows.length) return { points: [], radius: 1 };
+    const paddingX = Math.min(20, Math.max(6, section.width * 0.045));
+    const paddingY = Math.min(18, Math.max(7, section.height * 0.1));
+    const width = Math.max(1, section.width - paddingX * 2);
+    const height = Math.max(1, section.height - paddingY * 2);
+    const nativeRowCount = new Set(rows.map((row) => `${row.section_id}:${row.row_number}`)).size;
+    const visualRows = Math.max(1, Math.min(rows.length, Math.max(nativeRowCount, Math.ceil(Math.sqrt(rows.length * Math.max(height / width, 0.2))))));
+    const columns = Math.ceil(rows.length / visualRows);
+    const rowCount = Math.ceil(rows.length / columns);
+    const points = [];
+    let seatIndex = 0;
+    let smallestGap = Math.min(width / columns, height / rowCount);
+    for (let rowIndex = 0; rowIndex < rowCount; rowIndex += 1) {
+      const count = Math.min(columns, rows.length - seatIndex);
+      const xGap = width / count;
+      smallestGap = Math.min(smallestGap, xGap, height / rowCount);
+      for (let columnIndex = 0; columnIndex < count; columnIndex += 1) {
+        points.push({
+          row: rows[seatIndex++],
+          x: section.x + paddingX + xGap * (columnIndex + 0.5),
+          y: section.y + paddingY + height * (rowIndex + 0.5) / rowCount,
+        });
+      }
+    }
+    return { points, radius: Math.max(0.7, Math.min(4.8, smallestGap * 0.3)) };
+  }
+
+  async function expoPreviewRowsForEvent() {
+    const eventId = form.elements.id.value;
+    if (!eventId) return [];
+    const { data, error } = await client.rpc("get_event_seat_map", { p_event_id: eventId });
+    if (error) throw error;
+    return data || [];
+  }
+
+  function renderExpoGeorgiaPavilion11Preview(svg, blueprint, eventId, rows) {
+    const tiers = ["cheap", "medium", "expensive", "vip"];
+    const tickets = eventTickets(eventId);
+    const ticketById = new Map(tickets.map((ticket) => [String(ticket.id), ticket]));
+    const rowsByTier = new Map(tiers.map((tier) => [tier, []]));
+    rows.forEach((row) => {
+      const tier = ticketById.get(String(row.ticket_type_id))?.canonical_tier;
+      if (rowsByTier.has(tier)) rowsByTier.get(tier).push(row);
+    });
+    const stage = createPreviewSvgElement(svg, "rect", blueprint.stage);
+    stage.setAttribute("class", "preview-focal");
+    svg.appendChild(stage);
+    const stageLabel = createPreviewSvgElement(svg, "text", {
+      x: Number(blueprint.stage.x) + Number(blueprint.stage.width) / 2,
+      y: Number(blueprint.stage.y) + Number(blueprint.stage.height) / 2 + 11,
+    });
+    stageLabel.textContent = blueprint.stage.label;
+    svg.appendChild(stageLabel);
+
+    const assignedSeatIds = [];
+    tiers.forEach((tier) => {
+      const sections = blueprint.sections.filter((section) => section.tier === tier);
+      const ticket = tickets.find((item) => item.canonical_tier === tier);
+      const color = ticket?.display_color || state.wizardTickets?.[tier]?.color || ticketColorForTier(tier);
+      const tierRows = rowsByTier.get(tier)
+        .slice()
+        .sort((left, right) => Number(left.section_order) - Number(right.section_order) || Number(left.row_number) - Number(right.row_number) || Number(left.seat_number) - Number(right.seat_number) || String(left.event_seat_id).localeCompare(String(right.event_seat_id)));
+      const allocation = allocatePreviewSeats(tierRows.length, sections.map((section) => section.width * section.height));
+      let offset = 0;
+      sections.forEach((section, index) => {
+        const frame = createPreviewSvgElement(svg, "rect", { ...section, fill: color, "fill-opacity": "0.72" });
+        frame.setAttribute("class", "preview-seat-section");
+        svg.appendChild(frame);
+        const sectionRows = tierRows.slice(offset, offset + allocation[index]);
+        offset += allocation[index];
+        const placement = expoPreviewSeatPositions(section, sectionRows);
+        placement.points.forEach(({ row, x, y }) => {
+          assignedSeatIds.push(row.event_seat_id);
+          const seat = createPreviewSvgElement(svg, "circle", {
+            cx: x.toFixed(3),
+            cy: y.toFixed(3),
+            r: placement.radius.toFixed(2),
+            fill: color,
+            "data-event-seat-id": row.event_seat_id,
+            "data-ticket-type-id": row.ticket_type_id,
+            "data-seat-status": row.status,
+          });
+          seat.setAttribute("class", `preview-event-seat${row.status === "available" ? "" : " is-unavailable"}`);
+          svg.appendChild(seat);
+        });
+      });
+    });
+    if (assignedSeatIds.length !== rows.length || new Set(assignedSeatIds).size !== rows.length) {
+      throw new Error("ExpoGeorgia Pavilion 11 preview could not bind every canonical event seat exactly once.");
+    }
+  }
+
+  async function renderHallMapPreview() {
     const venue = selectedVenueContext();
-    const blueprint = blueprintForVenue(venue);
     eventMapPreviewCanvas.replaceChildren();
+    eventMapPreviewDescription.textContent = "Loading hall map preview…";
+    let blueprint;
+    try {
+      blueprint = await blueprintForVenue(venue);
+    } catch (error) {
+      eventMapPreviewDescription.textContent = error.message || "The hall map blueprint could not be loaded.";
+      eventMapPreviewCanvas.innerHTML = '<p class="admin-map-preview__empty">The hall map preview is unavailable right now.</p>';
+      return;
+    }
     if (!venue || !blueprint) {
       eventMapPreviewDescription.textContent = venue ? `${venue.name} has no approved draft geometry available for preview.` : "Choose a venue before previewing the hall map.";
       eventMapPreviewCanvas.innerHTML = '<p class="admin-map-preview__empty">No geometry has been invented for this venue. Canonical inventory is still configured from its physical capacity.</p>';
       return;
     }
-    eventMapPreviewDescription.textContent = `${venue.name} geometry with draft ticket-tier colors. This preview does not create, reserve, or sell seats.`;
+    const eventId = form.elements.id.value;
+    let eventRows = [];
+    if (blueprint.slug === "expo-georgia-pavilion-11" && eventId) {
+      try {
+        eventRows = await expoPreviewRowsForEvent();
+      } catch (error) {
+        eventMapPreviewDescription.textContent = error.message || "The event seat inventory could not be loaded.";
+        eventMapPreviewCanvas.innerHTML = '<p class="admin-map-preview__empty">The hall geometry is available, but this event\'s canonical seats could not be loaded.</p>';
+        return;
+      }
+    }
+    eventMapPreviewDescription.textContent = blueprint.slug === "expo-georgia-pavilion-11" && eventId
+      ? `${venue.name} geometry with ${formatSeatNumber(eventRows.length)} canonical event seats. This preview does not modify seat state.`
+      : `${venue.name} geometry with draft ticket-tier colors. This preview does not create, reserve, or sell seats.`;
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    svg.setAttribute("viewBox", blueprint.viewBox.join(" "));
+    svg.setAttribute("viewBox", Array.isArray(blueprint.viewBox) ? blueprint.viewBox.join(" ") : blueprint.viewBox);
     svg.setAttribute("role", "img");
     svg.setAttribute("aria-label", `${venue.name} draft hall map`);
+    if (blueprint.slug === "expo-georgia-pavilion-11") {
+      try {
+        renderExpoGeorgiaPavilion11Preview(svg, blueprint, eventId, eventRows);
+      } catch (error) {
+        eventMapPreviewDescription.textContent = error.message || "The event seat inventory could not be rendered.";
+        eventMapPreviewCanvas.innerHTML = '<p class="admin-map-preview__empty">The hall geometry is available, but this event\'s canonical seats could not be rendered.</p>';
+        return;
+      }
+      eventMapPreviewCanvas.appendChild(svg);
+      return;
+    }
     const tierByLabel = { "Cheap / Standard": "cheap", "Medium / Premium": "medium", Expensive: "expensive", VIP: "vip" };
     if (blueprint.outerBoundary) {
       const ellipse = document.createElementNS(svg.namespaceURI, "ellipse");
@@ -1427,8 +1598,8 @@
     if (button) showWizardStep(Number(button.dataset.reviewEdit));
   });
   previewSeatMap.addEventListener("click", () => {
-    renderHallMapPreview();
     if (typeof eventMapPreviewDialog.showModal === "function") eventMapPreviewDialog.showModal();
+    renderHallMapPreview();
   });
   document.querySelector("#eventMapPreviewClose").addEventListener("click", () => eventMapPreviewDialog.close());
   document

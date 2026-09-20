@@ -121,6 +121,10 @@
     return Boolean(selectedBand?.venueId)
       && selectedBand.venueId === window.tbilisiSportsPalaceBlueprint?.venueId;
   }
+  function isExpoGeorgiaPavilion11Event() {
+    return Boolean(selectedBand?.venueId)
+      && selectedBand.venueId === window.expoGeorgiaPavilion11Blueprint?.venueId;
+  }
   function isDinamoArenaEvent() {
     return Boolean(selectedBand?.venueId)
       && selectedBand.venueId === window.dinamoArenaBlueprint?.venueId;
@@ -155,7 +159,7 @@
       if (node.matches(".seat")) node.style.pointerEvents = dimmed ? "none" : "";
     });
     document.querySelectorAll(
-      ".stageMap .black-sea-arena-stage, .stageMap .black-sea-arena-stage-label, .stageMap .dinamo-arena-boundary, .stageMap .dinamo-arena-restricted, .stageMap .dinamo-arena-field, .stageMap .dinamo-arena-field-label, .stageMap .theatre-stage, .stageMap .theatre-stage-label, .stageMap .tbilisi-sports-palace-stage, .stageMap .tbilisi-sports-palace-stage-label",
+      ".stageMap .black-sea-arena-stage, .stageMap .black-sea-arena-stage-label, .stageMap .dinamo-arena-boundary, .stageMap .dinamo-arena-restricted, .stageMap .dinamo-arena-field, .stageMap .dinamo-arena-field-label, .stageMap .theatre-stage, .stageMap .theatre-stage-label, .stageMap .tbilisi-sports-palace-stage, .stageMap .tbilisi-sports-palace-stage-label, .stageMap .expo-georgia-pavilion-11-stage, .stageMap .expo-georgia-pavilion-11-stage-label",
     ).forEach((node) => node.classList.toggle("is-filter-dimmed", hasFilter));
   }
 
@@ -271,6 +275,23 @@
   window.renderHallMap = function renderCanonicalSeatMap() {
     const stageMap = document.querySelector(".stageMap");
     if (!stageMap) return;
+    if (isExpoGeorgiaPavilion11Event() && window.expoGeorgiaPavilion11SeatMap) {
+      try {
+        const mapResult = window.expoGeorgiaPavilion11SeatMap.render({ stageMap, rows: seatState.rows, ticketTypes: canonicalTicketTypes(), colors: colorsByTicketType(), selectedIds: seatState.selectedIds });
+        if (seatState.runtimeDiagnostics) seatState.runtimeDiagnostics.mapAllocation = mapResult.diagnostics;
+        applyMapFilters();
+        window.attachSeatClickHandlers();
+        return;
+      } catch (error) {
+        console.error("ExpoGeorgia Pavilion 11 map could not bind canonical event seats", error);
+        stageMap.replaceChildren();
+        const message = document.createElement("p");
+        message.className = "seat-map-load-error";
+        message.textContent = "The ExpoGeorgia Pavilion 11 seat map could not be loaded without risking an incomplete seat binding.";
+        stageMap.appendChild(message);
+        return;
+      }
+    }
     if (isTbilisiSportsPalaceEvent() && window.tbilisiSportsPalaceSeatMap) {
       try {
         const mapResult = window.tbilisiSportsPalaceSeatMap.render({

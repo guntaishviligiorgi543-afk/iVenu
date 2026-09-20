@@ -1929,6 +1929,15 @@ body.event-editor-mode .admin-event-wizard {
   stroke-width: 2;
 }
 
+.admin-map-preview__canvas .preview-event-seat {
+  stroke: rgba(255, 255, 255, 0.74);
+  stroke-width: 0.45;
+}
+
+.admin-map-preview__canvas .preview-event-seat.is-unavailable {
+  opacity: 0.32;
+}
+
 .admin-map-preview__canvas text {
   fill: #fff;
   font-family: "Cabin", sans-serif;
