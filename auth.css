@@ -426,7 +426,7 @@ header nav .authNavLink[hidden] {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   column-gap: 20px;
   row-gap: 20px;
- }
+}
 
 #registerForm label {
   min-width: 0;
@@ -457,7 +457,7 @@ header nav .authNavLink[hidden] {
   display: grid;
   grid-template-columns: max-content minmax(0, 1fr);
   border: 1px solid rgba(255, 255, 255, 0.3);
- }
+}
 
 #registerForm .required-mark {
   color: #ff9475;
@@ -488,7 +488,7 @@ header nav .authNavLink[hidden] {
 
 #registerForm .phone-input-group select {
   padding: 13px 14px;
-   border-right: 1px solid rgba(255, 255, 255, 0.24);
+  border-right: 1px solid rgba(255, 255, 255, 0.24);
   line-height: 1.2;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -2011,7 +2011,7 @@ header nav .authNavLink[hidden] {
   place-items: center;
   padding: 0;
   border: 0;
-  color: rgba(255, 255, 255, 0.52);
+  color: rgb(0, 0, 0);
   background: transparent;
   transform: translateY(-50%);
   cursor: pointer;
@@ -2102,6 +2102,7 @@ header nav .authNavLink[hidden] {
   border: 1px solid rgba(255, 148, 117, 0.48);
   border-radius: 10px;
   background: #151515;
+  text-align: center;
   box-shadow: 0 18px 45px rgba(0, 0, 0, 0.45);
 }
 
@@ -2555,7 +2556,9 @@ header nav .authNavLink[hidden] {
   border-radius: 0;
   color: #fff;
   background: transparent;
-  font: 700 2.35rem/0.8 Arial, sans-serif;
+  font:
+    700 2.35rem/0.8 Arial,
+    sans-serif;
 }
 
 #eventCartPanel .event-cart-panel-head button:hover,
