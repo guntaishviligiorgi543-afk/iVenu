@@ -11,7 +11,11 @@ function heroDate(event) {
   const value = new Date(`${event.event_date}T00:00:00`);
   return Number.isNaN(value.getTime())
     ? "Date TBA"
-    : value.toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" });
+    : value.toLocaleDateString("en-US", {
+        weekday: "long",
+        month: "short",
+        day: "numeric",
+      });
 }
 
 function heroTime(event) {
@@ -38,12 +42,14 @@ function renderHeroSlide(event, index) {
   details.className = "heroEventInfo";
   const dates = document.createElement("div");
   dates.className = "heroEventDetails";
-  [heroDate(event), heroTime(event), location.venue || location.details].filter(Boolean).forEach((value) => {
-    const line = document.createElement("p");
-    line.className = "heroEventMeta";
-    line.textContent = value;
-    dates.append(line);
-  });
+  [heroDate(event), heroTime(event), location.venue || location.details]
+    .filter(Boolean)
+    .forEach((value) => {
+      const line = document.createElement("p");
+      line.className = "heroEventMeta";
+      line.textContent = value;
+      dates.append(line);
+    });
   const cta = document.createElement("div");
   cta.className = "heroEventCta";
   cta.insertAdjacentHTML("beforeend", heroArrowSvg);
@@ -81,30 +87,47 @@ function initializeHeroSlider() {
     slides[index].classList.add("active");
     dots[index]?.classList.add("active");
     currentSlide = index;
-    window.setTimeout(() => { isAnimating = false; }, slideDuration);
+    window.setTimeout(() => {
+      isAnimating = false;
+    }, slideDuration);
   };
   const nextSlide = () => showSlide(currentSlide + 1);
   const previousSlide = () => showSlide(currentSlide - 1);
   const startAutoSlide = () => {
     window.clearInterval(autoSlide);
-    if (slides.length > 1) autoSlide = window.setInterval(nextSlide, autoSlideTime);
+    if (slides.length > 1)
+      autoSlide = window.setInterval(nextSlide, autoSlideTime);
   };
-  dots.forEach((dot, index) => dot.addEventListener("click", () => {
-    showSlide(index);
-    startAutoSlide();
-  }));
-  heroSlider.addEventListener("wheel", (event) => {
-    const horizontalScroll = Math.abs(event.deltaX) > Math.abs(event.deltaY);
-    const atTop = window.scrollY <= 0;
-    const atBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2;
-    const shouldHandle = horizontalScroll || (event.deltaY > 0 ? atBottom : event.deltaY < 0 && atTop);
-    if (!shouldHandle || wheelLocked || isAnimating) return;
-    event.preventDefault();
-    wheelLocked = true;
-    (horizontalScroll ? event.deltaX : event.deltaY) > 0 ? nextSlide() : previousSlide();
-    startAutoSlide();
-    window.setTimeout(() => { wheelLocked = false; }, slideDuration);
-  }, { passive: false });
+  dots.forEach((dot, index) =>
+    dot.addEventListener("click", () => {
+      showSlide(index);
+      startAutoSlide();
+    }),
+  );
+  heroSlider.addEventListener(
+    "wheel",
+    (event) => {
+      const horizontalScroll = Math.abs(event.deltaX) > Math.abs(event.deltaY);
+      const atTop = window.scrollY <= 0;
+      const atBottom =
+        window.innerHeight + window.scrollY >=
+        document.documentElement.scrollHeight - 2;
+      const shouldHandle =
+        horizontalScroll ||
+        (event.deltaY > 0 ? atBottom : event.deltaY < 0 && atTop);
+      if (!shouldHandle || wheelLocked || isAnimating) return;
+      event.preventDefault();
+      wheelLocked = true;
+      (horizontalScroll ? event.deltaX : event.deltaY) > 0
+        ? nextSlide()
+        : previousSlide();
+      startAutoSlide();
+      window.setTimeout(() => {
+        wheelLocked = false;
+      }, slideDuration);
+    },
+    { passive: false },
+  );
   startAutoSlide();
 }
 
@@ -148,11 +171,16 @@ function setAccordionOpen(accordion, isOpen) {
 
 function closeOpenAccordion(except = null) {
   const openAccordion = eventsAccordion.querySelector(".eventAcordion.is-open");
-  if (openAccordion && openAccordion !== except) setAccordionOpen(openAccordion, false);
+  if (openAccordion && openAccordion !== except)
+    setAccordionOpen(openAccordion, false);
 }
 
 document.addEventListener("click", (event) => {
-  if (event.target.closest?.(".eventAcordion") || eventShareDialog?.contains(event.target)) return;
+  if (
+    event.target.closest?.(".eventAcordion") ||
+    eventShareDialog?.contains(event.target)
+  )
+    return;
   closeOpenAccordion();
 });
 
@@ -217,7 +245,9 @@ async function copySharedEventUrl() {
     return true;
   } catch (error) {
     console.error("Event link could not be copied.", error);
-    setShareFeedback("Unable to copy the link. Please copy it from the address bar.");
+    setShareFeedback(
+      "Unable to copy the link. Please copy it from the address bar.",
+    );
     return false;
   }
 }
@@ -233,7 +263,8 @@ eventShareDialog?.addEventListener("click", async (event) => {
     closeEventShareDialog();
     return;
   }
-  const platform = event.target.closest("[data-share-platform]")?.dataset.sharePlatform;
+  const platform = event.target.closest("[data-share-platform]")?.dataset
+    .sharePlatform;
   if (!platform || !sharedEvent) return;
   if (platform === "facebook") {
     const target = new URL("https://www.facebook.com/sharer/sharer.php");

@@ -978,10 +978,7 @@ body.event-share-dialog-open {
   letter-spacing: 4px;
 }
 
-/* =========================
-   MOBILE
-========================= */
-@media (max-width: 768px) {
+ @media (max-width: 768px) {
   .sec2 {
     min-height: 78vh;
     padding: 0 18px 45px;

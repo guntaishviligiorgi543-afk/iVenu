@@ -569,7 +569,9 @@
       font-weight: 600;
       letter-spacing: 0.04em;
       cursor: pointer;
-      transition: color 0.2s ease, background-color 0.2s ease;
+      transition:
+        color 0.2s ease,
+        background-color 0.2s ease;
     }
 
     .catalog-more button:hover,
@@ -1109,7 +1111,10 @@
 
           visibleCatalogCount = CATALOG_BATCH_SIZE;
           renderCatalog();
-          catalogContainer.scrollIntoView({ behavior: "smooth", block: "start" });
+          catalogContainer.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+          });
         });
       }
 
