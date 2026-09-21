@@ -1,6 +1,6 @@
-# The Launch / iVenue
+iVenue
 
-The Launch is an iVenue music venue site with show discovery, ticket-cart support, account management, and Supabase-backed authentication.
+The ivnue is an  music venue site with show discovery, ticket-cart support, account management, and Supabase-backed authentication.
 
 ## Features
 
