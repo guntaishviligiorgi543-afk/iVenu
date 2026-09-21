@@ -1461,7 +1461,7 @@ header > nav a:hover span {
     top: 0;
     right: 0;
 
-    width: min(86vw, 380px);
+    width: min(86vw, 386px);
     height: 100dvh;
 
     padding: 90px 25px 35px;

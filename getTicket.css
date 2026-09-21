@@ -1490,13 +1490,14 @@ body.ticket-open .socIcons {
   box-shadow: 0 3px 14px rgb(0 0 0 / 0.14);
   cursor: default;
   touch-action: manipulation;
+  height: fit-content;
 }
 
 .hall-map-zoom-controls {
   display: grid;
   grid-template-columns: repeat(3, 32px);
   gap: 3px;
-}
+ }
 
 .hall-map-controls button {
   width: 32px;
