@@ -30,10 +30,14 @@ function renderHeroSlide(event, index) {
     const image = document.createElement("img");
     image.src = event.image_url;
     image.alt = event.title || event.performer || "Event";
-    image.addEventListener("error", () => {
-      slide.classList.add("heroSlide--image-fallback");
-      image.remove();
-    }, { once: true });
+    image.addEventListener(
+      "error",
+      () => {
+        slide.classList.add("heroSlide--image-fallback");
+        image.remove();
+      },
+      { once: true },
+    );
     slide.append(image);
   } else {
     slide.classList.add("heroSlide--image-fallback");
@@ -166,11 +170,15 @@ function initializeHeroSlider() {
   heroSlider.addEventListener("pointercancel", () => {
     touchStart = null;
   });
-  heroSlider.addEventListener("click", (event) => {
-    if (Date.now() >= suppressClickUntil) return;
-    event.preventDefault();
-    event.stopPropagation();
-  }, true);
+  heroSlider.addEventListener(
+    "click",
+    (event) => {
+      if (Date.now() >= suppressClickUntil) return;
+      event.preventDefault();
+      event.stopPropagation();
+    },
+    true,
+  );
   startAutoSlide();
 }
 
@@ -183,7 +191,8 @@ async function loadHeroEvents() {
   try {
     const events = await window.supabaseData.getHomepageHeroEvents();
     if (!events.length) {
-      heroSlider.innerHTML = '<p class="heroState">No featured events are available right now.</p>';
+      heroSlider.innerHTML =
+        '<p class="heroState">No featured events are available right now.</p>';
       return;
     }
     const dots = document.createElement("div");
@@ -199,13 +208,15 @@ async function loadHeroEvents() {
     });
     const firstImage = slides[0].querySelector("img");
     const imageReady = await window.pageLoading?.waitForImage(firstImage);
-    if (imageReady === false) slides[0].classList.add("heroSlide--image-fallback");
+    if (imageReady === false)
+      slides[0].classList.add("heroSlide--image-fallback");
     heroSlider.replaceChildren(...slides, dots);
     heroSlider.classList.add("is-ready");
     initializeHeroSlider();
   } catch (error) {
     console.error("Hero events could not be loaded.", error);
-    heroSlider.innerHTML = '<p class="heroState heroStateError">Featured events are temporarily unavailable.</p>';
+    heroSlider.innerHTML =
+      '<p class="heroState heroStateError">Featured events are temporarily unavailable.</p>';
   } finally {
     heroSlider.classList.remove("is-loading");
     heroSlider.setAttribute("aria-busy", "false");
@@ -451,7 +462,8 @@ function renderAccordionSkeletons() {
     const skeleton = document.createElement("div");
     skeleton.className = "accordionSkeleton";
     skeleton.setAttribute("aria-hidden", "true");
-    skeleton.innerHTML = '<div><span class="skeletonBlock accordionSkeletonDate"></span><span class="skeletonBlock accordionSkeletonTitle"></span></div><span class="skeletonBlock accordionSkeletonButton"></span>';
+    skeleton.innerHTML =
+      '<div><span class="skeletonBlock accordionSkeletonDate"></span><span class="skeletonBlock accordionSkeletonTitle"></span></div><span class="skeletonBlock accordionSkeletonButton"></span>';
     eventsAccordion.append(skeleton);
   }
 }
@@ -497,8 +509,21 @@ const mobileMenu = document.querySelector("#mobileMenu");
 const mobileMenuAccount = document.querySelector("#mobileMenuAccount");
 const mobileMenuSocial = document.querySelector(".mobileMenuSocial");
 const headerSocialIcons = document.querySelector(".socIcons");
+const headerElement = document.querySelector("header");
 const headerSocialParent = headerSocialIcons?.parentNode;
 const headerSocialNextSibling = headerSocialIcons?.nextSibling;
+const burgerBreakpoint = window.matchMedia("(max-width: 1290px)");
+
+function placeHeaderSocialIcons(isMenuOpen = false) {
+  if (!headerSocialIcons || !headerElement) return;
+  if (isMenuOpen && mobileMenuSocial) {
+    mobileMenuSocial.append(headerSocialIcons);
+  } else if (burgerBreakpoint.matches) {
+    headerElement.append(headerSocialIcons);
+  } else if (headerSocialParent) {
+    headerSocialParent.insertBefore(headerSocialIcons, headerSocialNextSibling);
+  }
+}
 
 // Burger menu open / close
 function setMobileMenu(open) {
@@ -511,12 +536,10 @@ function setMobileMenu(open) {
   mobileMenu.setAttribute("aria-hidden", String(!open));
 
   document.body.classList.toggle("mobile-menu-open", open);
-  document.querySelector("#eventCartToggle")?.classList.toggle("header-cart-hidden", open);
-  if (headerSocialIcons && mobileMenuSocial) {
-    if (open) mobileMenuSocial.append(headerSocialIcons);
-    else if (headerSocialParent)
-      headerSocialParent.insertBefore(headerSocialIcons, headerSocialNextSibling);
-  }
+  document
+    .querySelector("#eventCartToggle")
+    ?.classList.toggle("header-cart-hidden", open);
+  placeHeaderSocialIcons(open);
 }
 
 // Burger button click
@@ -527,10 +550,7 @@ mobileMenuToggle?.addEventListener("click", () => {
 
 // Close menu when clicking overlay or navigation link
 mobileMenu?.addEventListener("click", (event) => {
-  if (
-    event.target === mobileMenu ||
-    event.target.closest(".mobileMenuNav a")
-  ) {
+  if (event.target === mobileMenu || event.target.closest(".mobileMenuNav a")) {
     setMobileMenu(false);
   }
 });
@@ -544,10 +564,11 @@ document.addEventListener("keydown", (event) => {
 
 // If resized back to desktop, close mobile menu
 window.addEventListener("resize", () => {
-  if (window.innerWidth > 900) {
-    setMobileMenu(false);
-  }
+  if (window.innerWidth > 1290) setMobileMenu(false);
+  else if (!mobileMenu?.classList.contains("is-open")) placeHeaderSocialIcons();
 });
+
+placeHeaderSocialIcons();
 
 // =====================================================
 // MOBILE AUTH MENU
@@ -577,7 +598,7 @@ async function renderMobileAccountMenu() {
   if (!client?.auth?.getSession) {
     mobileMenuAccount.append(
       mobileMenuLink("log in", "login.html"),
-      mobileMenuLink("sign up", "signup.html")
+      mobileMenuLink("sign up", "signup.html"),
     );
 
     return;
@@ -599,7 +620,7 @@ async function renderMobileAccountMenu() {
     if (!user) {
       mobileMenuAccount.append(
         mobileMenuLink("log in", "login.html"),
-        mobileMenuLink("sign up", "signup.html")
+        mobileMenuLink("sign up", "signup.html"),
       );
 
       return;
@@ -609,9 +630,7 @@ async function renderMobileAccountMenu() {
     // USER IS LOGGED IN
     // =================================================
 
-    mobileMenuAccount.append(
-      mobileMenuLink("account", "profile.html")
-    );
+    mobileMenuAccount.append(mobileMenuLink("account", "profile.html"));
 
     // =================================================
     // ADMIN CHECK
@@ -632,11 +651,7 @@ async function renderMobileAccountMenu() {
     // Admin only
     if (isAdmin) {
       mobileMenuAccount.append(
-        mobileMenuLink(
-          "dashboard",
-          "admin-dashboard.html",
-          "mobileAdminLink"
-        )
+        mobileMenuLink("dashboard", "admin-dashboard.html", "mobileAdminLink"),
       );
     }
 
@@ -668,10 +683,7 @@ async function renderMobileAccountMenu() {
 
     mobileMenuAccount.append(logoutButton);
   } catch (error) {
-    console.error(
-      "Mobile account menu could not be rendered:",
-      error
-    );
+    console.error("Mobile account menu could not be rendered:", error);
   }
 }
 

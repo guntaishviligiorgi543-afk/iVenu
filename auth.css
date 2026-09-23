@@ -281,7 +281,7 @@
 
 .auth-shell {
   position: relative;
-  z-index: 1000;
+  z-index: 1;
   justify-self: center;
   width: 100%;
   min-width: 0;
@@ -294,6 +294,7 @@
 }
 
 .auth-page {
+  position: relative;
   display: grid;
   min-height: 100vh;
   place-items: center;
@@ -302,35 +303,73 @@
   font-family: "Cabin", sans-serif;
 }
 
-/* The auth brand follows the site content pattern, not the navigation row. */
-.auth-page-logo {
-  position: absolute;
-  top: 112px;
-  left: 50%;
-  z-index: 2;
-  display: block;
-  width: clamp(132px, 17vw, 210px);
-  line-height: 0;
-  transform: translateX(-50%);
+body.auth-login-page > header,
+body.auth-register-page > header {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
-.auth-page-logo img {
+body.auth-login-page > header > nav,
+body.auth-register-page > header > nav {
+  order: 0;
+  margin-right: auto;
+}
+
+body.auth-login-page > header .auth-page-logo,
+body.auth-register-page > header .auth-page-logo {
+  position: relative;
+  z-index: 100000;
+  display: block;
+  width: clamp(110px, 14vw, 176px);
+  margin-left: auto;
+  margin-right: 0;
+  line-height: 0;
+  transform: none;
+}
+
+body.auth-login-page > header .auth-page-logo img,
+body.auth-register-page > header .auth-page-logo img {
   display: block;
   width: 100%;
   height: auto;
 }
 
 @media (max-width: 1290px) {
-  .auth-page-logo {
-    top: 118px;
-    width: clamp(120px, 28vw, 185px);
+  body.auth-login-page > header,
+  body.auth-register-page > header {
+    justify-content: flex-start;
+    height: 110px;
+    padding: 0 24px;
+  }
+
+  body.auth-login-page > header > nav,
+  body.auth-register-page > header > nav {
+    display: none;
+  }
+
+  body.auth-login-page > header .auth-page-logo,
+  body.auth-register-page > header .auth-page-logo {
+    position: absolute;
+    top: 16px;
+    left: 24px;
+    right: auto;
+    order: 0;
+    width: clamp(90px, 18vw, 150px);
+    margin-left: 0;
+    margin-right: 0;
   }
 }
 
 @media (max-width: 600px) {
-  .auth-page-logo {
-    top: 118px;
-    width: clamp(110px, 42vw, 155px);
+  body.auth-login-page > header .auth-page-logo,
+  body.auth-register-page > header .auth-page-logo {
+    top: 18px;
+    left: 16px;
+    width: clamp(80px, 24vw, 120px);
   }
 }
 
@@ -357,7 +396,6 @@ body.auth-register-page > header > nav {
   body.auth-register-page > header > nav span {
     font-size: 14px;
   }
-
 }
 
 .auth-shell label,

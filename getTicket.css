@@ -18,6 +18,32 @@ main {
   isolation: isolate;
 }
 
+.ticketHero {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 100vh;
+  background: #000;
+}
+
+.ticketHero > .logo {
+  position: relative;
+  z-index: 20;
+  display: block;
+  align-self: center;
+  width: 220px;
+  max-width: 220px;
+  height: 125px;
+  transform: translateY(20px);
+}
+
+.ticketHero > .logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
 section {
   position: relative;
   min-height: 100vh;
@@ -57,10 +83,22 @@ section {
   gap: 24px;
 }
 
-.ticketHeroSkeletonTitle { width: min(100%, 520px); height: clamp(36px, 5vw, 62px); }
-.ticketHeroSkeletonDate { width: min(56%, 300px); height: 20px; }
-.ticketHeroSkeletonDescription { width: min(78%, 640px); height: 56px; }
-.ticketHeroSkeletonButton { width: 144px; height: 48px; }
+.ticketHeroSkeletonTitle {
+  width: min(100%, 520px);
+  height: clamp(36px, 5vw, 62px);
+}
+.ticketHeroSkeletonDate {
+  width: min(56%, 300px);
+  height: 20px;
+}
+.ticketHeroSkeletonDescription {
+  width: min(78%, 640px);
+  height: 56px;
+}
+.ticketHeroSkeletonButton {
+  width: 144px;
+  height: 48px;
+}
 
 .ticketHero--image-fallback .bandImg2 {
   display: none;
@@ -72,8 +110,12 @@ section {
 }
 
 @keyframes ticketHeroReveal {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -209,6 +251,20 @@ section {
   object-position: center;
   filter: brightness(50%);
   pointer-events: none;
+}
+
+@media (max-width: 1290px) {
+  .ticketHero {
+    min-height: max(100vh, 850px);
+  }
+
+  .bandImg2 {
+    top: calc(max(100vh, 850px) - min(250px, calc((100vw - 40px) * 9 / 32)));
+    width: min(calc(100% - 40px), 900px);
+    height: auto;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+  }
 }
 
 .timeLocation {
@@ -1557,7 +1613,7 @@ body.ticket-open .socIcons {
   display: grid;
   grid-template-columns: repeat(3, 32px);
   gap: 3px;
- }
+}
 
 .hall-map-controls button {
   width: 32px;
@@ -1567,7 +1623,9 @@ body.ticket-open .socIcons {
   border-radius: 5px;
   background: #fff;
   color: #111;
-  font: 800 15px/1 Arial, sans-serif;
+  font:
+    800 15px/1 Arial,
+    sans-serif;
   cursor: pointer;
 }
 
@@ -1868,7 +1926,9 @@ body.ticket-open .socIcons {
   overflow: visible;
   cursor: grab;
 }
-.tbilisi-sports-palace-svg.is-panning { cursor: grabbing; }
+.tbilisi-sports-palace-svg.is-panning {
+  cursor: grabbing;
+}
 .tbilisi-sports-palace-section {
   fill-opacity: 0.13;
   stroke: currentColor;
@@ -1905,25 +1965,104 @@ body.ticket-open .socIcons {
   transform-box: fill-box;
   transform-origin: center;
   cursor: pointer;
-  transition: opacity 0.16s ease, filter 0.16s ease, transform 0.16s ease;
+  transition:
+    opacity 0.16s ease,
+    filter 0.16s ease,
+    transform 0.16s ease;
 }
-.stageMap .tbilisi-sports-palace-svg .seat:hover { transform: scale(1.75); filter: brightness(0.8); }
-.stageMap .tbilisi-sports-palace-svg .seat.selected { fill: #111 !important; opacity: 0.58; pointer-events: none; }
-.stageMap .tbilisi-sports-palace-svg .seat.unavailable { fill: #777 !important; opacity: 0.35; cursor: not-allowed; }
-.stageMap .tbilisi-sports-palace-svg .seat.is-filter-muted { opacity: 0.11; filter: grayscale(1); }
+.stageMap .tbilisi-sports-palace-svg .seat:hover {
+  transform: scale(1.75);
+  filter: brightness(0.8);
+}
+.stageMap .tbilisi-sports-palace-svg .seat.selected {
+  fill: #111 !important;
+  opacity: 0.58;
+  pointer-events: none;
+}
+.stageMap .tbilisi-sports-palace-svg .seat.unavailable {
+  fill: #777 !important;
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.stageMap .tbilisi-sports-palace-svg .seat.is-filter-muted {
+  opacity: 0.11;
+  filter: grayscale(1);
+}
 
 /* ExpoGeorgia Pavilion 11: fixed 1600 × 1000 SVG geometry with canonical event seats. */
-.expo-georgia-pavilion-11-map-viewport { position: relative; width: 100%; height: 100%; overflow: hidden; touch-action: none; }
-.expo-georgia-pavilion-11-svg { display: block; width: 100%; height: 100%; overflow: visible; cursor: grab; }
-.expo-georgia-pavilion-11-svg.is-panning { cursor: grabbing; }
-.expo-georgia-pavilion-11-section { fill-opacity: 0.13; stroke: currentColor; stroke-width: 3; vector-effect: non-scaling-stroke; pointer-events: none; }
-.expo-georgia-pavilion-11-stage { fill: #151515; stroke: #050505; stroke-width: 3; pointer-events: none; }
-.expo-georgia-pavilion-11-stage-label { fill: #fff; font-family: Arial, sans-serif; font-size: 34px; font-weight: 700; letter-spacing: 1px; pointer-events: none; }
-.stageMap .expo-georgia-pavilion-11-svg .seat { position: static; width: auto; height: auto; min-width: 0; min-height: 0; padding: 0; margin: 0; border: 0; transform-box: fill-box; transform-origin: center; cursor: pointer; transition: opacity 0.16s ease, filter 0.16s ease, transform 0.16s ease; }
-.stageMap .expo-georgia-pavilion-11-svg .seat:hover { transform: scale(1.75); filter: brightness(0.8); }
-.stageMap .expo-georgia-pavilion-11-svg .seat.selected { fill: #111 !important; opacity: 0.58; pointer-events: none; }
-.stageMap .expo-georgia-pavilion-11-svg .seat.unavailable { fill: #777 !important; opacity: 0.35; cursor: not-allowed; }
-.stageMap .expo-georgia-pavilion-11-svg .seat.is-filter-muted { opacity: 0.11; filter: grayscale(1); }
+.expo-georgia-pavilion-11-map-viewport {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  touch-action: none;
+}
+.expo-georgia-pavilion-11-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  cursor: grab;
+}
+.expo-georgia-pavilion-11-svg.is-panning {
+  cursor: grabbing;
+}
+.expo-georgia-pavilion-11-section {
+  fill-opacity: 0.13;
+  stroke: currentColor;
+  stroke-width: 3;
+  vector-effect: non-scaling-stroke;
+  pointer-events: none;
+}
+.expo-georgia-pavilion-11-stage {
+  fill: #151515;
+  stroke: #050505;
+  stroke-width: 3;
+  pointer-events: none;
+}
+.expo-georgia-pavilion-11-stage-label {
+  fill: #fff;
+  font-family: Arial, sans-serif;
+  font-size: 34px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  pointer-events: none;
+}
+.stageMap .expo-georgia-pavilion-11-svg .seat {
+  position: static;
+  width: auto;
+  height: auto;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  cursor: pointer;
+  transition:
+    opacity 0.16s ease,
+    filter 0.16s ease,
+    transform 0.16s ease;
+}
+.stageMap .expo-georgia-pavilion-11-svg .seat:hover {
+  transform: scale(1.75);
+  filter: brightness(0.8);
+}
+.stageMap .expo-georgia-pavilion-11-svg .seat.selected {
+  fill: #111 !important;
+  opacity: 0.58;
+  pointer-events: none;
+}
+.stageMap .expo-georgia-pavilion-11-svg .seat.unavailable {
+  fill: #777 !important;
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.stageMap .expo-georgia-pavilion-11-svg .seat.is-filter-muted {
+  opacity: 0.11;
+  filter: grayscale(1);
+}
 
 /* Ticket-type filtering is visual focus: keep the whole map visible while
    non-matching seats, frames, labels and structural elements are faded. */
