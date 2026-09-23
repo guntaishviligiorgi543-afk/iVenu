@@ -36,6 +36,9 @@
     upcomingShowsConfig: { mode: "latest_added", display_limit: 4, event_ids: [] },
     upcomingShowsPreview: [],
     upcomingShowsPreviewMode: "latest_added",
+    refreshing: false,
+    deletingEvent: false,
+    eventPendingDeletion: null,
   };
   let expoGeorgiaPavilion11BlueprintPromise = null;
   const status = document.querySelector("#adminStatus");
@@ -94,6 +97,12 @@
   const catalogList = document.querySelector("#catalogList");
   const catalogMore = document.querySelector("#catalogMore");
   const catalogMoreButton = document.querySelector("#catalogMoreButton");
+  const refreshAdmin = document.querySelector("#refreshAdmin");
+  const eventDeleteDialog = document.querySelector("#eventDeleteDialog");
+  const eventDeleteName = document.querySelector("#eventDeleteName");
+  const eventDeleteMessage = document.querySelector("#eventDeleteMessage");
+  const cancelEventDelete = document.querySelector("#cancelEventDelete");
+  const confirmEventDelete = document.querySelector("#confirmEventDelete");
   const heroForm = document.querySelector("#heroForm");
   heroForm.innerHTML = `<fieldset class="admin-hero-mode"><legend>Hero Display Mode</legend><label class="admin-check"><input type="radio" name="hero_mode" value="latest_added" checked /> Latest Added</label><label class="admin-check"><input type="radio" name="hero_mode" value="most_added_to_cart" /> Most Added to Cart</label><label class="admin-check"><input type="radio" name="hero_mode" value="best_selling" /> Best Selling</label><label class="admin-check"><input type="radio" name="hero_mode" value="custom_selection" /> Custom Selection</label></fieldset><p class="admin-hero-help" id="heroHelp"></p><div id="heroAutomatic"></div><div id="heroSlots" hidden><label>Find eligible events<input id="heroSearch" type="search" placeholder="Search title, date, venue or category" autocomplete="off" /></label><div class="upcoming-shows-results" id="heroResults"></div><p class="admin-hero-help" id="heroCount"></p><div class="upcoming-shows-selected" id="heroSelected"></div></div><div class="admin-form-actions"><button class="auth-submit" type="submit">Save Hero</button></div>`;
   const heroSlots = document.querySelector("#heroSlots");
@@ -122,6 +131,25 @@
   const setMessage = (text, type = "") => {
     message.className = `admin-message ${type}`;
     message.textContent = text;
+  };
+  const setRefreshLoading = (isLoading) => {
+    state.refreshing = isLoading;
+    refreshAdmin.disabled = isLoading;
+    refreshAdmin.classList.toggle("is-loading", isLoading);
+    refreshAdmin.setAttribute("aria-busy", String(isLoading));
+  };
+  const closeEventDeleteDialog = () => {
+    if (state.deletingEvent) return;
+    state.eventPendingDeletion = null;
+    eventDeleteDialog.close();
+  };
+  const openEventDeleteDialog = (event) => {
+    state.eventPendingDeletion = event;
+    eventDeleteName.textContent = event.title;
+    eventDeleteMessage.hidden = true;
+    eventDeleteMessage.textContent = "";
+    eventDeleteDialog.showModal();
+    cancelEventDelete.focus();
   };
 
   const formatRevenue = (value) => `${Number(value || 0).toFixed(2)}₾`;
@@ -1516,11 +1544,19 @@
         renderEvents();
       }),
   );
-  document
-    .querySelector("#refreshAdmin")
-    .addEventListener("click", () =>
-      loadData().catch((error) => setMessage(error.message, "error")),
-    );
+  refreshAdmin.addEventListener("click", async () => {
+    if (state.refreshing) return;
+    setRefreshLoading(true);
+    try {
+      await loadData();
+      setMessage("Dashboard refreshed.", "success");
+    } catch (error) {
+      console.error("Admin dashboard refresh failed", error);
+      setMessage(error.message || "Dashboard data could not be refreshed.", "error");
+    } finally {
+      setRefreshLoading(false);
+    }
+  });
   analyticsPeriod.addEventListener("change", () =>
     loadAnalytics().catch((error) => setMessage(error.message, "error")),
   );
@@ -1685,19 +1721,45 @@
       const item = state.events.find(
         (candidate) => String(candidate.id) === remove.dataset.delete,
       );
-      if (!item || !window.confirm(`Delete ${item.title}?`)) return;
-      try {
-        const result = await client.rpc("admin_delete_event_with_display_order", { p_event_id: item.id });
-        if (result.error) throw result.error;
-        setMessage("Event deleted.", "success");
-        await loadData();
-      } catch (error) {
-        console.error(error);
-        setMessage(
-          "Event could not be deleted. Related tickets or orders may reference it.",
-          "error",
-        );
+      if (item) openEventDeleteDialog(item);
+    }
+  });
+  cancelEventDelete.addEventListener("click", closeEventDeleteDialog);
+  eventDeleteDialog.addEventListener("cancel", (event) => {
+    if (state.deletingEvent) event.preventDefault();
+    else closeEventDeleteDialog();
+  });
+  eventDeleteDialog.addEventListener("click", (event) => {
+    if (event.target === eventDeleteDialog) closeEventDeleteDialog();
+  });
+  confirmEventDelete.addEventListener("click", async () => {
+    const item = state.eventPendingDeletion;
+    if (!item || state.deletingEvent) return;
+    let deleted = false;
+    state.deletingEvent = true;
+    confirmEventDelete.disabled = true;
+    confirmEventDelete.classList.add("is-loading");
+    eventDeleteMessage.hidden = true;
+    try {
+      const result = await client.rpc("admin_delete_event_with_display_order", { p_event_id: item.id });
+      if (result.error) throw result.error;
+      deleted = true;
+      state.deletingEvent = false;
+      closeEventDeleteDialog();
+      setMessage("Event deleted.", "success");
+      await loadData();
+    } catch (error) {
+      console.error("Admin event deletion failed", error);
+      if (deleted) {
+        setMessage("Event was deleted, but dashboard data could not be refreshed.", "error");
+      } else {
+        eventDeleteMessage.textContent = "Event could not be deleted. Related tickets or orders may reference it.";
+        eventDeleteMessage.hidden = false;
       }
+    } finally {
+      state.deletingEvent = false;
+      confirmEventDelete.disabled = false;
+      confirmEventDelete.classList.remove("is-loading");
     }
   });
   document

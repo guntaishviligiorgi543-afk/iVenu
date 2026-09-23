@@ -38,6 +38,19 @@
       </nav>
       <p class="admin-message" id="adminMessage" role="status"></p>
 
+      <dialog class="admin-delete-dialog" id="eventDeleteDialog" aria-labelledby="eventDeleteDialogTitle" aria-describedby="eventDeleteDialogDescription">
+        <form class="admin-delete-dialog__panel" method="dialog">
+          <p class="admin-eyebrow">Delete event</p>
+          <h2 id="eventDeleteDialogTitle">Delete <span id="eventDeleteName"></span>?</h2>
+          <p id="eventDeleteDialogDescription">This will permanently delete the event. This action cannot be undone.</p>
+          <p class="admin-delete-dialog__message" id="eventDeleteMessage" role="alert" aria-live="polite" hidden></p>
+          <div class="admin-delete-dialog__actions">
+            <button class="admin-outline" id="cancelEventDelete" type="button">Cancel</button>
+            <button class="admin-danger-button" id="confirmEventDelete" type="button">Delete Event</button>
+          </div>
+        </form>
+      </dialog>
+
       <section class="admin-panel is-active" data-panel="overview">
         <div class="admin-panel-heading">
           <div>

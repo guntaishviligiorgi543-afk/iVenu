@@ -56,12 +56,13 @@
   flex: 1;
 }
 
-.admin-header-actions {
+.admin-header > .admin-header-actions {
   display: flex;
   align-items: center;
   gap: 10px;
   flex-wrap: wrap;
   justify-content: flex-end;
+  flex: 0 1 auto;
 }
 
 .admin-header h1,
@@ -132,6 +133,111 @@
 .admin-outline:hover {
   background: rgba(255, 148, 117, 0.15);
   color: #ff9475;
+}
+
+.admin-outline.is-loading,
+.admin-danger-button.is-loading {
+  cursor: progress;
+}
+
+.admin-outline.is-loading::after,
+.admin-danger-button.is-loading::after {
+  content: "";
+  display: inline-block;
+  width: 0.7em;
+  height: 0.7em;
+  margin-left: 0.55em;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: admin-button-spin 0.7s linear infinite;
+  vertical-align: -0.08em;
+}
+
+@keyframes admin-button-spin {
+  to { transform: rotate(360deg); }
+}
+
+.admin-delete-dialog {
+  width: min(460px, calc(100vw - 32px));
+  margin: auto;
+  padding: 0;
+  border: 1px solid rgba(255, 148, 117, 0.5);
+  border-radius: 10px;
+  color: #fff;
+  background: #151515;
+  box-shadow: 0 20px 65px rgba(0, 0, 0, 0.56);
+}
+
+.admin-delete-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(3px);
+}
+
+.admin-delete-dialog__panel {
+  padding: clamp(20px, 5vw, 32px);
+}
+
+.admin-delete-dialog h2 {
+  margin: 4px 0 12px;
+  font-family: "Fjalla One", Impact, sans-serif;
+  font-weight: 400;
+  font-size: clamp(1.7rem, 5vw, 2.35rem);
+  overflow-wrap: anywhere;
+}
+
+.admin-delete-dialog p:not(.admin-eyebrow) {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.72);
+  line-height: 1.55;
+}
+
+.admin-delete-dialog__message {
+  margin-top: 14px !important;
+  padding: 10px 12px;
+  border-radius: 6px;
+  color: #ffb4a4 !important;
+  background: rgba(222, 86, 61, 0.14);
+}
+
+.admin-delete-dialog__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.admin-danger-button {
+  flex-shrink: 0;
+  border: 1px solid rgba(255, 130, 110, 0.75);
+  padding: 10px 18px;
+  border-radius: 6px;
+  color: #fff;
+  background: #bd4634;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.admin-danger-button:hover:not(:disabled) {
+  background: #d95743;
+}
+
+.admin-danger-button:focus-visible,
+.admin-outline:focus-visible {
+  outline: 3px solid rgba(255, 170, 145, 0.8);
+  outline-offset: 3px;
+}
+
+.admin-danger-button:disabled,
+.admin-outline:disabled {
+  opacity: 0.62;
+  cursor: not-allowed;
 }
 
 /* =========================================
@@ -933,6 +1039,7 @@
   }
 
   .admin-header-actions {
+    width: 100%;
     justify-content: flex-start;
   }
 
@@ -977,6 +1084,21 @@
   .analytics-card-heading {
     align-items: flex-start;
     flex-direction: column;
+  }
+}
+
+@media (max-width: 420px) {
+  .admin-header {
+    padding: 18px;
+    gap: 18px;
+  }
+
+  .admin-header-actions > button {
+    flex: 1 1 130px;
+  }
+
+  .admin-delete-dialog__actions > button {
+    flex: 1 1 140px;
   }
 }
 
@@ -1078,7 +1200,7 @@ body.event-editor-mode .event-editor-shell {
   position: absolute;
   top: 20px;
   right: 0;
-   z-index: 3;
+  z-index: 3;
   display: flex;
   align-items: center;
   flex-wrap: wrap;
@@ -1376,9 +1498,23 @@ body.event-editor-mode .admin-event-wizard {
   -webkit-appearance: none;
 }
 
-.admin-hero-mode { display: grid; gap: 10px; margin: 0; padding: 16px; border: 1px solid rgba(255, 255, 255, 0.14); border-radius: 8px; }
-.admin-hero-mode legend, .admin-hero-help { color: rgba(255, 255, 255, 0.7); font-size: 0.85rem; }
-.admin-hero-help { margin: -6px 0 0; }
+.admin-hero-mode {
+  display: flex;
+  gap: 10px;
+  margin: 0;
+  padding: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 8px;
+}
+.admin-hero-mode legend,
+.admin-hero-help {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.85rem;
+}
+.admin-hero-help {
+  margin: -6px 0 0;
+  padding: 15px;
+}
 
 .upcoming-shows-preview,
 .upcoming-shows-results,
@@ -1992,14 +2128,30 @@ body.event-editor-mode .admin-event-wizard {
     grid-column: 2;
   }
 
-  .admin-event-group__image:nth-child(1) { grid-row: 1; }
-  .admin-event-group__information .admin-event-group__item:nth-child(1) { grid-row: 2; }
-  .admin-event-group__image:nth-child(2) { grid-row: 1; }
-  .admin-event-group__information .admin-event-group__item:nth-child(2) { grid-row: 2; }
-  .admin-event-group__image:nth-child(3) { grid-row: 3; }
-  .admin-event-group__information .admin-event-group__item:nth-child(3) { grid-row: 4; }
-  .admin-event-group__image:nth-child(4) { grid-row: 3; }
-  .admin-event-group__information .admin-event-group__item:nth-child(4) { grid-row: 4; }
+  .admin-event-group__image:nth-child(1) {
+    grid-row: 1;
+  }
+  .admin-event-group__information .admin-event-group__item:nth-child(1) {
+    grid-row: 2;
+  }
+  .admin-event-group__image:nth-child(2) {
+    grid-row: 1;
+  }
+  .admin-event-group__information .admin-event-group__item:nth-child(2) {
+    grid-row: 2;
+  }
+  .admin-event-group__image:nth-child(3) {
+    grid-row: 3;
+  }
+  .admin-event-group__information .admin-event-group__item:nth-child(3) {
+    grid-row: 4;
+  }
+  .admin-event-group__image:nth-child(4) {
+    grid-row: 3;
+  }
+  .admin-event-group__information .admin-event-group__item:nth-child(4) {
+    grid-row: 4;
+  }
 
   .admin-event-group__item.admin-event-row {
     min-height: 0;
@@ -2085,14 +2237,30 @@ body.event-editor-mode .admin-event-wizard {
     padding: 14px 0;
   }
 
-  .admin-event-group__image:nth-child(1) { grid-row: 1; }
-  .admin-event-group__information .admin-event-group__item:nth-child(1) { grid-row: 2; }
-  .admin-event-group__image:nth-child(2) { grid-row: 3; }
-  .admin-event-group__information .admin-event-group__item:nth-child(2) { grid-row: 4; }
-  .admin-event-group__image:nth-child(3) { grid-row: 5; }
-  .admin-event-group__information .admin-event-group__item:nth-child(3) { grid-row: 6; }
-  .admin-event-group__image:nth-child(4) { grid-row: 7; }
-  .admin-event-group__information .admin-event-group__item:nth-child(4) { grid-row: 8; }
+  .admin-event-group__image:nth-child(1) {
+    grid-row: 1;
+  }
+  .admin-event-group__information .admin-event-group__item:nth-child(1) {
+    grid-row: 2;
+  }
+  .admin-event-group__image:nth-child(2) {
+    grid-row: 3;
+  }
+  .admin-event-group__information .admin-event-group__item:nth-child(2) {
+    grid-row: 4;
+  }
+  .admin-event-group__image:nth-child(3) {
+    grid-row: 5;
+  }
+  .admin-event-group__information .admin-event-group__item:nth-child(3) {
+    grid-row: 6;
+  }
+  .admin-event-group__image:nth-child(4) {
+    grid-row: 7;
+  }
+  .admin-event-group__information .admin-event-group__item:nth-child(4) {
+    grid-row: 8;
+  }
 
   .event-editor-nav {
     min-height: 54px;

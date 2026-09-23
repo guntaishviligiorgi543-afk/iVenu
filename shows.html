@@ -320,6 +320,30 @@
       font-family: "Cabin", sans-serif;
     }
 
+    .event-card-skeleton {
+      pointer-events: none;
+    }
+
+    .event-card-skeleton .cardContent {
+      align-items: stretch;
+      gap: 20px;
+    }
+
+    .event-card-skeleton__media {
+      width: 100%;
+      height: 50%;
+    }
+
+    .event-card-skeleton__text {
+      display: grid;
+      gap: 12px;
+    }
+
+    .event-card-skeleton__button {
+      width: 45%;
+      height: 40px;
+    }
+
     @media (max-width: 768px) {
       .eventFilters {
         grid-template-columns: 1fr;
@@ -495,6 +519,18 @@
 
       function showEventsMessage(message, isError = false) {
         eventCards.innerHTML = `<p class="eventsMessage${isError ? " error" : ""}">${message}</p>`;
+      }
+
+      function showEventSkeletons() {
+        eventCards.innerHTML = "";
+        pagination.innerHTML = "";
+        for (let index = 0; index < EVENTS_PER_PAGE; index += 1) {
+          const skeleton = document.createElement("div");
+          skeleton.className = "vntCrd event-card-skeleton";
+          skeleton.setAttribute("aria-hidden", "true");
+          skeleton.innerHTML = `<div class="cardContent"><div class="skeletonBlock event-card-skeleton__media"></div><div class="event-card-skeleton__text"><span class="skeletonBlock skeletonTextLine skeletonTextLine--wide"></span><span class="skeletonBlock skeletonTextLine"></span></div><span class="skeletonBlock event-card-skeleton__button"></span></div>`;
+          eventCards.append(skeleton);
+        }
       }
 
       function formatEventTime(value) {
@@ -674,7 +710,7 @@
       });
 
       async function loadEvents() {
-        showEventsMessage("Loading events...");
+        showEventSkeletons();
 
         try {
           const events = await window.supabaseData.getEvents();

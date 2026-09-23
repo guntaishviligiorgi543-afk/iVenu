@@ -171,13 +171,18 @@
 
   document.addEventListener("click", async (event) => {
     const button = event.target.closest(".event-cart-remove");
-    if (!button) return;
+    if (!button || button.disabled) return;
     button.disabled = true;
+    button.classList.add("cart-action-pending");
+    button.setAttribute("aria-busy", "true");
     try {
       await remove(button.dataset.eventId);
     } catch (error) {
       console.error(error);
+    } finally {
       button.disabled = false;
+      button.classList.remove("cart-action-pending");
+      button.setAttribute("aria-busy", "false");
     }
   });
 

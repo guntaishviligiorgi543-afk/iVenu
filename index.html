@@ -18,6 +18,11 @@
       href="https://fonts.googleapis.com/css2?family=Cabin:ital,wght@0,400..700;1,400..700&display=swap"
       rel="stylesheet"
     />
+    <!-- AOS CSS -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css"
+    />
   </head>
   <body>
     <header>
@@ -298,5 +303,15 @@
     <script src="event-cart.js"></script>
     <script src="auth-ui.js"></script>
     <script src="index.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+
+    <script>
+      AOS.init({
+        duration: 800,
+        easing: "ease-out",
+        once: true,
+        offset: 80,
+      });
+    </script>
   </body>
 </html>

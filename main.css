@@ -233,6 +233,51 @@ header > nav a:hover span {
   overflow: hidden;
 }
 
+.skeletonBlock {
+  display: block;
+  border-radius: 4px;
+  background: linear-gradient(100deg, rgba(255, 255, 255, 0.09) 20%, rgba(255, 148, 117, 0.2) 42%, rgba(255, 255, 255, 0.09) 64%);
+  background-size: 220% 100%;
+  animation: iVenueSkeletonShimmer 1.7s ease-in-out infinite;
+}
+
+@keyframes iVenueSkeletonShimmer {
+  to { background-position: -120% 0; }
+}
+
+.heroSkeleton {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(110deg, #151515, #24201f);
+}
+
+.heroSkeletonOverlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(250px, 30%);
+  align-content: center;
+  column-gap: clamp(56px, 9vw, 160px);
+  padding: 0 clamp(24px, 7vw, 112px);
+}
+
+.heroSkeletonTitle { width: min(100%, 620px); height: clamp(72px, 10vw, 150px); align-self: center; }
+.heroSkeletonDetails { display: grid; align-content: center; gap: 14px; }
+.heroSkeletonDetails .skeletonBlock { height: 18px; width: 78%; }
+.heroSkeletonDetails .heroSkeletonButton { width: 142px; height: 46px; margin-top: 10px; }
+
+.heroState {
+  display: grid;
+  place-items: center;
+  height: 100%;
+  margin: 0;
+  padding: 24px;
+  color: rgba(255, 255, 255, 0.8);
+  text-align: center;
+}
+
+.heroStateError { color: #ffb19f; }
+
 .heroSlide {
   position: absolute;
   inset: 0;
@@ -719,6 +764,43 @@ header > nav a:hover span {
   width: min(900px, 100%);
 
   padding: 30px 0;
+}
+
+.accordionSkeleton {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 150px;
+  gap: 25px;
+  border-top: 2px solid rgba(255, 148, 117, 0.6);
+}
+
+.accordionSkeleton > div { display: grid; gap: 14px; width: min(65%, 510px); }
+.accordionSkeletonDate { width: 130px; height: 18px; }
+.accordionSkeletonTitle { width: min(100%, 360px); height: 36px; }
+.accordionSkeletonButton { width: 142px; height: 46px; }
+
+.skeletonTextLine { width: 58%; height: 15px; }
+.skeletonTextLine--wide { width: 86%; height: 25px; }
+
+.cart-action-pending {
+  position: relative;
+  overflow: hidden;
+  cursor: progress !important;
+}
+
+.cart-action-pending::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 35%, rgba(255, 255, 255, 0.35) 50%, transparent 65%);
+  transform: translateX(-120%);
+  animation: iVenueCartAction 0.9s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes iVenueCartAction {
+  to { transform: translateX(120%); }
 }
 
 /* =========================================================
@@ -2253,6 +2335,55 @@ header > nav a:hover span {
 
   .heroEventMeta {
     font-size: clamp(0.95rem, 5vw, 1.25rem);
+  }
+}
+
+@media (max-width: 600px) {
+  .heroSkeletonOverlay {
+    display: block;
+    padding: 0;
+  }
+
+  .heroSkeletonTitle {
+    position: absolute;
+    top: 50px;
+    left: 16px;
+    width: calc(100% - 32px);
+    height: clamp(82px, 24vw, 125px);
+  }
+
+  .heroSkeletonDetails {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 15px;
+    min-height: 300px;
+    padding: 30px 58px;
+    background: rgba(255, 148, 117, 0.72);
+  }
+
+  .heroSkeletonDetails .skeletonBlock {
+    background: linear-gradient(100deg, rgba(0, 0, 0, 0.68) 20%, rgba(255, 255, 255, 0.34) 42%, rgba(0, 0, 0, 0.68) 64%);
+    background-size: 220% 100%;
+  }
+
+  .accordionSkeleton {
+    min-height: 132px;
+    gap: 16px;
+  }
+
+  .accordionSkeletonTitle { height: 30px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeletonBlock,
+  .cart-action-pending::after {
+    animation: none;
+  }
+
+  .heroSlide,
+  .heroSlide .heroEventOverlay {
+    transition-duration: 0.01ms;
   }
 }
 

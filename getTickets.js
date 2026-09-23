@@ -410,6 +410,8 @@ function renderSelectedEvent() {
 
     addToCartButton.onclick = async () => {
       addToCartButton.disabled = true;
+      addToCartButton.classList.add("cart-action-pending");
+      addToCartButton.setAttribute("aria-busy", "true");
       try {
         const isAdded = await window.eventCart.hasEvent(selectedBand.id);
         if (isAdded) {
@@ -424,6 +426,8 @@ function renderSelectedEvent() {
         console.error(error.message || "Unable to update cart");
       } finally {
         addToCartButton.disabled = false;
+        addToCartButton.classList.remove("cart-action-pending");
+        addToCartButton.setAttribute("aria-busy", "false");
       }
     };
 

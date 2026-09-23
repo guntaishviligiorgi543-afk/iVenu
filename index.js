@@ -68,6 +68,15 @@ function renderHeroSlide(event, index) {
   return slide;
 }
 
+function renderHeroSkeleton() {
+  const skeleton = document.createElement("div");
+  skeleton.className = "heroSkeleton";
+  skeleton.setAttribute("role", "status");
+  skeleton.setAttribute("aria-label", "Loading featured events");
+  skeleton.innerHTML = `<div class="heroSkeletonOverlay"><span class="skeletonBlock heroSkeletonTitle"></span><div class="heroSkeletonDetails"><span class="skeletonBlock"></span><span class="skeletonBlock"></span><span class="skeletonBlock"></span><span class="skeletonBlock heroSkeletonButton"></span></div></div>`;
+  return skeleton;
+}
+
 function initializeHeroSlider() {
   const slides = [...heroSlider.querySelectorAll(".heroSlide")];
   const dots = [...heroSlider.querySelectorAll(".heroDot")];
@@ -76,6 +85,8 @@ function initializeHeroSlider() {
   let autoSlide;
   let isAnimating = false;
   let wheelLocked = false;
+  let touchStart = null;
+  let suppressClickUntil = 0;
   const slideDuration = 1300;
   const autoSlideTime = 7000;
   const showSlide = (index) => {
@@ -100,6 +111,7 @@ function initializeHeroSlider() {
   };
   dots.forEach((dot, index) =>
     dot.addEventListener("click", () => {
+      if (Date.now() < suppressClickUntil) return;
       showSlide(index);
       startAutoSlide();
     }),
@@ -128,15 +140,41 @@ function initializeHeroSlider() {
     },
     { passive: false },
   );
+  heroSlider.addEventListener("pointerdown", (event) => {
+    if (event.pointerType !== "touch" || !event.isPrimary) return;
+    touchStart = { id: event.pointerId, x: event.clientX, y: event.clientY };
+  });
+  heroSlider.addEventListener("pointerup", (event) => {
+    if (!touchStart || event.pointerId !== touchStart.id) return;
+    const deltaX = event.clientX - touchStart.x;
+    const deltaY = event.clientY - touchStart.y;
+    touchStart = null;
+    const horizontal = Math.abs(deltaX) > Math.abs(deltaY) * 1.25;
+    if (!horizontal || Math.abs(deltaX) < 48) return;
+    suppressClickUntil = Date.now() + 500;
+    deltaX < 0 ? nextSlide() : previousSlide();
+    startAutoSlide();
+  });
+  heroSlider.addEventListener("pointercancel", () => {
+    touchStart = null;
+  });
+  heroSlider.addEventListener("click", (event) => {
+    if (Date.now() >= suppressClickUntil) return;
+    event.preventDefault();
+    event.stopPropagation();
+  }, true);
   startAutoSlide();
 }
 
 async function loadHeroEvents() {
   if (!heroSlider) return;
+  heroSlider.classList.add("is-loading");
+  heroSlider.replaceChildren(renderHeroSkeleton());
   try {
     const events = await window.supabaseData.getHomepageHeroEvents();
+    heroSlider.classList.remove("is-loading");
     if (!events.length) {
-      heroSlider.replaceChildren();
+      heroSlider.innerHTML = '<p class="heroState">No featured events are available right now.</p>';
       return;
     }
     const dots = document.createElement("div");
@@ -154,7 +192,8 @@ async function loadHeroEvents() {
     initializeHeroSlider();
   } catch (error) {
     console.error("Hero events could not be loaded.", error);
-    heroSlider.replaceChildren();
+    heroSlider.classList.remove("is-loading");
+    heroSlider.innerHTML = '<p class="heroState heroStateError">Featured events are temporarily unavailable.</p>';
   }
 }
 
@@ -390,8 +429,20 @@ function renderAccordion(event) {
   eventsAccordion.appendChild(accordion);
 }
 
+function renderAccordionSkeletons() {
+  eventsAccordion.replaceChildren();
+  for (let index = 0; index < 3; index += 1) {
+    const skeleton = document.createElement("div");
+    skeleton.className = "accordionSkeleton";
+    skeleton.setAttribute("aria-hidden", "true");
+    skeleton.innerHTML = '<div><span class="skeletonBlock accordionSkeletonDate"></span><span class="skeletonBlock accordionSkeletonTitle"></span></div><span class="skeletonBlock accordionSkeletonButton"></span>';
+    eventsAccordion.append(skeleton);
+  }
+}
+
 async function loadUpcomingEvents() {
-  eventsAccordion.innerHTML = "<p>Loading events...</p>";
+  eventsAccordion.setAttribute("aria-busy", "true");
+  renderAccordionSkeletons();
 
   try {
     const upcomingEvents = await window.supabaseData.getHomepageUpcomingShows();
@@ -408,6 +459,8 @@ async function loadUpcomingEvents() {
     console.error(error);
     eventsAccordion.innerHTML =
       "<p>Events are temporarily unavailable. Please try again later.</p>";
+  } finally {
+    eventsAccordion.setAttribute("aria-busy", "false");
   }
 }
 

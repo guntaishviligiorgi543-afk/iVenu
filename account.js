@@ -301,9 +301,10 @@
 
   cartList.addEventListener("click", async (event) => {
     const button = event.target.closest(".dashboard-cart-remove");
-    if (!button || !cartList.contains(button)) return;
+    if (!button || !cartList.contains(button) || button.disabled) return;
     button.disabled = true;
-    button.textContent = "Removing...";
+    button.classList.add("cart-action-pending");
+    button.setAttribute("aria-busy", "true");
     try {
       await removeCartItem({
         cartItemId: button.dataset.cartItemId,
@@ -311,9 +312,11 @@
       });
     } catch (error) {
       console.error("Unable to remove cart item", error);
-      button.disabled = false;
-      button.textContent = "Remove";
       setMessage(error.message || "This cart item could not be removed.", "error");
+    } finally {
+      button.disabled = false;
+      button.classList.remove("cart-action-pending");
+      button.setAttribute("aria-busy", "false");
     }
   });
 
