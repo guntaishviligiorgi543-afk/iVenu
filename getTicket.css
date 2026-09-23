@@ -23,6 +23,66 @@ section {
   min-height: 100vh;
 }
 
+.ticketHero.is-loading > .tittle-date-dcrp-btn,
+.ticketHero.is-loading > .bandImg2 {
+  visibility: hidden;
+}
+
+.ticketHeroSkeleton {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  overflow: hidden;
+  background: #171717;
+}
+
+.ticketHeroSkeletonMedia {
+  position: absolute;
+  top: calc(100vh - 250px);
+  left: 50%;
+  width: min(60%, 900px);
+  height: 500px;
+  transform: translateX(-50%);
+}
+
+.ticketHeroSkeletonContent {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: min(900px, calc(100% - 40px));
+  margin: 0 auto;
+  padding: 20px;
+  gap: 24px;
+}
+
+.ticketHeroSkeletonTitle { width: min(100%, 520px); height: clamp(36px, 5vw, 62px); }
+.ticketHeroSkeletonDate { width: min(56%, 300px); height: 20px; }
+.ticketHeroSkeletonDescription { width: min(78%, 640px); height: 56px; }
+.ticketHeroSkeletonButton { width: 144px; height: 48px; }
+
+.ticketHero--image-fallback .bandImg2 {
+  display: none;
+}
+
+.ticketHero.is-ready > .tittle-date-dcrp-btn,
+.ticketHero.is-ready > .bandImg2 {
+  animation: ticketHeroReveal 0.3s ease-out both;
+}
+
+@keyframes ticketHeroReveal {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ticketHero.is-ready > .tittle-date-dcrp-btn,
+  .ticketHero.is-ready > .bandImg2 {
+    animation: none;
+  }
+}
+
 .tittle-date-dcrp-btn {
   width: min(900px, calc(100% - 40px));
   padding: 20px;

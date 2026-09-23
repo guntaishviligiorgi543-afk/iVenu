@@ -302,36 +302,42 @@
   font-family: "Cabin", sans-serif;
 }
 
+/* The auth brand follows the site content pattern, not the navigation row. */
+.auth-page-logo {
+  position: absolute;
+  top: 112px;
+  left: 50%;
+  z-index: 2;
+  display: block;
+  width: clamp(132px, 17vw, 210px);
+  line-height: 0;
+  transform: translateX(-50%);
+}
+
+.auth-page-logo img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+@media (max-width: 1290px) {
+  .auth-page-logo {
+    top: 118px;
+    width: clamp(120px, 28vw, 185px);
+  }
+}
+
+@media (max-width: 600px) {
+  .auth-page-logo {
+    top: 118px;
+    width: clamp(110px, 42vw, 155px);
+  }
+}
+
 /* Keep the authentication-page navigation sized to its links. */
 body.auth-login-page > header > nav,
 body.auth-register-page > header > nav {
   width: fit-content;
-}
-
-body.auth-login-page > header > .auth-home-brand,
-body.auth-register-page > header > .auth-home-brand {
-  display: inline-flex;
-  flex: 0 0 auto;
-  align-items: center;
-  padding: 9px 13px;
-  border: 1px solid rgba(255, 255, 255, 0.7);
-  color: #fff;
-  font-family: "Cabin", sans-serif;
-  font-size: 0.9rem;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  line-height: 1;
-  text-decoration: none;
-  transition: 0.2s ease;
-}
-
-body.auth-login-page > header > .auth-home-brand:hover,
-body.auth-login-page > header > .auth-home-brand:focus-visible,
-body.auth-register-page > header > .auth-home-brand:hover,
-body.auth-register-page > header > .auth-home-brand:focus-visible {
-  color: #000;
-  background: #fff;
-  transform: translateY(-1px);
 }
 
 @media (max-width: 400px) {
@@ -352,11 +358,6 @@ body.auth-register-page > header > .auth-home-brand:focus-visible {
     font-size: 14px;
   }
 
-  body.auth-login-page > header > .auth-home-brand,
-  body.auth-register-page > header > .auth-home-brand {
-    padding: 8px 10px;
-    font-size: 0.82rem;
-  }
 }
 
 .auth-shell label,

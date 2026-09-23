@@ -2,6 +2,35 @@ const params = new URLSearchParams(window.location.search);
 const bandId = params.get("id");
 let selectedBand = null;
 
+const ticketHero = document.querySelector(".ticketHero");
+
+function renderTicketHeroSkeleton() {
+  if (!ticketHero) return;
+  ticketHero.classList.add("is-loading");
+  ticketHero.setAttribute("aria-busy", "true");
+  const skeleton = document.createElement("div");
+  skeleton.className = "ticketHeroSkeleton";
+  skeleton.setAttribute("role", "status");
+  skeleton.setAttribute("aria-label", "Loading event details");
+  skeleton.innerHTML = '<span class="skeletonBlock ticketHeroSkeletonMedia"></span><div class="ticketHeroSkeletonContent"><span class="skeletonBlock ticketHeroSkeletonTitle"></span><span class="skeletonBlock ticketHeroSkeletonDate"></span><span class="skeletonBlock ticketHeroSkeletonDescription"></span><span class="skeletonBlock ticketHeroSkeletonButton"></span></div>';
+  ticketHero.append(skeleton);
+}
+
+function finishTicketHeroLoading(state = "ready") {
+  if (!ticketHero) return;
+  ticketHero.querySelector(".ticketHeroSkeleton")?.remove();
+  ticketHero.classList.remove("is-loading");
+  ticketHero.classList.toggle("is-ready", state === "ready");
+  ticketHero.setAttribute("aria-busy", "false");
+}
+
+function setTicketHeroState(message, isError = false) {
+  finishTicketHeroLoading("state");
+  const title = document.querySelector(".tittle-date-dcrp-btn h2");
+  if (title) title.textContent = message;
+  ticketHero?.classList.toggle("ticketHero--image-fallback", isError);
+}
+
 function createTicketAdapter(ticketTypes) {
   const ticketByName = new Map(
     ticketTypes.map((ticket) => [ticket.name.toLowerCase(), ticket]),
@@ -28,18 +57,28 @@ function createTicketAdapter(ticketTypes) {
 }
 
 async function loadSelectedEvent() {
-  if (!bandId) return;
+  if (!bandId) {
+    setTicketHeroState("Event unavailable", true);
+    return;
+  }
 
-  const [event, ticketTypes] = await Promise.all([
-    window.supabaseData.getEvent(bandId),
-    window.supabaseData.getTicketTypes(bandId),
-  ]);
+  const releaseScroll = window.pageLoading?.lock("ticket-hero");
+  renderTicketHeroSkeleton();
 
-  if (!event) return;
+  try {
+    const [event, ticketTypes] = await Promise.all([
+      window.supabaseData.getEvent(bandId),
+      window.supabaseData.getTicketTypes(bandId),
+    ]);
 
-  const band = event.bands || {};
-  const eventLocation = window.supabaseData.getEventLocation(event);
-  selectedBand = {
+    if (!event) {
+      setTicketHeroState("Event unavailable", true);
+      return;
+    }
+
+    const band = event.bands || {};
+    const eventLocation = window.supabaseData.getEventLocation(event);
+    selectedBand = {
     id: event.id,
     venueId: event.venue_id,
     venueName: event.venues?.name || eventLocation.venue,
@@ -65,15 +104,25 @@ async function loadSelectedEvent() {
         lng: eventLocation.longitude,
       },
     },
-  };
+    };
 
-  renderSelectedEvent();
-  window.dispatchEvent(new CustomEvent("event-seat-context"));
-  initializeBasket();
-  renderBasket();
-  window.supabaseData.recordEventView(selectedBand.id).catch((error) => {
-    console.error("Unable to record event view", error);
-  });
+    renderSelectedEvent();
+    const heroImage = document.querySelector(".ticketHero .bandImg2");
+    const imageReady = await window.pageLoading?.waitForImage(heroImage);
+    if (imageReady === false) ticketHero?.classList.add("ticketHero--image-fallback");
+    finishTicketHeroLoading();
+    window.dispatchEvent(new CustomEvent("event-seat-context"));
+    initializeBasket();
+    renderBasket();
+    window.supabaseData.recordEventView(selectedBand.id).catch((error) => {
+      console.error("Unable to record event view", error);
+    });
+  } catch (error) {
+    console.error(error);
+    setTicketHeroState("Event unavailable", true);
+  } finally {
+    releaseScroll?.();
+  }
 }
 
 function getEventState() {
@@ -529,8 +578,4 @@ function renderSelectedEvent() {
   }
 }
 
-loadSelectedEvent().catch((error) => {
-  console.error(error);
-  const title = document.querySelector(".tittle-date-dcrp-btn h2");
-  if (title) title.textContent = "Event unavailable";
-});
+loadSelectedEvent();

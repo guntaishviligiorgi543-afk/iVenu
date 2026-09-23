@@ -1,9 +1,6 @@
 @import url("https://fonts.googleapis.com/css2?family=Fjalla+One&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Cabin:ital,wght@0,400..700;1,400..700&display=swap");
 
-/* =========================================================
-   RESET
-========================================================= */
 
 * {
   margin: 0;
@@ -24,6 +21,35 @@ body {
 body.mobile-menu-open,
 body.event-share-dialog-open {
   overflow: hidden;
+}
+
+html.initial-load-scroll-locked,
+body.initial-load-scroll-locked {
+  overflow: hidden;
+  overscroll-behavior: none;
+  touch-action: none;
+}
+
+.initialPageLoader {
+  position: fixed;
+  inset: 0;
+  z-index: 1000004;
+  overflow: hidden;
+  background: #000;
+  touch-action: none;
+}
+
+.initialPageLoaderBlock {
+  position: absolute;
+  min-width: 2px;
+  min-height: 2px;
+}
+
+.initialPageLoaderLogo {
+  background: linear-gradient(100deg, rgba(255, 255, 255, 0.09) 20%, rgba(255, 148, 117, 0.2) 42%, rgba(255, 255, 255, 0.09) 64%);
+  background-size: 220% 100%;
+  -webkit-mask: url("assets/ivenue-logo.png") center / contain no-repeat;
+  mask: url("assets/ivenue-logo.png") center / contain no-repeat;
 }
 
 a {
@@ -47,9 +73,6 @@ img {
   width: 100%;
 }
 
-/* =========================================================
-   HEADER — DESKTOP
-========================================================= */
 
 header {
   position: fixed;
@@ -64,6 +87,13 @@ header {
   justify-content: space-between;
 
   padding: 30px;
+
+  /* Let centered content logos receive clicks through the header's empty area. */
+  pointer-events: none;
+}
+
+header > * {
+  pointer-events: auto;
 }
 
 header > nav {
@@ -233,37 +263,78 @@ header > nav a:hover span {
   overflow: hidden;
 }
 
-.site-logo { display: inline-flex; align-items: center; width: clamp(130px, 18vw, 220px); min-width: 0; line-height: 0; }
-.site-logo img { display: block; width: 100%; height: auto; aspect-ratio: 560 / 180; object-fit: contain; }
-.header-cart-hidden { display: none !important; }
+.header-cart-hidden {
+  display: none !important;
+}
 .mobile-menu-open #eventCartToggle,
-body[class*="auth"] #eventCartToggle { display: none !important; }
-.mobileMenu { z-index: 50; }
-.mobileMenuToggle { z-index: 52; }
-.mobileMenuPanel { display: flex; flex-direction: column; }
-.mobileMenuSocial { display: none; gap: 14px; padding: 8px 0 18px; }
-.mobileMenu.is-open .mobileMenuSocial { display: flex; }
-.mobileMenuSocial .socIcons { position: static; display: flex; width: auto; margin: 0; }
-.mobileMenuAccount { margin-top: auto; padding-top: 24px; }
+body[class*="auth"] #eventCartToggle {
+  display: none !important;
+}
+.mobileMenu {
+  z-index: 50;
+}
+.mobileMenuToggle {
+  z-index: 52;
+}
+.mobileMenuPanel {
+  display: flex;
+  flex-direction: column;
+}
+.mobileMenuSocial {
+  display: none;
+  gap: 30px;
+  padding: 8px 0 18px;
+}
+.mobileMenu.is-open .mobileMenuSocial {
+  display: flex;
+ }
+.mobileMenuSocial .socIcons {
+  position: static;
+  display: flex;
+  width: auto;
+  margin: 0;
+    gap: 30px;
+
+}
+.mobileMenuAccount {
+  margin-top: auto;
+  padding-top: 24px;
+}
 body.ticket-open .mobileMenuToggle,
-body.ticket-open #eventCartToggle { display: none !important; }
+body.ticket-open #eventCartToggle {
+  display: none !important;
+}
 
 .skeletonBlock {
   display: block;
   border-radius: 4px;
-  background: linear-gradient(100deg, rgba(255, 255, 255, 0.09) 20%, rgba(255, 148, 117, 0.2) 42%, rgba(255, 255, 255, 0.09) 64%);
+  background: linear-gradient(
+    100deg,
+    rgba(255, 255, 255, 0.09) 20%,
+    rgba(255, 148, 117, 0.2) 42%,
+    rgba(255, 255, 255, 0.09) 64%
+  );
   background-size: 220% 100%;
   animation: iVenueSkeletonShimmer 1.7s ease-in-out infinite;
 }
 
 @keyframes iVenueSkeletonShimmer {
-  to { background-position: -120% 0; }
+  to {
+    background-position: -120% 0;
+  }
 }
 
 .heroSkeleton {
   position: absolute;
   inset: 0;
   background: linear-gradient(110deg, #151515, #24201f);
+}
+
+.heroSkeletonMedia {
+  position: absolute;
+  inset: 0;
+  border-radius: 0;
+  opacity: 0.55;
 }
 
 .heroSkeletonOverlay {
@@ -276,10 +347,38 @@ body.ticket-open #eventCartToggle { display: none !important; }
   padding: 0 clamp(24px, 7vw, 112px);
 }
 
-.heroSkeletonTitle { width: min(100%, 620px); height: clamp(72px, 10vw, 150px); align-self: center; }
-.heroSkeletonDetails { display: grid; align-content: center; gap: 14px; }
-.heroSkeletonDetails .skeletonBlock { height: 18px; width: 78%; }
-.heroSkeletonDetails .heroSkeletonButton { width: 142px; height: 46px; margin-top: 10px; }
+.heroSkeletonTitle {
+  width: min(100%, 620px);
+  height: clamp(72px, 10vw, 150px);
+  align-self: center;
+}
+.heroSkeletonDetails {
+  display: grid;
+  align-content: center;
+  gap: 14px;
+}
+.heroSkeletonDetails .skeletonBlock {
+  height: 18px;
+  width: 78%;
+}
+.heroSkeletonDetails .heroSkeletonButton {
+  width: 142px;
+  height: 46px;
+  margin-top: 10px;
+}
+.heroSkeletonDots {
+  position: absolute;
+  bottom: 28px;
+  left: 50%;
+  display: flex;
+  gap: 10px;
+  transform: translateX(-50%);
+}
+.heroSkeletonDots .skeletonBlock {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+}
 
 .heroState {
   display: grid;
@@ -291,7 +390,9 @@ body.ticket-open #eventCartToggle { display: none !important; }
   text-align: center;
 }
 
-.heroStateError { color: #ffb19f; }
+.heroStateError {
+  color: #ffb19f;
+}
 
 .heroSlide {
   position: absolute;
@@ -781,6 +882,113 @@ body.ticket-open #eventCartToggle { display: none !important; }
   padding: 30px 0;
 }
 
+.heroSlide--image-fallback {
+  background: linear-gradient(130deg, #221c1a, #4b3029 50%, #171717);
+}
+
+.venueHero.is-loading .aboutVenueCont {
+  visibility: hidden;
+}
+
+.venueHeroSkeleton {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  overflow: hidden;
+  background: #000;
+}
+
+.venueHeroSkeletonContent {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 1.25fr);
+  grid-template-rows: auto minmax(280px, 1fr);
+  gap: clamp(28px, 5vw, 72px);
+  width: min(900px, calc(100% - 40px));
+  min-height: min(100%, 820px);
+  margin: 100px auto 0;
+}
+
+.venueHeroSkeletonTitle {
+  display: grid;
+  align-content: center;
+  gap: 12px;
+}
+
+.venueHeroSkeletonTitle .skeletonBlock:first-child {
+  width: min(100%, 280px);
+  height: clamp(48px, 7vw, 84px);
+}
+.venueHeroSkeletonTitle .skeletonBlock:last-child {
+  width: min(100%, 420px);
+  height: clamp(48px, 7vw, 84px);
+}
+.venueHeroSkeletonImage {
+  grid-row: 1 / span 2;
+  grid-column: 2;
+  min-height: 430px;
+}
+.venueHeroSkeletonCopy {
+  width: min(100%, 360px);
+  height: 118px;
+}
+
+.venueHero--image-fallback .img-Par .img {
+  background: linear-gradient(130deg, #221c1a, #4b3029 50%, #171717);
+}
+
+.venueHero--image-fallback .img-Par .img img {
+  display: none;
+}
+
+.venueHero.is-ready .aboutVenueCont {
+  animation: venueHeroReveal 0.3s ease-out both;
+}
+
+@keyframes venueHeroReveal {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (max-width: 700px) {
+  .venueHeroSkeletonContent {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto minmax(240px, 48vw) auto;
+    gap: 26px;
+    width: min(100% - 32px, 560px);
+    margin-top: 112px;
+  }
+
+  .venueHeroSkeletonTitle {
+    grid-row: 1;
+  }
+  .venueHeroSkeletonImage {
+    grid-row: 2;
+    grid-column: 1;
+    min-height: 0;
+  }
+  .venueHeroSkeletonCopy {
+    grid-row: 3;
+    width: 100%;
+  }
+}
+
+.heroSlider.is-ready .heroSlide.active {
+  animation: heroReveal 0.35s ease-out both;
+}
+
+@keyframes heroReveal {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 .accordionSkeleton {
   display: flex;
   align-items: center;
@@ -790,13 +998,32 @@ body.ticket-open #eventCartToggle { display: none !important; }
   border-top: 2px solid rgba(255, 148, 117, 0.6);
 }
 
-.accordionSkeleton > div { display: grid; gap: 14px; width: min(65%, 510px); }
-.accordionSkeletonDate { width: 130px; height: 18px; }
-.accordionSkeletonTitle { width: min(100%, 360px); height: 36px; }
-.accordionSkeletonButton { width: 142px; height: 46px; }
+.accordionSkeleton > div {
+  display: grid;
+  gap: 14px;
+  width: min(65%, 510px);
+}
+.accordionSkeletonDate {
+  width: 130px;
+  height: 18px;
+}
+.accordionSkeletonTitle {
+  width: min(100%, 360px);
+  height: 36px;
+}
+.accordionSkeletonButton {
+  width: 142px;
+  height: 46px;
+}
 
-.skeletonTextLine { width: 58%; height: 15px; }
-.skeletonTextLine--wide { width: 86%; height: 25px; }
+.skeletonTextLine {
+  width: 58%;
+  height: 15px;
+}
+.skeletonTextLine--wide {
+  width: 86%;
+  height: 25px;
+}
 
 .cart-action-pending {
   position: relative;
@@ -808,14 +1035,21 @@ body.ticket-open #eventCartToggle { display: none !important; }
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(105deg, transparent 35%, rgba(255, 255, 255, 0.35) 50%, transparent 65%);
+  background: linear-gradient(
+    105deg,
+    transparent 35%,
+    rgba(255, 255, 255, 0.35) 50%,
+    transparent 65%
+  );
   transform: translateX(-120%);
   animation: iVenueCartAction 0.9s ease-in-out infinite;
   pointer-events: none;
 }
 
 @keyframes iVenueCartAction {
-  to { transform: translateX(120%); }
+  to {
+    transform: translateX(120%);
+  }
 }
 
 /* =========================================================
@@ -2378,7 +2612,12 @@ body.ticket-open #eventCartToggle { display: none !important; }
   }
 
   .heroSkeletonDetails .skeletonBlock {
-    background: linear-gradient(100deg, rgba(0, 0, 0, 0.68) 20%, rgba(255, 255, 255, 0.34) 42%, rgba(0, 0, 0, 0.68) 64%);
+    background: linear-gradient(
+      100deg,
+      rgba(0, 0, 0, 0.68) 20%,
+      rgba(255, 255, 255, 0.34) 42%,
+      rgba(0, 0, 0, 0.68) 64%
+    );
     background-size: 220% 100%;
   }
 
@@ -2387,7 +2626,9 @@ body.ticket-open #eventCartToggle { display: none !important; }
     gap: 16px;
   }
 
-  .accordionSkeletonTitle { height: 30px; }
+  .accordionSkeletonTitle {
+    height: 30px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -2399,6 +2640,14 @@ body.ticket-open #eventCartToggle { display: none !important; }
   .heroSlide,
   .heroSlide .heroEventOverlay {
     transition-duration: 0.01ms;
+  }
+
+  .heroSlider.is-ready .heroSlide.active {
+    animation: none;
+  }
+
+  .venueHero.is-ready .aboutVenueCont {
+    animation: none;
   }
 }
 

@@ -1,6 +1,7 @@
 (() => {
   const isHome = /(?:^|\/)index\.html$/.test(location.pathname) || location.pathname.endsWith("/");
-  if (isHome) return;
+  const isDashboard = document.body.classList.contains("account-page") || /(?:^|\/)admin-dashboard\.html$/.test(location.pathname);
+  if (isHome || isDashboard) return;
   let header = document.querySelector("header");
   if (!header) {
     header = document.createElement("header");
@@ -9,15 +10,6 @@
   if (header.dataset.publicHeaderReady) return;
   header.dataset.publicHeaderReady = "true";
   const isAuthPage = document.body.className.includes("auth") || /login|register|verify|reset|forgot/.test(location.pathname);
-  let logo = header.querySelector(".logo, .auth-home-brand");
-  if (!logo) {
-    logo = document.createElement("a");
-    logo.href = "index.html";
-    header.prepend(logo);
-  }
-  logo.className = "site-logo";
-  logo.setAttribute("aria-label", "iVenue home");
-  logo.innerHTML = '<img src="assets/ivenue-logo.svg" alt="iVenue" />';
   let toggle = header.querySelector(".mobileMenuToggle");
   if (!toggle) {
     toggle = document.createElement("button");
@@ -40,8 +32,13 @@
   const panel = menu.querySelector(".mobileMenuPanel");
   const nav = menu.querySelector(".mobileMenuNav");
   if (nav && !nav.querySelector('[href="profile.html#cart"]')) nav.insertAdjacentHTML("beforeend", '<a href="profile.html#cart">Cart</a><a href="profile.html">Dashboard</a>');
+  let socialSlot = menu.querySelector(".mobileMenuSocial");
   const account = menu.querySelector(".mobileMenuAccount");
-  const socialSlot = menu.querySelector(".mobileMenuSocial");
+  if (!socialSlot && panel) {
+    socialSlot = document.createElement("div");
+    socialSlot.className = "mobileMenuSocial";
+    panel.insertBefore(socialSlot, account || null);
+  }
   const social = document.querySelector(".socIcons");
   const socialParent = social?.parentNode;
   const socialNext = social?.nextSibling;

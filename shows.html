@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Launch</title>
     <link rel="stylesheet" href="main.css" />
+    <script src="loading-state.js"></script>
     <script defer src="public-header.js"></script>
     <link rel="stylesheet" href="auth.css" />
   </head>
@@ -442,7 +443,7 @@
           </a>
         </div>
         <a class="logo" href="index.html">
-          <img src="./iamge/logo.png" alt="" />
+          <img src="assets/ivenue-logo.png" alt="iVenue" />
         </a>
 
         <div class="calendarCont">
@@ -513,6 +514,7 @@
       const pagination = document.querySelector(".pagination");
       const eventSearch = document.querySelector("#eventSearch");
       const eventCategory = document.querySelector("#eventCategory");
+      const releaseShowsInitialLoad = window.pageLoading?.lock("shows-first-section");
       const EVENTS_PER_PAGE = window.iVenueEventListing.pageSize;
       let loadedEvents = [];
       let filteredEvents = [];
@@ -729,6 +731,8 @@
         } catch (error) {
           console.error(error);
           showEventsMessage("Events are temporarily unavailable.", true);
+        } finally {
+          releaseShowsInitialLoad?.();
         }
       }
     </script>

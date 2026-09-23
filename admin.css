@@ -56,18 +56,6 @@
   flex: 1;
 }
 
-.admin-site-logo {
-  flex: 0 0 auto;
-  width: clamp(120px, 14vw, 185px);
-  line-height: 0;
-}
-
-.admin-site-logo img {
-  display: block;
-  width: 100%;
-  height: auto;
-}
-
 .admin-header > .admin-header-actions {
   display: flex;
   align-items: center;
@@ -1103,10 +1091,6 @@
   .admin-header {
     padding: 18px;
     gap: 18px;
-  }
-
-  .admin-site-logo {
-    width: min(180px, 55vw);
   }
 
   .admin-header-actions > button {

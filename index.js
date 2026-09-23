@@ -26,10 +26,18 @@ function renderHeroSlide(event, index) {
   const location = window.supabaseData.getEventLocation(event);
   const slide = document.createElement("div");
   slide.className = `heroSlide${index === 0 ? " active" : ""}`;
-  const image = document.createElement("img");
-  image.src = event.image_url || "";
-  image.alt = event.title || event.performer || "Event";
-  slide.append(image);
+  if (event.image_url) {
+    const image = document.createElement("img");
+    image.src = event.image_url;
+    image.alt = event.title || event.performer || "Event";
+    image.addEventListener("error", () => {
+      slide.classList.add("heroSlide--image-fallback");
+      image.remove();
+    }, { once: true });
+    slide.append(image);
+  } else {
+    slide.classList.add("heroSlide--image-fallback");
+  }
 
   const content = document.createElement("div");
   content.className = "SlideContent heroEventOverlay";
@@ -73,7 +81,7 @@ function renderHeroSkeleton() {
   skeleton.className = "heroSkeleton";
   skeleton.setAttribute("role", "status");
   skeleton.setAttribute("aria-label", "Loading featured events");
-  skeleton.innerHTML = `<div class="heroSkeletonOverlay"><span class="skeletonBlock heroSkeletonTitle"></span><div class="heroSkeletonDetails"><span class="skeletonBlock"></span><span class="skeletonBlock"></span><span class="skeletonBlock"></span><span class="skeletonBlock heroSkeletonButton"></span></div></div>`;
+  skeleton.innerHTML = `<span class="skeletonBlock heroSkeletonMedia"></span><div class="heroSkeletonOverlay"><span class="skeletonBlock heroSkeletonTitle"></span><div class="heroSkeletonDetails"><span class="skeletonBlock"></span><span class="skeletonBlock"></span><span class="skeletonBlock"></span><span class="skeletonBlock heroSkeletonButton"></span></div></div><div class="heroSkeletonDots"><span class="skeletonBlock"></span><span class="skeletonBlock"></span><span class="skeletonBlock"></span></div>`;
   return skeleton;
 }
 
@@ -168,19 +176,20 @@ function initializeHeroSlider() {
 
 async function loadHeroEvents() {
   if (!heroSlider) return;
+  const releaseScroll = window.pageLoading?.lock("homepage-hero");
   heroSlider.classList.add("is-loading");
+  heroSlider.setAttribute("aria-busy", "true");
   heroSlider.replaceChildren(renderHeroSkeleton());
   try {
     const events = await window.supabaseData.getHomepageHeroEvents();
-    heroSlider.classList.remove("is-loading");
     if (!events.length) {
       heroSlider.innerHTML = '<p class="heroState">No featured events are available right now.</p>';
       return;
     }
     const dots = document.createElement("div");
     dots.className = "heroDots";
-    events.forEach((event, index) => {
-      heroSlider.append(renderHeroSlide(event, index));
+    const slides = events.map(renderHeroSlide);
+    slides.forEach((slide, index) => {
       const dot = document.createElement("button");
       dot.className = `heroDot${index === 0 ? " active" : ""}`;
       dot.dataset.slide = String(index);
@@ -188,12 +197,19 @@ async function loadHeroEvents() {
       dot.setAttribute("aria-label", `Show slide ${index + 1}`);
       dots.append(dot);
     });
-    heroSlider.append(dots);
+    const firstImage = slides[0].querySelector("img");
+    const imageReady = await window.pageLoading?.waitForImage(firstImage);
+    if (imageReady === false) slides[0].classList.add("heroSlide--image-fallback");
+    heroSlider.replaceChildren(...slides, dots);
+    heroSlider.classList.add("is-ready");
     initializeHeroSlider();
   } catch (error) {
     console.error("Hero events could not be loaded.", error);
-    heroSlider.classList.remove("is-loading");
     heroSlider.innerHTML = '<p class="heroState heroStateError">Featured events are temporarily unavailable.</p>';
+  } finally {
+    heroSlider.classList.remove("is-loading");
+    heroSlider.setAttribute("aria-busy", "false");
+    releaseScroll?.();
   }
 }
 
