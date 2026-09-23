@@ -479,6 +479,10 @@ console.log("EVENT SOURCE: Supabase");
 const mobileMenuToggle = document.querySelector(".mobileMenuToggle");
 const mobileMenu = document.querySelector("#mobileMenu");
 const mobileMenuAccount = document.querySelector("#mobileMenuAccount");
+const mobileMenuSocial = document.querySelector(".mobileMenuSocial");
+const headerSocialIcons = document.querySelector(".socIcons");
+const headerSocialParent = headerSocialIcons?.parentNode;
+const headerSocialNextSibling = headerSocialIcons?.nextSibling;
 
 // Burger menu open / close
 function setMobileMenu(open) {
@@ -491,6 +495,12 @@ function setMobileMenu(open) {
   mobileMenu.setAttribute("aria-hidden", String(!open));
 
   document.body.classList.toggle("mobile-menu-open", open);
+  document.querySelector("#eventCartToggle")?.classList.toggle("header-cart-hidden", open);
+  if (headerSocialIcons && mobileMenuSocial) {
+    if (open) mobileMenuSocial.append(headerSocialIcons);
+    else if (headerSocialParent)
+      headerSocialParent.insertBefore(headerSocialIcons, headerSocialNextSibling);
+  }
 }
 
 // Burger button click

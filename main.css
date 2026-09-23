@@ -233,6 +233,21 @@ header > nav a:hover span {
   overflow: hidden;
 }
 
+.site-logo { display: inline-flex; align-items: center; width: clamp(130px, 18vw, 220px); min-width: 0; line-height: 0; }
+.site-logo img { display: block; width: 100%; height: auto; aspect-ratio: 560 / 180; object-fit: contain; }
+.header-cart-hidden { display: none !important; }
+.mobile-menu-open #eventCartToggle,
+body[class*="auth"] #eventCartToggle { display: none !important; }
+.mobileMenu { z-index: 50; }
+.mobileMenuToggle { z-index: 52; }
+.mobileMenuPanel { display: flex; flex-direction: column; }
+.mobileMenuSocial { display: none; gap: 14px; padding: 8px 0 18px; }
+.mobileMenu.is-open .mobileMenuSocial { display: flex; }
+.mobileMenuSocial .socIcons { position: static; display: flex; width: auto; margin: 0; }
+.mobileMenuAccount { margin-top: auto; padding-top: 24px; }
+body.ticket-open .mobileMenuToggle,
+body.ticket-open #eventCartToggle { display: none !important; }
+
 .skeletonBlock {
   display: block;
   border-radius: 4px;
