@@ -750,21 +750,12 @@
     state.eventPage = Math.min(state.eventPage, totalPages);
     const pageStart = (state.eventPage - 1) * EVENTS_PAGE_SIZE;
     const pageItems = filtered.slice(pageStart, pageStart + EVENTS_PAGE_SIZE);
-    eventList.innerHTML = pageItems.length
-      ? pageItems
-          .map((event) => {
-            const stats = eventStats(event);
-            const location = getEventLocation(event);
-            return `<article class="admin-event-row"><div><strong>${escapeHtml(event.title)}</strong><span>${escapeHtml(event.performer)} · ${escapeHtml(event.categories?.name || "Uncategorized")} · ${escapeHtml(event.event_date)} · ${escapeHtml(event.event_time)} · ${escapeHtml(location.text)}</span><span>${stats.sold} sold / ${stats.remaining} available${stats.blocked ? ` / ${stats.blocked} blocked` : ""}</span></div><span class="admin-badge">${escapeHtml(event.status || "active")}</span><div class="admin-event-actions"><button data-edit="${event.id}" type="button">Edit</button><button data-delete="${event.id}" type="button">Delete</button></div></article>`;
-          })
-          .join("")
-      : '<p class="admin-message">No matching events.</p>';
     if (pageItems.length) {
       const eventGroups = Array.from(
         { length: Math.ceil(pageItems.length / 4) },
         (_, index) => pageItems.slice(index * 4, index * 4 + 4),
       );
-      eventList.innerHTML = eventGroups
+      const desktopEvents = eventGroups
         .map((group) => {
           const cards = group.map((event) => {
             const stats = eventStats(event);
@@ -777,6 +768,16 @@
           return `<section class="admin-event-group"><div class="admin-event-group__images">${cards.map((card) => card.image).join("")}</div><div class="admin-event-group__information">${cards.map((card) => card.info).join("")}</div></section>`;
         })
         .join("");
+      const mobileEvents = pageItems
+        .map((event) => {
+          const stats = eventStats(event);
+          const location = getEventLocation(event);
+          return `<article class="admin-event-mobile-row"><div class="admin-event-mobile-row__image"><img src="${escapeHtml(event.image_url || "")}" alt="${escapeHtml(event.title)}" loading="lazy" /></div><div class="admin-event-mobile-row__info"><strong>${escapeHtml(event.title)}</strong><span>${escapeHtml(event.performer)} &middot; ${escapeHtml(event.categories?.name || "Uncategorized")}</span><span>${escapeHtml(location.text)}</span><time datetime="${escapeHtml(event.event_date)}">${escapeHtml(event.event_date)} &middot; ${escapeHtml(event.event_time)}</time><small>${stats.sold} sold / ${stats.remaining} available${stats.blocked ? ` / ${stats.blocked} blocked` : ""}</small></div><div class="admin-event-mobile-row__actions"><span class="admin-badge">${escapeHtml(event.status || "active")}</span><div class="admin-event-actions"><button data-edit="${event.id}" type="button">Edit</button><button data-delete="${event.id}" type="button">Delete</button></div></div></article>`;
+        })
+        .join("");
+      eventList.innerHTML = `<div class="admin-event-desktop-list">${desktopEvents}</div><div class="admin-event-mobile-list">${mobileEvents}</div>`;
+    } else {
+      eventList.innerHTML = '<p class="admin-message">No matching events.</p>';
     }
     renderPagination(
       eventsPagination,
