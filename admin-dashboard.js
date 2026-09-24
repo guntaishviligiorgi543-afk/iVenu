@@ -4,7 +4,9 @@
   const CATALOG_BATCH_SIZE = 10;
   const PUBLIC_EVENTS_PER_PAGE = window.iVenueEventListing?.pageSize;
   if (!Number.isInteger(PUBLIC_EVENTS_PER_PAGE) || PUBLIC_EVENTS_PER_PAGE < 1) {
-    throw new Error("The shared public event listing page size is unavailable.");
+    throw new Error(
+      "The shared public event listing page size is unavailable.",
+    );
   }
   const client = window.supabaseClient;
   const state = {
@@ -33,7 +35,11 @@
     heroConfig: { mode: "latest_added", display_limit: 3, event_ids: [] },
     heroPreview: [],
     heroPreviewMode: "latest_added",
-    upcomingShowsConfig: { mode: "latest_added", display_limit: 4, event_ids: [] },
+    upcomingShowsConfig: {
+      mode: "latest_added",
+      display_limit: 4,
+      event_ids: [],
+    },
     upcomingShowsPreview: [],
     upcomingShowsPreviewMode: "latest_added",
     refreshing: false,
@@ -55,27 +61,41 @@
   const venuePreview = document.querySelector("#venuePreview");
   const wizardMessage = document.querySelector("#eventWizardMessage");
   const wizardStepButtons = [...document.querySelectorAll("[data-event-step]")];
-  const wizardStepPanels = [...document.querySelectorAll("[data-event-step-panel]")];
+  const wizardStepPanels = [
+    ...document.querySelectorAll("[data-event-step-panel]"),
+  ];
   const wizardBack = document.querySelector("#wizardBack");
   const wizardContinue = document.querySelector("#wizardContinue");
   const wizardSubmit = document.querySelector("#wizardSubmit");
   const ticketInventoryRows = document.querySelector("#ticketInventoryRows");
   const ticketInventoryError = document.querySelector("#ticketInventoryError");
   const ticketVenueSummary = document.querySelector("#ticketVenueSummary");
-  const ticketPhysicalCapacity = document.querySelector("#ticketPhysicalCapacity");
-  const ticketSellableCapacity = document.querySelector("#ticketSellableCapacity");
-  const ticketBlockedCapacity = document.querySelector("#ticketBlockedCapacity");
-  const ticketPotentialRevenue = document.querySelector("#ticketPotentialRevenue");
+  const ticketPhysicalCapacity = document.querySelector(
+    "#ticketPhysicalCapacity",
+  );
+  const ticketSellableCapacity = document.querySelector(
+    "#ticketSellableCapacity",
+  );
+  const ticketBlockedCapacity = document.querySelector(
+    "#ticketBlockedCapacity",
+  );
+  const ticketPotentialRevenue = document.querySelector(
+    "#ticketPotentialRevenue",
+  );
   const ticketCapacityLabel = document.querySelector("#ticketCapacityLabel");
   const ticketCapacityBar = document.querySelector("#ticketCapacityBar");
   const eventImagePreview = document.querySelector("#eventImagePreview");
-  const eventImagePreviewImage = document.querySelector("#eventImagePreviewImage");
+  const eventImagePreviewImage = document.querySelector(
+    "#eventImagePreviewImage",
+  );
   const eventImageEmpty = document.querySelector("#eventImageEmpty");
   const eventReview = document.querySelector("#eventReview");
   const placementMode = document.querySelector("#eventPlacementMode");
   const placementCustom = document.querySelector("#eventPlacementCustom");
   const placementPage = document.querySelector("#eventPlacementPage");
-  const placementPagePosition = document.querySelector("#eventPlacementPagePosition");
+  const placementPagePosition = document.querySelector(
+    "#eventPlacementPagePosition",
+  );
   const placementPreview = document.querySelector("#eventPlacementPreview");
   const placementError = document.querySelector("#eventPlacementError");
   const eventEditorShell = document.querySelector("#eventEditorShell");
@@ -83,16 +103,34 @@
   const eventEditorBack = document.querySelector("#eventEditorBack");
   const eventEditorHome = document.querySelector("#eventEditorHome");
   const eventSaveSuccess = document.querySelector("#eventSaveSuccess");
-  const eventSaveSuccessMessage = document.querySelector("#eventSaveSuccessMessage");
+  const eventSaveSuccessMessage = document.querySelector(
+    "#eventSaveSuccessMessage",
+  );
   const previewSeatMap = document.querySelector("#previewSeatMap");
-  const eventMapPreviewDialog = document.querySelector("#eventMapPreviewDialog");
-  const eventMapPreviewCanvas = document.querySelector("#eventMapPreviewCanvas");
-  const eventMapPreviewDescription = document.querySelector("#eventMapPreviewDescription");
+  const eventMapPreviewDialog = document.querySelector(
+    "#eventMapPreviewDialog",
+  );
+  const eventMapPreviewCanvas = document.querySelector(
+    "#eventMapPreviewCanvas",
+  );
+  const eventMapPreviewDescription = document.querySelector(
+    "#eventMapPreviewDescription",
+  );
   const categoryFilter = document.querySelector("#eventCategory");
   const analyticsPeriod = document.querySelector("#analyticsPeriod");
   const performanceSort = document.querySelector("#performanceSort");
   const performanceMore = document.querySelector("#performanceMore");
   const backButton = document.querySelector("#adminBack");
+  const adminShell = document.querySelector(".admin-shell");
+  const adminHeader = document.querySelector(".admin-header");
+  const adminNav = document.querySelector(".admin-nav");
+  const adminMenu = document.querySelector("#adminMenu");
+  const adminMenuToggle = document.querySelector("#adminMenuToggle");
+  const adminMenuNav = document.querySelector(".admin-menu-nav");
+  const adminMenuLogout = document.querySelector(".admin-menu-logout");
+  const adminHeaderActions = document.querySelector(".admin-header-actions");
+  const adminMessage = document.querySelector("#adminMessage");
+  const adminLogout = document.querySelector("#adminLogout");
   const catalogForm = document.querySelector("#catalogForm");
   const catalogList = document.querySelector("#catalogList");
   const catalogMore = document.querySelector("#catalogMore");
@@ -104,22 +142,27 @@
   const cancelEventDelete = document.querySelector("#cancelEventDelete");
   const confirmEventDelete = document.querySelector("#confirmEventDelete");
   const heroForm = document.querySelector("#heroForm");
-  heroForm.innerHTML = `<fieldset class="admin-hero-mode"><legend>Hero Display Mode</legend><label class="admin-check"><input type="radio" name="hero_mode" value="latest_added" checked /> Latest Added</label><label class="admin-check"><input type="radio" name="hero_mode" value="most_added_to_cart" /> Most Added to Cart</label><label class="admin-check"><input type="radio" name="hero_mode" value="best_selling" /> Best Selling</label><label class="admin-check"><input type="radio" name="hero_mode" value="custom_selection" /> Custom Selection</label></fieldset><p class="admin-hero-help" id="heroHelp"></p><div id="heroAutomatic"></div><div id="heroSlots" hidden><label>Find eligible events<input id="heroSearch" type="search" placeholder="Search title, date, venue or category" autocomplete="off" /></label><div class="upcoming-shows-results" id="heroResults"></div><p class="admin-hero-help" id="heroCount"></p><div class="upcoming-shows-selected" id="heroSelected"></div></div><div class="admin-form-actions"><button class="auth-submit" type="submit">Save Hero</button></div>`;
+  heroForm.innerHTML = `<fieldset class="admin-hero-mode"><legend>Hero Display Mode</legend><label class="admin-check"><input type="radio" name="hero_mode" value="latest_added" checked /> Latest Added</label><label class="admin-check"><input type="radio" name="hero_mode" value="most_added_to_cart" /> Most Added to Cart</label><label class="admin-check"><input type="radio" name="hero_mode" value="best_selling" /> Best Selling</label><label class="admin-check"><input type="radio" name="hero_mode" value="custom_selection" /> Custom Selection</label></fieldset><label class="admin-hero-limit">Hero event count<input id="heroLimit" type="number" min="1" step="1" inputmode="numeric" /></label><p class="admin-hero-help" id="heroHelp"></p><div id="heroAutomatic"></div><div id="heroSlots" hidden><label>Find eligible events<input id="heroSearch" type="search" placeholder="Search title, date, venue or category" autocomplete="off" /></label><div class="upcoming-shows-results" id="heroResults"></div><p class="admin-hero-help" id="heroCount"></p><div class="upcoming-shows-selected" id="heroSelected"></div></div><div class="admin-form-actions"><button class="auth-submit" type="submit">Save Hero</button></div>`;
   const heroSlots = document.querySelector("#heroSlots");
   const heroHelp = document.querySelector("#heroHelp");
   const heroAutomatic = document.querySelector("#heroAutomatic");
   const heroSearch = document.querySelector("#heroSearch");
+  const heroLimit = document.querySelector("#heroLimit");
   const heroResults = document.querySelector("#heroResults");
   const heroCount = document.querySelector("#heroCount");
   const heroSelected = document.querySelector("#heroSelected");
   const upcomingShowsForm = document.querySelector("#upcomingShowsForm");
   const upcomingShowsHelp = document.querySelector("#upcomingShowsHelp");
-  const upcomingShowsAutomatic = document.querySelector("#upcomingShowsAutomatic");
+  const upcomingShowsAutomatic = document.querySelector(
+    "#upcomingShowsAutomatic",
+  );
   const upcomingShowsCustom = document.querySelector("#upcomingShowsCustom");
   const upcomingShowsSearch = document.querySelector("#upcomingShowsSearch");
   const upcomingShowsResults = document.querySelector("#upcomingShowsResults");
   const upcomingShowsCount = document.querySelector("#upcomingShowsCount");
-  const upcomingShowsSelected = document.querySelector("#upcomingShowsSelected");
+  const upcomingShowsSelected = document.querySelector(
+    "#upcomingShowsSelected",
+  );
 
   const escapeHtml = (value) =>
     String(value ?? "")
@@ -200,39 +243,67 @@
   };
 
   async function loadData() {
-    const [events, categories, tickets, orders, users, catalog, venues, inventory, eventCreationContext, heroConfig, heroPreview, upcomingShowsConfig, upcomingShowsPreview] =
-      await Promise.all([
-        client
-          .from("events")
-          .select(
-            "id, performer, category_id, title, description, event_date, event_time, doors_open, venue_id, venue, city, country, image_url, status, display_order, venues:venues!events_venue_id_fkey(id, name, city_area, region, country, address, latitude, longitude, image_url), categories(id, name)",
-          )
-          .order("display_order", { ascending: true })
-          .order("id", { ascending: true }),
-        client.from("categories").select("id, name").order("name"),
-        client
-          .from("ticket_types")
-          .select("id, event_id, name, canonical_tier, display_color, price, is_active, total_quantity, available_quantity"),
-        client.from("order_items").select("ticket_type_id, quantity"),
-        client.from("profiles").select("id", { count: "exact", head: true }),
-        client
-          .from("venue_catalog")
-          .select("id, image_url, display_order, created_at")
-          .order("display_order", { ascending: true }),
-        client
-          .from("venues")
-          .select(
-            "id, name, city_area, region, country, address, latitude, longitude, image_url",
-          )
-          .order("name"),
-        client.rpc("get_admin_event_inventory"),
-        client.rpc("get_admin_event_creation_context"),
-        client.rpc("get_admin_homepage_hero_config"),
-        client.rpc("get_homepage_hero_events"),
-        client.rpc("get_admin_homepage_upcoming_shows_config"),
-        client.rpc("get_homepage_upcoming_shows"),
-      ]);
-    for (const result of [events, categories, tickets, orders, catalog, venues, inventory, eventCreationContext, heroConfig, heroPreview, upcomingShowsConfig, upcomingShowsPreview])
+    const [
+      events,
+      categories,
+      tickets,
+      orders,
+      users,
+      catalog,
+      venues,
+      inventory,
+      eventCreationContext,
+      heroConfig,
+      heroPreview,
+      upcomingShowsConfig,
+      upcomingShowsPreview,
+    ] = await Promise.all([
+      client
+        .from("events")
+        .select(
+          "id, performer, category_id, title, description, event_date, event_time, doors_open, venue_id, venue, city, country, image_url, status, display_order, venues:venues!events_venue_id_fkey(id, name, city_area, region, country, address, latitude, longitude, image_url), categories(id, name)",
+        )
+        .order("display_order", { ascending: true })
+        .order("id", { ascending: true }),
+      client.from("categories").select("id, name").order("name"),
+      client
+        .from("ticket_types")
+        .select(
+          "id, event_id, name, canonical_tier, display_color, price, is_active, total_quantity, available_quantity",
+        ),
+      client.from("order_items").select("ticket_type_id, quantity"),
+      client.from("profiles").select("id", { count: "exact", head: true }),
+      client
+        .from("venue_catalog")
+        .select("id, image_url, display_order, created_at")
+        .order("display_order", { ascending: true }),
+      client
+        .from("venues")
+        .select(
+          "id, name, city_area, region, country, address, latitude, longitude, image_url",
+        )
+        .order("name"),
+      client.rpc("get_admin_event_inventory"),
+      client.rpc("get_admin_event_creation_context"),
+      client.rpc("get_admin_homepage_hero_config"),
+      client.rpc("get_homepage_hero_events"),
+      client.rpc("get_admin_homepage_upcoming_shows_config"),
+      client.rpc("get_homepage_upcoming_shows"),
+    ]);
+    for (const result of [
+      events,
+      categories,
+      tickets,
+      orders,
+      catalog,
+      venues,
+      inventory,
+      eventCreationContext,
+      heroConfig,
+      heroPreview,
+      upcomingShowsConfig,
+      upcomingShowsPreview,
+    ])
       if (result.error) throw result.error;
     state.events = events.data || [];
     state.categories = categories.data || [];
@@ -243,13 +314,25 @@
     state.catalogVisibleCount = CATALOG_BATCH_SIZE;
     state.venues = venues.data || [];
     state.inventory = inventory.data || [];
-    state.eventCreationContext = eventCreationContext.data || { venues: [], ticket_colors: {} };
-    state.heroConfig = heroConfig.data || { mode: "latest_added", display_limit: 3, event_ids: [] };
+    state.eventCreationContext = eventCreationContext.data || {
+      venues: [],
+      ticket_colors: {},
+    };
+    state.heroConfig = heroConfig.data || {
+      mode: "latest_added",
+      display_limit: 3,
+      event_ids: [],
+    };
     state.heroConfig.event_ids = state.heroConfig.event_ids || [];
     state.heroPreview = heroPreview.data || [];
     state.heroPreviewMode = state.heroConfig.mode;
-    state.upcomingShowsConfig = upcomingShowsConfig.data || { mode: "latest_added", display_limit: 4, event_ids: [] };
-    state.upcomingShowsConfig.event_ids = state.upcomingShowsConfig.event_ids || [];
+    state.upcomingShowsConfig = upcomingShowsConfig.data || {
+      mode: "latest_added",
+      display_limit: 4,
+      event_ids: [],
+    };
+    state.upcomingShowsConfig.event_ids =
+      state.upcomingShowsConfig.event_ids || [];
     state.upcomingShowsPreview = upcomingShowsPreview.data || [];
     state.upcomingShowsPreviewMode = state.upcomingShowsConfig.mode;
     state.eventPage = 1;
@@ -265,39 +348,85 @@
 
   function renderHeroForm() {
     const config = state.heroConfig;
-    const mode = ["latest_added", "most_added_to_cart", "best_selling", "custom_selection"].includes(config.mode)
-      ? config.mode : "latest_added";
-    const limit = Number(config.display_limit) || 3;
+    const mode = [
+      "latest_added",
+      "most_added_to_cart",
+      "best_selling",
+      "custom_selection",
+    ].includes(config.mode)
+      ? config.mode
+      : "latest_added";
+    const eligibleEvents = state.events.filter(
+      (event) =>
+        event.status === "active" &&
+        event.event_date >= new Date().toISOString().slice(0, 10),
+    );
+    const availableCount = eligibleEvents.length;
+    const limit = Math.max(1, Math.floor(Number(config.display_limit) || 3));
     heroForm.elements.hero_mode.value = mode;
+    heroLimit.max = String(Math.max(1, availableCount));
+    heroLimit.value = String(limit);
     heroSlots.hidden = mode !== "custom_selection";
     heroAutomatic.hidden = mode === "custom_selection";
     const help = {
       latest_added: `Automatically shows the ${limit} newest active, upcoming events.`,
-      most_added_to_cart: "Automatically ranks active, upcoming events by recorded add-to-cart ticket units.",
-      best_selling: "Automatically ranks active, upcoming events by ticket quantities in paid orders.",
+      most_added_to_cart:
+        "Automatically ranks active, upcoming events by recorded add-to-cart ticket units.",
+      best_selling:
+        "Automatically ranks active, upcoming events by ticket quantities in paid orders.",
       custom_selection: `Choose and order up to ${limit} active, upcoming events. Removing one here does not delete the event.`,
     };
     heroHelp.textContent = help[mode];
     if (mode !== "custom_selection") {
-      heroAutomatic.innerHTML = mode !== state.heroPreviewMode
-        ? '<p class="admin-message">Save this display mode to update the current Hero preview.</p>'
-        : state.heroPreview.length
-          ? `<div class="upcoming-shows-preview">${state.heroPreview.map((event) => `<div><span>${formatUpcomingEvent(event)}</span><button type="button" data-hero-edit="${event.id}">Edit Event</button></div>`).join("")}</div>`
-          : '<p class="admin-message">No eligible events are available for this mode.</p>';
+      heroAutomatic.innerHTML =
+        mode !== state.heroPreviewMode
+          ? '<p class="admin-message">Save this display mode to update the current Hero preview.</p>'
+          : state.heroPreview.length
+            ? `<div class="upcoming-shows-preview">${state.heroPreview.map((event) => `<div><span>${formatUpcomingEvent(event)}</span><button type="button" data-hero-edit="${event.id}">Edit Event</button></div>`).join("")}</div>`
+            : '<p class="admin-message">No eligible events are available for this mode.</p>';
       return;
     }
     const selectedIds = config.event_ids.map(String);
-    const selected = selectedIds.map((id) => state.events.find((event) => String(event.id) === id)).filter(Boolean);
+    const selected = selectedIds
+      .map((id) => state.events.find((event) => String(event.id) === id))
+      .filter(Boolean);
     heroCount.textContent = `${selected.length} of ${limit} events selected for the Hero.`;
     heroSelected.innerHTML = selected.length
-      ? selected.map((event, index) => `<div class="upcoming-shows-row"><span>${index + 1}. ${formatUpcomingEvent(event)}</span><div><button type="button" data-hero-move="up" data-hero-id="${event.id}" ${index === 0 ? "disabled" : ""}>Move up</button><button type="button" data-hero-move="down" data-hero-id="${event.id}" ${index === selected.length - 1 ? "disabled" : ""}>Move down</button><button type="button" data-hero-edit="${event.id}">Edit Event</button><button type="button" data-hero-remove="${event.id}">Remove</button></div></div>`).join("")
+      ? selected
+          .map(
+            (event, index) =>
+              `<div class="upcoming-shows-row"><span>${index + 1}. ${formatUpcomingEvent(event)}</span><div><button type="button" data-hero-move="up" data-hero-id="${event.id}" ${index === 0 ? "disabled" : ""}>Move up</button><button type="button" data-hero-move="down" data-hero-id="${event.id}" ${index === selected.length - 1 ? "disabled" : ""}>Move down</button><button type="button" data-hero-edit="${event.id}">Edit Event</button><button type="button" data-hero-remove="${event.id}">Remove</button></div></div>`,
+          )
+          .join("")
       : '<p class="admin-message">No custom Hero events selected.</p>';
     const search = heroSearch.value.trim().toLowerCase();
-    const matches = state.events.filter((event) => {
-      const text = [event.title, event.performer, event.event_date, event.venues?.name || event.venue, event.categories?.name].join(" ").toLowerCase();
-      return event.status === "active" && event.event_date >= new Date().toISOString().slice(0, 10) && !selectedIds.includes(String(event.id)) && (!search || text.includes(search));
-    }).slice(0, 12);
-    heroResults.innerHTML = selected.length >= limit ? "" : matches.map((event) => `<div class="upcoming-shows-row"><span>${formatUpcomingEvent(event)}</span><button type="button" data-hero-add="${event.id}">Add</button></div>`).join("") || '<p class="admin-message">No eligible matching events found.</p>';
+    const matches = eligibleEvents
+      .filter((event) => {
+        const text = [
+          event.title,
+          event.performer,
+          event.event_date,
+          event.venues?.name || event.venue,
+          event.categories?.name,
+        ]
+          .join(" ")
+          .toLowerCase();
+        return (
+          !selectedIds.includes(String(event.id)) &&
+          (!search || text.includes(search))
+        );
+      })
+      .slice(0, 12);
+    heroResults.innerHTML =
+      selected.length >= limit
+        ? ""
+        : matches
+            .map(
+              (event) =>
+                `<div class="upcoming-shows-row"><span>${formatUpcomingEvent(event)}</span><button type="button" data-hero-add="${event.id}">Add</button></div>`,
+            )
+            .join("") ||
+          '<p class="admin-message">No eligible matching events found.</p>';
     return;
     /* const mode = state.heroConfig.mode === "manual" ? "manual" : "automatic";
     heroForm.elements.hero_mode.value = mode;
@@ -316,15 +445,22 @@
 
   function formatUpcomingEvent(event) {
     const venue = event.venues?.name || event.venue || "Venue TBA";
-    const category = event.categories?.name || event.category || "Uncategorized";
+    const category =
+      event.categories?.name || event.category || "Uncategorized";
     const date = event.event_date || "Date TBA";
     return `${escapeHtml(event.title || event.performer || "Untitled event")} — ${escapeHtml(date)} · ${escapeHtml(venue)} · ${escapeHtml(category)}`;
   }
 
   function renderUpcomingShowsForm() {
     const config = state.upcomingShowsConfig;
-    const mode = ["latest_added", "most_added_to_cart", "best_selling", "custom_selection"].includes(config.mode)
-      ? config.mode : "latest_added";
+    const mode = [
+      "latest_added",
+      "most_added_to_cart",
+      "best_selling",
+      "custom_selection",
+    ].includes(config.mode)
+      ? config.mode
+      : "latest_added";
     upcomingShowsForm.elements.upcoming_mode.value = mode;
     upcomingShowsCustom.hidden = mode !== "custom_selection";
     upcomingShowsAutomatic.hidden = mode === "custom_selection";
@@ -339,7 +475,8 @@
 
     if (mode !== "custom_selection") {
       if (mode !== state.upcomingShowsPreviewMode) {
-        upcomingShowsAutomatic.innerHTML = '<p class="admin-message">Save this display mode to update the current homepage preview.</p>';
+        upcomingShowsAutomatic.innerHTML =
+          '<p class="admin-message">Save this display mode to update the current homepage preview.</p>';
         return;
       }
       upcomingShowsAutomatic.innerHTML = state.upcomingShowsPreview.length
@@ -349,19 +486,48 @@
     }
 
     const selectedIds = config.event_ids.map(String);
-    const selected = selectedIds.map((id) => state.events.find((event) => String(event.id) === id)).filter(Boolean);
+    const selected = selectedIds
+      .map((id) => state.events.find((event) => String(event.id) === id))
+      .filter(Boolean);
     upcomingShowsCount.textContent = `${selected.length} of ${limit} events selected for the homepage accordion.`;
     upcomingShowsSelected.innerHTML = selected.length
-      ? selected.map((event, index) => `<div class="upcoming-shows-row"><span>${index + 1}. ${formatUpcomingEvent(event)}</span><div><button type="button" data-upcoming-move="up" data-upcoming-id="${event.id}" ${index === 0 ? "disabled" : ""}>Move up</button><button type="button" data-upcoming-move="down" data-upcoming-id="${event.id}" ${index === selected.length - 1 ? "disabled" : ""}>Move down</button><button type="button" data-upcoming-edit="${event.id}">Edit Event</button><button type="button" data-upcoming-remove="${event.id}">Remove</button></div></div>`).join("")
+      ? selected
+          .map(
+            (event, index) =>
+              `<div class="upcoming-shows-row"><span>${index + 1}. ${formatUpcomingEvent(event)}</span><div><button type="button" data-upcoming-move="up" data-upcoming-id="${event.id}" ${index === 0 ? "disabled" : ""}>Move up</button><button type="button" data-upcoming-move="down" data-upcoming-id="${event.id}" ${index === selected.length - 1 ? "disabled" : ""}>Move down</button><button type="button" data-upcoming-edit="${event.id}">Edit Event</button><button type="button" data-upcoming-remove="${event.id}">Remove</button></div></div>`,
+          )
+          .join("")
       : '<p class="admin-message">No custom events selected.</p>';
     const search = upcomingShowsSearch.value.trim().toLowerCase();
-    const matches = state.events.filter((event) => {
-      const text = [event.title, event.performer, event.event_date, event.venues?.name || event.venue, event.categories?.name].join(" ").toLowerCase();
-      return event.status === "active" && event.event_date >= new Date().toISOString().slice(0, 10) && !selectedIds.includes(String(event.id)) && (!search || text.includes(search));
-    }).slice(0, 12);
-    upcomingShowsResults.innerHTML = selected.length >= limit
-      ? ""
-      : matches.map((event) => `<div class="upcoming-shows-row"><span>${formatUpcomingEvent(event)}</span><button type="button" data-upcoming-add="${event.id}">Add</button></div>`).join("") || '<p class="admin-message">No eligible matching events found.</p>';
+    const matches = state.events
+      .filter((event) => {
+        const text = [
+          event.title,
+          event.performer,
+          event.event_date,
+          event.venues?.name || event.venue,
+          event.categories?.name,
+        ]
+          .join(" ")
+          .toLowerCase();
+        return (
+          event.status === "active" &&
+          event.event_date >= new Date().toISOString().slice(0, 10) &&
+          !selectedIds.includes(String(event.id)) &&
+          (!search || text.includes(search))
+        );
+      })
+      .slice(0, 12);
+    upcomingShowsResults.innerHTML =
+      selected.length >= limit
+        ? ""
+        : matches
+            .map(
+              (event) =>
+                `<div class="upcoming-shows-row"><span>${formatUpcomingEvent(event)}</span><button type="button" data-upcoming-add="${event.id}">Add</button></div>`,
+            )
+            .join("") ||
+          '<p class="admin-message">No eligible matching events found.</p>';
   }
 
   function resetCatalogForm() {
@@ -410,7 +576,13 @@
     renderAnalytics();
   }
 
-  function renderPagination(container, currentPage, totalItems, onPageChange, itemsPerPage = PAGE_SIZE) {
+  function renderPagination(
+    container,
+    currentPage,
+    totalItems,
+    onPageChange,
+    itemsPerPage = PAGE_SIZE,
+  ) {
     const totalPages = Math.ceil(totalItems / itemsPerPage);
     if (totalPages <= 1) {
       container.innerHTML = "";
@@ -507,7 +679,10 @@
 
     const recent = document.querySelector("#recentActivity");
     const fiveMostRecentActivities = [...(analytics.recent_activity || [])]
-      .sort((left, right) => new Date(right.created_at || 0) - new Date(left.created_at || 0))
+      .sort(
+        (left, right) =>
+          new Date(right.created_at || 0) - new Date(left.created_at || 0),
+      )
       .slice(0, 5);
     recent.innerHTML = fiveMostRecentActivities.length
       ? fiveMostRecentActivities
@@ -568,7 +743,10 @@
           (availability === "sold-out" ? stats.soldOut : !stats.soldOut))
       );
     });
-    const totalPages = Math.max(1, Math.ceil(filtered.length / EVENTS_PAGE_SIZE));
+    const totalPages = Math.max(
+      1,
+      Math.ceil(filtered.length / EVENTS_PAGE_SIZE),
+    );
     state.eventPage = Math.min(state.eventPage, totalPages);
     const pageStart = (state.eventPage - 1) * EVENTS_PAGE_SIZE;
     const pageItems = filtered.slice(pageStart, pageStart + EVENTS_PAGE_SIZE);
@@ -586,17 +764,19 @@
         { length: Math.ceil(pageItems.length / 4) },
         (_, index) => pageItems.slice(index * 4, index * 4 + 4),
       );
-      eventList.innerHTML = eventGroups.map((group) => {
-        const cards = group.map((event) => {
-          const stats = eventStats(event);
-          const location = getEventLocation(event);
-          return {
-            image: `<div class="admin-event-group__image"><img src="${escapeHtml(event.image_url || "")}" alt="${escapeHtml(event.title)}" loading="lazy" /></div>`,
-            info: `<article class="admin-event-row admin-event-group__item"><div class="admin-event-group__details"><strong>${escapeHtml(event.title)}</strong><span>${escapeHtml(event.performer)} &middot; ${escapeHtml(event.categories?.name || "Uncategorized")}</span><span>${escapeHtml(location.text)}</span><time datetime="${escapeHtml(event.event_date)}">${escapeHtml(event.event_date)} &middot; ${escapeHtml(event.event_time)}</time><small>${stats.sold} sold / ${stats.remaining} available${stats.blocked ? ` / ${stats.blocked} blocked` : ""}</small></div><div class="admin-event-group__footer"><span class="admin-badge">${escapeHtml(event.status || "active")}</span><div class="admin-event-actions"><button data-edit="${event.id}" type="button">Edit</button><button data-delete="${event.id}" type="button">Delete</button></div></div></article>`,
-          };
-        });
-        return `<section class="admin-event-group"><div class="admin-event-group__images">${cards.map((card) => card.image).join("")}</div><div class="admin-event-group__information">${cards.map((card) => card.info).join("")}</div></section>`;
-      }).join("");
+      eventList.innerHTML = eventGroups
+        .map((group) => {
+          const cards = group.map((event) => {
+            const stats = eventStats(event);
+            const location = getEventLocation(event);
+            return {
+              image: `<div class="admin-event-group__image"><img src="${escapeHtml(event.image_url || "")}" alt="${escapeHtml(event.title)}" loading="lazy" /></div>`,
+              info: `<article class="admin-event-row admin-event-group__item"><div class="admin-event-group__details"><strong>${escapeHtml(event.title)}</strong><span>${escapeHtml(event.performer)} &middot; ${escapeHtml(event.categories?.name || "Uncategorized")}</span><span>${escapeHtml(location.text)}</span><time datetime="${escapeHtml(event.event_date)}">${escapeHtml(event.event_date)} &middot; ${escapeHtml(event.event_time)}</time><small>${stats.sold} sold / ${stats.remaining} available${stats.blocked ? ` / ${stats.blocked} blocked` : ""}</small></div><div class="admin-event-group__footer"><span class="admin-badge">${escapeHtml(event.status || "active")}</span><div class="admin-event-actions"><button data-edit="${event.id}" type="button">Edit</button><button data-delete="${event.id}" type="button">Delete</button></div></div></article>`,
+            };
+          });
+          return `<section class="admin-event-group"><div class="admin-event-group__images">${cards.map((card) => card.image).join("")}</div><div class="admin-event-group__information">${cards.map((card) => card.info).join("")}</div></section>`;
+        })
+        .join("");
     }
     renderPagination(
       eventsPagination,
@@ -678,8 +858,9 @@
   }
 
   function renderVenuePreview(venueId) {
-    const venue = state.eventCreationContext.venues.find((item) => item.id === venueId)
-      || state.venues.find((item) => item.id === venueId);
+    const venue =
+      state.eventCreationContext.venues.find((item) => item.id === venueId) ||
+      state.venues.find((item) => item.id === venueId);
     if (!venue) {
       venuePreview.replaceChildren();
       venuePreview.hidden = true;
@@ -687,7 +868,9 @@
     }
 
     const location = [
-      ...new Set([venue.city_area, venue.region, venue.country].filter(Boolean)),
+      ...new Set(
+        [venue.city_area, venue.region, venue.country].filter(Boolean),
+      ),
     ].join(", ");
     venuePreview.innerHTML = `<strong>${escapeHtml(venue.name)}</strong><span>${escapeHtml(location || venue.address || "Venue details unavailable")}</span><span>Hall map: ${escapeHtml(venue.name)} · Capacity: ${formatSeatNumber(venue.physical_capacity || 0)}</span>`;
     venuePreview.hidden = false;
@@ -723,25 +906,42 @@
   ]);
 
   function selectedVenueContext() {
-    return state.eventCreationContext.venues.find((venue) => venue.id === venueSelect.value)
-      || state.venues.find((venue) => venue.id === venueSelect.value)
-      || null;
+    return (
+      state.eventCreationContext.venues.find(
+        (venue) => venue.id === venueSelect.value,
+      ) ||
+      state.venues.find((venue) => venue.id === venueSelect.value) ||
+      null
+    );
   }
 
   function ticketColorForTier(tier) {
-    const existing = state.ticketTypes.find((ticket) => ticket.canonical_tier === tier);
-    return state.eventCreationContext.ticket_colors?.[tier] || existing?.display_color || "#ff9475";
+    const existing = state.ticketTypes.find(
+      (ticket) => ticket.canonical_tier === tier,
+    );
+    return (
+      state.eventCreationContext.ticket_colors?.[tier] ||
+      existing?.display_color ||
+      "#ff9475"
+    );
   }
 
   function createTicketDraft() {
-    return Object.fromEntries(TICKET_TIERS.map((tier) => {
-      const existing = state.ticketTypes.find((ticket) => ticket.canonical_tier === tier.id);
-      return [tier.id, {
-        quantity: 0,
-        price: Number(existing?.price || 0),
-        color: ticketColorForTier(tier.id),
-      }];
-    }));
+    return Object.fromEntries(
+      TICKET_TIERS.map((tier) => {
+        const existing = state.ticketTypes.find(
+          (ticket) => ticket.canonical_tier === tier.id,
+        );
+        return [
+          tier.id,
+          {
+            quantity: 0,
+            price: Number(existing?.price || 0),
+            color: ticketColorForTier(tier.id),
+          },
+        ];
+      }),
+    );
   }
 
   function ticketDraftValue(tier, field) {
@@ -782,21 +982,49 @@
   function getInventoryValidation({ validateDraft = false } = {}) {
     const venue = selectedVenueContext();
     const inventory = currentTicketInventory();
-    if (!venue) return { valid: false, message: "Choose a venue before configuring ticket inventory." };
+    if (!venue)
+      return {
+        valid: false,
+        message: "Choose a venue before configuring ticket inventory.",
+      };
     if (validateDraft) {
-      const invalidQuantity = TICKET_TIERS.find((tier) => !isValidQuantityDraft(ticketDraftValue(tier.id, "quantity")));
-      if (invalidQuantity) return { valid: false, message: `${invalidQuantity.name} needs a whole, non-negative seat quantity.` };
-      const invalidPrice = TICKET_TIERS.find((tier) => !isValidPriceDraft(ticketDraftValue(tier.id, "price")));
-      if (invalidPrice) return { valid: false, message: `${invalidPrice.name} needs a non-negative price.` };
+      const invalidQuantity = TICKET_TIERS.find(
+        (tier) => !isValidQuantityDraft(ticketDraftValue(tier.id, "quantity")),
+      );
+      if (invalidQuantity)
+        return {
+          valid: false,
+          message: `${invalidQuantity.name} needs a whole, non-negative seat quantity.`,
+        };
+      const invalidPrice = TICKET_TIERS.find(
+        (tier) => !isValidPriceDraft(ticketDraftValue(tier.id, "price")),
+      );
+      if (invalidPrice)
+        return {
+          valid: false,
+          message: `${invalidPrice.name} needs a non-negative price.`,
+        };
     }
     const total = inventory.reduce((sum, tier) => sum + tier.quantity, 0);
-    const tierOverage = inventory.find((tier) => tier.quantity > Number(venue.tier_capacities?.[tier.canonical_tier] || 0));
+    const tierOverage = inventory.find(
+      (tier) =>
+        tier.quantity >
+        Number(venue.tier_capacities?.[tier.canonical_tier] || 0),
+    );
     if (tierOverage) {
-      const capacity = Number(venue.tier_capacities?.[tierOverage.canonical_tier] || 0);
-      return { valid: false, message: `${tierOverage.name} exceeds its physical venue inventory by ${formatSeatNumber(tierOverage.quantity - capacity)} seats.` };
+      const capacity = Number(
+        venue.tier_capacities?.[tierOverage.canonical_tier] || 0,
+      );
+      return {
+        valid: false,
+        message: `${tierOverage.name} exceeds its physical venue inventory by ${formatSeatNumber(tierOverage.quantity - capacity)} seats.`,
+      };
     }
     if (total > Number(venue.physical_capacity || 0)) {
-      return { valid: false, message: `Configured ticket quantity exceeds venue capacity by ${formatSeatNumber(total - Number(venue.physical_capacity || 0))} seats.` };
+      return {
+        valid: false,
+        message: `Configured ticket quantity exceeds venue capacity by ${formatSeatNumber(total - Number(venue.physical_capacity || 0))} seats.`,
+      };
     }
     return { valid: true, venue, inventory, total };
   }
@@ -806,8 +1034,12 @@
     wizardBack.hidden = state.wizardStep === 1;
     wizardContinue.hidden = review;
     wizardSubmit.hidden = !review;
-    wizardContinue.disabled = state.wizardStep === 4 && !getInventoryValidation({ validateDraft: true }).valid;
-    wizardSubmit.textContent = form.elements.id.value ? "Save changes" : "Create event";
+    wizardContinue.disabled =
+      state.wizardStep === 4 &&
+      !getInventoryValidation({ validateDraft: true }).valid;
+    wizardSubmit.textContent = form.elements.id.value
+      ? "Save changes"
+      : "Create event";
     wizardStepButtons.forEach((button) => {
       const step = Number(button.dataset.eventStep);
       button.classList.toggle("is-active", step === state.wizardStep);
@@ -820,16 +1052,20 @@
   function renderTicketInventory() {
     const venue = selectedVenueContext();
     const inventory = currentTicketInventory();
-    ticketInventoryRows.innerHTML = inventory.map((tier) => {
-      const capacity = Number(venue?.tier_capacities?.[tier.canonical_tier] || 0);
-      const quantityValue = ticketDraftValue(tier.canonical_tier, "quantity");
-      const priceValue = ticketDraftValue(tier.canonical_tier, "price");
-      return `<div class="admin-ticket-row" role="row" data-ticket-tier="${tier.canonical_tier}">
+    ticketInventoryRows.innerHTML = inventory
+      .map((tier) => {
+        const capacity = Number(
+          venue?.tier_capacities?.[tier.canonical_tier] || 0,
+        );
+        const quantityValue = ticketDraftValue(tier.canonical_tier, "quantity");
+        const priceValue = ticketDraftValue(tier.canonical_tier, "price");
+        return `<div class="admin-ticket-row" role="row" data-ticket-tier="${tier.canonical_tier}">
         <div class="admin-ticket-row__tier" role="cell" style="--ticket-color: ${escapeHtml(tier.color)}"><i aria-hidden="true"></i><div><strong>${escapeHtml(tier.name)}</strong><span>${venue ? `${formatSeatNumber(capacity)} physical seats` : "Select a venue first"}</span></div></div>
         <label role="cell"><span class="sr-only">${escapeHtml(tier.name)} sellable seats</span><input data-ticket-quantity type="number" min="0" max="${capacity}" step="1" value="${escapeHtml(quantityValue)}" inputmode="numeric" /></label>
         <label role="cell"><span class="sr-only">${escapeHtml(tier.name)} price</span><input data-ticket-price type="text" inputmode="decimal" autocomplete="off" pattern="[0-9]*[.]?[0-9]*" value="${escapeHtml(priceValue)}" /></label>
       </div>`;
-    }).join("");
+      })
+      .join("");
     updateTicketInventorySummary();
   }
 
@@ -838,19 +1074,30 @@
     const inventory = currentTicketInventory();
     const validation = getInventoryValidation();
     const physical = Number(venue?.physical_capacity || 0);
-    const sellable = validation.total ?? inventory.reduce((sum, tier) => sum + tier.quantity, 0);
+    const sellable =
+      validation.total ??
+      inventory.reduce((sum, tier) => sum + tier.quantity, 0);
     ticketVenueSummary.innerHTML = venue
       ? `<strong>${escapeHtml(venue.name)}</strong><span>Hall map: ${escapeHtml(venue.name)} · Physical capacity: ${formatSeatNumber(physical)}</span>`
       : "Select a venue to configure its ticket inventory.";
-    ticketPhysicalCapacity.textContent = venue ? formatSeatNumber(physical) : "—";
+    ticketPhysicalCapacity.textContent = venue
+      ? formatSeatNumber(physical)
+      : "—";
     ticketSellableCapacity.textContent = formatSeatNumber(sellable);
-    ticketBlockedCapacity.textContent = venue ? formatSeatNumber(Math.max(0, physical - sellable)) : "—";
+    ticketBlockedCapacity.textContent = venue
+      ? formatSeatNumber(Math.max(0, physical - sellable))
+      : "—";
     ticketPotentialRevenue.textContent = `₾${inventory.reduce((sum, tier) => sum + tier.quantity * tier.price, 0).toFixed(2)}`;
     ticketCapacityLabel.textContent = venue
       ? `${formatSeatNumber(sellable)} / ${formatSeatNumber(physical)} seats configured`
       : "Choose a venue to see its capacity.";
-    ticketCapacityBar.style.width = venue && physical ? `${Math.min(100, (sellable / physical) * 100)}%` : "0%";
-    ticketInventoryError.textContent = validation.valid ? "" : validation.message;
+    ticketCapacityBar.style.width =
+      venue && physical
+        ? `${Math.min(100, (sellable / physical) * 100)}%`
+        : "0%";
+    ticketInventoryError.textContent = validation.valid
+      ? ""
+      : validation.message;
     ticketInventoryError.hidden = validation.valid;
     updateWizardControls();
   }
@@ -860,7 +1107,8 @@
     eventImagePreview.hidden = true;
     eventImageEmpty.hidden = false;
     eventImagePreviewImage.removeAttribute("src");
-    if (imageUrl && form.elements.image_url.checkValidity()) eventImagePreviewImage.src = imageUrl;
+    if (imageUrl && form.elements.image_url.checkValidity())
+      eventImagePreviewImage.src = imageUrl;
   }
 
   eventImagePreviewImage.addEventListener("load", () => {
@@ -890,7 +1138,10 @@
   function placementValidation({ showErrors = false } = {}) {
     const mode = placementMode.value;
     const currentTotal = finalEventCount();
-    const maxPage = Math.max(1, Math.ceil(currentTotal / PUBLIC_EVENTS_PER_PAGE));
+    const maxPage = Math.max(
+      1,
+      Math.ceil(currentTotal / PUBLIC_EVENTS_PER_PAGE),
+    );
     placementPage.max = String(maxPage);
     placementPagePosition.max = String(PUBLIC_EVENTS_PER_PAGE);
 
@@ -902,7 +1153,8 @@
       return {
         valid: true,
         mode,
-        preview: "Automatic placement follows the existing chronological event order after saving.",
+        preview:
+          "Automatic placement follows the existing chronological event order after saving.",
       };
     }
 
@@ -912,7 +1164,8 @@
         valid: true,
         mode,
         position: 1,
-        preview: "This event will be first in the public list · Page 1 · Position 1.",
+        preview:
+          "This event will be first in the public list · Page 1 · Position 1.",
       };
     }
 
@@ -933,15 +1186,21 @@
     const positionValid = /^[1-9]\d*$/.test(positionValue);
     const page = Number(pageValue);
     const positionOnPage = Number(positionValue);
-    const overallPosition = (page - 1) * PUBLIC_EVENTS_PER_PAGE + positionOnPage;
+    const overallPosition =
+      (page - 1) * PUBLIC_EVENTS_PER_PAGE + positionOnPage;
     let error = "";
 
     if (!pageValid || page < 1) {
       error = "Page must be a positive whole number.";
       if (showErrors || pageValue) placementPage.classList.add("is-invalid");
-    } else if (!positionValid || positionOnPage < 1 || positionOnPage > PUBLIC_EVENTS_PER_PAGE) {
+    } else if (
+      !positionValid ||
+      positionOnPage < 1 ||
+      positionOnPage > PUBLIC_EVENTS_PER_PAGE
+    ) {
       error = `Position on page must be between 1 and ${PUBLIC_EVENTS_PER_PAGE}.`;
-      if (showErrors || positionValue) placementPagePosition.classList.add("is-invalid");
+      if (showErrors || positionValue)
+        placementPagePosition.classList.add("is-invalid");
     } else if (overallPosition > currentTotal) {
       error = `Choose a position between 1 and ${currentTotal} for this event list.`;
       placementPage.classList.add("is-invalid");
@@ -949,13 +1208,25 @@
     }
 
     if (error) {
-      setPlacementInlineError(showErrors || pageValue || positionValue ? error : "");
-      return { valid: false, mode, error, page, positionOnPage, overallPosition };
+      setPlacementInlineError(
+        showErrors || pageValue || positionValue ? error : "",
+      );
+      return {
+        valid: false,
+        mode,
+        error,
+        page,
+        positionOnPage,
+        overallPosition,
+      };
     }
 
     const details = listingPageDetails(overallPosition);
-    const editedEvent = state.events.find((event) => String(event.id) === String(form.elements.id.value));
-    const isCurrentPlacement = editedEvent && Number(editedEvent.display_order) === overallPosition;
+    const editedEvent = state.events.find(
+      (event) => String(event.id) === String(form.elements.id.value),
+    );
+    const isCurrentPlacement =
+      editedEvent && Number(editedEvent.display_order) === overallPosition;
     setPlacementInlineError("");
     return {
       valid: true,
@@ -996,14 +1267,20 @@
   }
 
   function validateStep(step) {
-    const panel = wizardStepPanels.find((item) => Number(item.dataset.eventStepPanel) === step);
+    const panel = wizardStepPanels.find(
+      (item) => Number(item.dataset.eventStepPanel) === step,
+    );
     let firstInvalid = null;
     if (step < 4) {
-      panel.querySelectorAll("input[required], select[required], textarea[required]").forEach((field) => {
-        const valid = field.checkValidity();
-        field.classList.toggle("is-invalid", !valid);
-        if (!valid && !firstInvalid) firstInvalid = field;
-      });
+      panel
+        .querySelectorAll(
+          "input[required], select[required], textarea[required]",
+        )
+        .forEach((field) => {
+          const valid = field.checkValidity();
+          field.classList.toggle("is-invalid", !valid);
+          if (!valid && !firstInvalid) firstInvalid = field;
+        });
     }
     if (firstInvalid) {
       setWizardMessage("Complete the required fields before continuing.");
@@ -1011,8 +1288,13 @@
       return false;
     }
     if (step === 1 && !updatePlacementControls({ showErrors: true }).valid) {
-      setWizardMessage("Choose a valid public listing placement before continuing.");
-      (placementPage.classList.contains("is-invalid") ? placementPage : placementPagePosition).focus();
+      setWizardMessage(
+        "Choose a valid public listing placement before continuing.",
+      );
+      (placementPage.classList.contains("is-invalid")
+        ? placementPage
+        : placementPagePosition
+      ).focus();
       return false;
     }
     if (step === 4 && !getInventoryValidation({ validateDraft: true }).valid) {
@@ -1026,11 +1308,14 @@
   function renderReview() {
     const values = new FormData(form);
     const venue = selectedVenueContext();
-    const category = state.categories.find((item) => item.id === values.get("category_id"));
+    const category = state.categories.find(
+      (item) => item.id === values.get("category_id"),
+    );
     const inventory = currentTicketInventory();
     const totals = getInventoryValidation();
     const placement = updatePlacementControls({ showErrors: true });
-    const edit = (step, label) => `<button type="button" data-review-edit="${step}">Edit ${label}</button>`;
+    const edit = (step, label) =>
+      `<button type="button" data-review-edit="${step}">Edit ${label}</button>`;
     eventReview.innerHTML = `
       <section class="admin-review-section"><div class="admin-review-section__head"><h4>Event</h4>${edit(1, "event")}</div><strong>${escapeHtml(values.get("title") || "Untitled event")}</strong><span>${escapeHtml(values.get("performer") || "No performer")} · ${escapeHtml(category?.name || "No category")}</span><span>${escapeHtml(values.get("description") || "No description")}</span></section>
       <section class="admin-review-section"><div class="admin-review-section__head"><h4>Listing placement</h4>${edit(1, "placement")}</div><strong>${escapeHtml(placement.mode === "automatic" ? "Automatic" : placement.mode === "first" ? "First" : placement.mode === "last" ? "Last" : `Page ${placement.page} · Position ${placement.positionOnPage}`)}</strong><span>${escapeHtml(placement.preview || placement.error || "Choose a valid listing placement.")}</span></section>
@@ -1043,7 +1328,12 @@
 
   function showWizardStep(step, validateCurrent = false) {
     if (step < 1 || step > 5 || step > state.wizardHighestStep + 1) return;
-    if (validateCurrent && step > state.wizardStep && !validateStep(state.wizardStep)) return;
+    if (
+      validateCurrent &&
+      step > state.wizardStep &&
+      !validateStep(state.wizardStep)
+    )
+      return;
     state.wizardHighestStep = Math.max(state.wizardHighestStep, step);
     state.wizardStep = step;
     wizardStepPanels.forEach((panel) => {
@@ -1068,30 +1358,62 @@
     renderVenuePreview("");
     updateImagePreview();
     document.querySelector("#eventFormTitle").textContent = "Add new event";
-    document.querySelector("#eventFormEyebrow").textContent = "Publish to the calendar";
-    document.querySelector("#eventFormSubtitle").textContent = "Create and configure a new iVenue event.";
+    document.querySelector("#eventFormEyebrow").textContent =
+      "Publish to the calendar";
+    document.querySelector("#eventFormSubtitle").textContent =
+      "Create and configure a new iVenue event.";
     document.querySelector("#cancelEventEdit").hidden = true;
     showWizardStep(1);
   }
 
   async function loadExistingWizardInventory(eventId) {
-    const { data, error } = await client.rpc("get_admin_event_seating_configuration", { p_event_id: eventId });
+    const { data, error } = await client.rpc(
+      "get_admin_event_seating_configuration",
+      { p_event_id: eventId },
+    );
     if (error) throw error;
-    const existing = new Map((data?.ticket_types || []).map((ticket) => [ticket.canonical_tier, ticket]));
-    state.wizardTickets = Object.fromEntries(TICKET_TIERS.map((tier) => {
-      const ticket = existing.get(tier.id);
-      // `capacity` includes blocked canonical seats. Only seats that are
-      // available, reserved, or sold are part of the sellable inventory.
-      const sellableQuantity = Number(ticket?.available || 0)
-        + Number(ticket?.reserved || 0)
-        + Number(ticket?.sold || 0);
-      return [tier.id, { quantity: sellableQuantity, price: Number(ticket?.price || 0), color: ticket?.display_color || ticketColorForTier(tier.id) }];
-    }));
+    const existing = new Map(
+      (data?.ticket_types || []).map((ticket) => [
+        ticket.canonical_tier,
+        ticket,
+      ]),
+    );
+    state.wizardTickets = Object.fromEntries(
+      TICKET_TIERS.map((tier) => {
+        const ticket = existing.get(tier.id);
+        // `capacity` includes blocked canonical seats. Only seats that are
+        // available, reserved, or sold are part of the sellable inventory.
+        const sellableQuantity =
+          Number(ticket?.available || 0) +
+          Number(ticket?.reserved || 0) +
+          Number(ticket?.sold || 0);
+        return [
+          tier.id,
+          {
+            quantity: sellableQuantity,
+            price: Number(ticket?.price || 0),
+            color: ticket?.display_color || ticketColorForTier(tier.id),
+          },
+        ];
+      }),
+    );
     renderTicketInventory();
   }
 
   function fillForm(event) {
-    Object.entries({ id: event.id, title: event.title, performer: event.performer, category_id: event.category_id, event_date: event.event_date, event_time: event.event_time, doors_open: event.doors_open, status: event.status || "active", venue_id: event.venue_id, image_url: event.image_url, description: event.description }).forEach(([key, value]) => {
+    Object.entries({
+      id: event.id,
+      title: event.title,
+      performer: event.performer,
+      category_id: event.category_id,
+      event_date: event.event_date,
+      event_time: event.event_time,
+      doors_open: event.doors_open,
+      status: event.status || "active",
+      venue_id: event.venue_id,
+      image_url: event.image_url,
+      description: event.description,
+    }).forEach(([key, value]) => {
       if (form.elements[key]) form.elements[key].value = value || "";
     });
     loadCurrentPlacement(event);
@@ -1101,10 +1423,16 @@
     renderVenuePreview(venueSelect.value);
     updateImagePreview();
     document.querySelector("#eventFormTitle").textContent = "Edit event";
-    document.querySelector("#eventFormEyebrow").textContent = "Event management";
-    document.querySelector("#eventFormSubtitle").textContent = "Review details and inventory without changing sold or reserved seats.";
+    document.querySelector("#eventFormEyebrow").textContent =
+      "Event management";
+    document.querySelector("#eventFormSubtitle").textContent =
+      "Review details and inventory without changing sold or reserved seats.";
     document.querySelector("#cancelEventEdit").hidden = false;
-    loadExistingWizardInventory(event.id).catch((error) => setWizardMessage(error.message || "Ticket inventory could not be loaded."));
+    loadExistingWizardInventory(event.id).catch((error) =>
+      setWizardMessage(
+        error.message || "Ticket inventory could not be loaded.",
+      ),
+    );
     showWizardStep(1);
     enterEventEditor();
   }
@@ -1112,21 +1440,46 @@
   async function saveEvent() {
     const values = new FormData(form);
     const isEdit = Boolean(values.get("id"));
-    const payload = Object.fromEntries(["title", "performer", "category_id", "description", "event_date", "event_time", "doors_open", "venue_id", "image_url", "status"].map((key) => [key, String(values.get(key) || "").trim()]));
+    const payload = Object.fromEntries(
+      [
+        "title",
+        "performer",
+        "category_id",
+        "description",
+        "event_date",
+        "event_time",
+        "doors_open",
+        "venue_id",
+        "image_url",
+        "status",
+      ].map((key) => [key, String(values.get(key) || "").trim()]),
+    );
     const placement = updatePlacementControls({ showErrors: true });
-    if (!placement.valid) throw new Error(placement.error || "Choose a valid listing placement.");
+    if (!placement.valid)
+      throw new Error(placement.error || "Choose a valid listing placement.");
     payload.placement = {
       mode: placement.mode,
-      ...(placement.mode === "custom" ? { position: String(placement.position) } : {}),
+      ...(placement.mode === "custom"
+        ? { position: String(placement.position) }
+        : {}),
     };
     state.wizardSaving = true;
     wizardSubmit.disabled = true;
     try {
-      const { data, error } = await client.rpc("admin_save_event_with_display_order", {
-        p_event_id: values.get("id") || null,
-        p_event: payload,
-        p_ticket_inventory: currentTicketInventory().map(({ canonical_tier, quantity, price }) => ({ canonical_tier, quantity, price })),
-      });
+      const { data, error } = await client.rpc(
+        "admin_save_event_with_display_order",
+        {
+          p_event_id: values.get("id") || null,
+          p_event: payload,
+          p_ticket_inventory: currentTicketInventory().map(
+            ({ canonical_tier, quantity, price }) => ({
+              canonical_tier,
+              quantity,
+              price,
+            }),
+          ),
+        },
+      );
       if (error) throw error;
       await loadData();
       showEventSaveSuccess(isEdit);
@@ -1139,31 +1492,45 @@
 
   function showEventSaveSuccess(isEdit) {
     window.clearTimeout(state.saveSuccessTimeout);
-    eventSaveSuccessMessage.textContent = isEdit ? "Successfully edited" : "Successfully added";
+    eventSaveSuccessMessage.textContent = isEdit
+      ? "Successfully edited"
+      : "Successfully added";
     eventSaveSuccess.hidden = false;
     state.saveSuccessTimeout = window.setTimeout(() => {
       eventSaveSuccess.hidden = true;
       resetForm();
       leaveEventEditor("overview", 0);
-      setMessage(isEdit ? "Event and canonical inventory updated." : "Event and canonical inventory created.", "success");
+      setMessage(
+        isEdit
+          ? "Event and canonical inventory updated."
+          : "Event and canonical inventory created.",
+        "success",
+      );
     }, 3000);
   }
 
   async function expoGeorgiaPavilion11Blueprint() {
     if (!expoGeorgiaPavilion11BlueprintPromise) {
-      expoGeorgiaPavilion11BlueprintPromise = fetch("hall-maps/expo-georgia-pavilion-11.json")
+      expoGeorgiaPavilion11BlueprintPromise = fetch(
+        "hall-maps/expo-georgia-pavilion-11.json",
+      )
         .then((response) => {
-          if (!response.ok) throw new Error("ExpoGeorgia Pavilion 11 blueprint could not be loaded.");
+          if (!response.ok)
+            throw new Error(
+              "ExpoGeorgia Pavilion 11 blueprint could not be loaded.",
+            );
           return response.json();
         })
         .then((blueprint) => {
-          const valid = blueprint?.slug === "expo-georgia-pavilion-11"
-            && typeof blueprint.venueId === "string"
-            && typeof blueprint.viewBox === "string"
-            && blueprint.stage?.type === "rect"
-            && Array.isArray(blueprint.sections)
-            && blueprint.sections.length === 13;
-          if (!valid) throw new Error("ExpoGeorgia Pavilion 11 blueprint is invalid.");
+          const valid =
+            blueprint?.slug === "expo-georgia-pavilion-11" &&
+            typeof blueprint.venueId === "string" &&
+            typeof blueprint.viewBox === "string" &&
+            blueprint.stage?.type === "rect" &&
+            Array.isArray(blueprint.sections) &&
+            blueprint.sections.length === 13;
+          if (!valid)
+            throw new Error("ExpoGeorgia Pavilion 11 blueprint is invalid.");
           return blueprint;
         })
         .catch((error) => {
@@ -1176,9 +1543,12 @@
 
   async function blueprintForVenue(venue) {
     if (!venue) return null;
-    if (venue.name === "Black Sea Arena") return window.blackSeaArenaBlueprint || null;
-    if (venue.id === window.dinamoArenaBlueprint?.venueId) return window.dinamoArenaBlueprint;
-    if (venue.id === window.theatreBlueprint?.venueId) return window.theatreBlueprint;
+    if (venue.name === "Black Sea Arena")
+      return window.blackSeaArenaBlueprint || null;
+    if (venue.id === window.dinamoArenaBlueprint?.venueId)
+      return window.dinamoArenaBlueprint;
+    if (venue.id === window.theatreBlueprint?.venueId)
+      return window.theatreBlueprint;
     const expoBlueprint = await expoGeorgiaPavilion11Blueprint();
     if (venue.id === expoBlueprint.venueId) return expoBlueprint;
     return null;
@@ -1186,19 +1556,31 @@
 
   function createPreviewSvgElement(svg, name, attributes = {}) {
     const element = document.createElementNS(svg.namespaceURI, name);
-    Object.entries(attributes).forEach(([key, value]) => element.setAttribute(key, String(value)));
+    Object.entries(attributes).forEach(([key, value]) =>
+      element.setAttribute(key, String(value)),
+    );
     return element;
   }
 
   function allocatePreviewSeats(total, weights) {
     const weightTotal = weights.reduce((sum, weight) => sum + weight, 0);
-    const allocation = weights.map((weight) => Math.floor(total * weight / weightTotal));
+    const allocation = weights.map((weight) =>
+      Math.floor((total * weight) / weightTotal),
+    );
     const remaining = total - allocation.reduce((sum, value) => sum + value, 0);
     weights
-      .map((weight, index) => ({ index, remainder: total * weight / weightTotal - allocation[index] }))
-      .sort((left, right) => right.remainder - left.remainder || left.index - right.index)
+      .map((weight, index) => ({
+        index,
+        remainder: (total * weight) / weightTotal - allocation[index],
+      }))
+      .sort(
+        (left, right) =>
+          right.remainder - left.remainder || left.index - right.index,
+      )
       .slice(0, remaining)
-      .forEach(({ index }) => { allocation[index] += 1; });
+      .forEach(({ index }) => {
+        allocation[index] += 1;
+      });
     return allocation;
   }
 
@@ -1208,8 +1590,19 @@
     const paddingY = Math.min(18, Math.max(7, section.height * 0.1));
     const width = Math.max(1, section.width - paddingX * 2);
     const height = Math.max(1, section.height - paddingY * 2);
-    const nativeRowCount = new Set(rows.map((row) => `${row.section_id}:${row.row_number}`)).size;
-    const visualRows = Math.max(1, Math.min(rows.length, Math.max(nativeRowCount, Math.ceil(Math.sqrt(rows.length * Math.max(height / width, 0.2))))));
+    const nativeRowCount = new Set(
+      rows.map((row) => `${row.section_id}:${row.row_number}`),
+    ).size;
+    const visualRows = Math.max(
+      1,
+      Math.min(
+        rows.length,
+        Math.max(
+          nativeRowCount,
+          Math.ceil(Math.sqrt(rows.length * Math.max(height / width, 0.2))),
+        ),
+      ),
+    );
     const columns = Math.ceil(rows.length / visualRows);
     const rowCount = Math.ceil(rows.length / columns);
     const points = [];
@@ -1223,7 +1616,7 @@
         points.push({
           row: rows[seatIndex++],
           x: section.x + paddingX + xGap * (columnIndex + 0.5),
-          y: section.y + paddingY + height * (rowIndex + 0.5) / rowCount,
+          y: section.y + paddingY + (height * (rowIndex + 0.5)) / rowCount,
         });
       }
     }
@@ -1233,7 +1626,9 @@
   async function expoPreviewRowsForEvent() {
     const eventId = form.elements.id.value;
     if (!eventId) return [];
-    const { data, error } = await client.rpc("get_event_seat_map", { p_event_id: eventId });
+    const { data, error } = await client.rpc("get_event_seat_map", {
+      p_event_id: eventId,
+    });
     if (error) throw error;
     return data || [];
   }
@@ -1241,7 +1636,9 @@
   function renderExpoGeorgiaPavilion11Preview(svg, blueprint, eventId, rows) {
     const tiers = ["cheap", "medium", "expensive", "vip"];
     const tickets = eventTickets(eventId);
-    const ticketById = new Map(tickets.map((ticket) => [String(ticket.id), ticket]));
+    const ticketById = new Map(
+      tickets.map((ticket) => [String(ticket.id), ticket]),
+    );
     const rowsByTier = new Map(tiers.map((tier) => [tier, []]));
     rows.forEach((row) => {
       const tier = ticketById.get(String(row.ticket_type_id))?.canonical_tier;
@@ -1259,16 +1656,37 @@
 
     const assignedSeatIds = [];
     tiers.forEach((tier) => {
-      const sections = blueprint.sections.filter((section) => section.tier === tier);
+      const sections = blueprint.sections.filter(
+        (section) => section.tier === tier,
+      );
       const ticket = tickets.find((item) => item.canonical_tier === tier);
-      const color = ticket?.display_color || state.wizardTickets?.[tier]?.color || ticketColorForTier(tier);
-      const tierRows = rowsByTier.get(tier)
+      const color =
+        ticket?.display_color ||
+        state.wizardTickets?.[tier]?.color ||
+        ticketColorForTier(tier);
+      const tierRows = rowsByTier
+        .get(tier)
         .slice()
-        .sort((left, right) => Number(left.section_order) - Number(right.section_order) || Number(left.row_number) - Number(right.row_number) || Number(left.seat_number) - Number(right.seat_number) || String(left.event_seat_id).localeCompare(String(right.event_seat_id)));
-      const allocation = allocatePreviewSeats(tierRows.length, sections.map((section) => section.width * section.height));
+        .sort(
+          (left, right) =>
+            Number(left.section_order) - Number(right.section_order) ||
+            Number(left.row_number) - Number(right.row_number) ||
+            Number(left.seat_number) - Number(right.seat_number) ||
+            String(left.event_seat_id).localeCompare(
+              String(right.event_seat_id),
+            ),
+        );
+      const allocation = allocatePreviewSeats(
+        tierRows.length,
+        sections.map((section) => section.width * section.height),
+      );
       let offset = 0;
       sections.forEach((section, index) => {
-        const frame = createPreviewSvgElement(svg, "rect", { ...section, fill: color, "fill-opacity": "0.72" });
+        const frame = createPreviewSvgElement(svg, "rect", {
+          ...section,
+          fill: color,
+          "fill-opacity": "0.72",
+        });
         frame.setAttribute("class", "preview-seat-section");
         svg.appendChild(frame);
         const sectionRows = tierRows.slice(offset, offset + allocation[index]);
@@ -1285,13 +1703,21 @@
             "data-ticket-type-id": row.ticket_type_id,
             "data-seat-status": row.status,
           });
-          seat.setAttribute("class", `preview-event-seat${row.status === "available" ? "" : " is-unavailable"}`);
+          seat.setAttribute(
+            "class",
+            `preview-event-seat${row.status === "available" ? "" : " is-unavailable"}`,
+          );
           svg.appendChild(seat);
         });
       });
     });
-    if (assignedSeatIds.length !== rows.length || new Set(assignedSeatIds).size !== rows.length) {
-      throw new Error("ExpoGeorgia Pavilion 11 preview could not bind every canonical event seat exactly once.");
+    if (
+      assignedSeatIds.length !== rows.length ||
+      new Set(assignedSeatIds).size !== rows.length
+    ) {
+      throw new Error(
+        "ExpoGeorgia Pavilion 11 preview could not bind every canonical event seat exactly once.",
+      );
     }
   }
 
@@ -1303,13 +1729,18 @@
     try {
       blueprint = await blueprintForVenue(venue);
     } catch (error) {
-      eventMapPreviewDescription.textContent = error.message || "The hall map blueprint could not be loaded.";
-      eventMapPreviewCanvas.innerHTML = '<p class="admin-map-preview__empty">The hall map preview is unavailable right now.</p>';
+      eventMapPreviewDescription.textContent =
+        error.message || "The hall map blueprint could not be loaded.";
+      eventMapPreviewCanvas.innerHTML =
+        '<p class="admin-map-preview__empty">The hall map preview is unavailable right now.</p>';
       return;
     }
     if (!venue || !blueprint) {
-      eventMapPreviewDescription.textContent = venue ? `${venue.name} has no approved draft geometry available for preview.` : "Choose a venue before previewing the hall map.";
-      eventMapPreviewCanvas.innerHTML = '<p class="admin-map-preview__empty">No geometry has been invented for this venue. Canonical inventory is still configured from its physical capacity.</p>';
+      eventMapPreviewDescription.textContent = venue
+        ? `${venue.name} has no approved draft geometry available for preview.`
+        : "Choose a venue before previewing the hall map.";
+      eventMapPreviewCanvas.innerHTML =
+        '<p class="admin-map-preview__empty">No geometry has been invented for this venue. Canonical inventory is still configured from its physical capacity.</p>';
       return;
     }
     const eventId = form.elements.id.value;
@@ -1318,81 +1749,149 @@
       try {
         eventRows = await expoPreviewRowsForEvent();
       } catch (error) {
-        eventMapPreviewDescription.textContent = error.message || "The event seat inventory could not be loaded.";
-        eventMapPreviewCanvas.innerHTML = '<p class="admin-map-preview__empty">The hall geometry is available, but this event\'s canonical seats could not be loaded.</p>';
+        eventMapPreviewDescription.textContent =
+          error.message || "The event seat inventory could not be loaded.";
+        eventMapPreviewCanvas.innerHTML =
+          '<p class="admin-map-preview__empty">The hall geometry is available, but this event\'s canonical seats could not be loaded.</p>';
         return;
       }
     }
-    eventMapPreviewDescription.textContent = blueprint.slug === "expo-georgia-pavilion-11" && eventId
-      ? `${venue.name} geometry with ${formatSeatNumber(eventRows.length)} canonical event seats. This preview does not modify seat state.`
-      : `${venue.name} geometry with draft ticket-tier colors. This preview does not create, reserve, or sell seats.`;
+    eventMapPreviewDescription.textContent =
+      blueprint.slug === "expo-georgia-pavilion-11" && eventId
+        ? `${venue.name} geometry with ${formatSeatNumber(eventRows.length)} canonical event seats. This preview does not modify seat state.`
+        : `${venue.name} geometry with draft ticket-tier colors. This preview does not create, reserve, or sell seats.`;
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    svg.setAttribute("viewBox", Array.isArray(blueprint.viewBox) ? blueprint.viewBox.join(" ") : blueprint.viewBox);
+    svg.setAttribute(
+      "viewBox",
+      Array.isArray(blueprint.viewBox)
+        ? blueprint.viewBox.join(" ")
+        : blueprint.viewBox,
+    );
     svg.setAttribute("role", "img");
     svg.setAttribute("aria-label", `${venue.name} draft hall map`);
     if (blueprint.slug === "expo-georgia-pavilion-11") {
       try {
         renderExpoGeorgiaPavilion11Preview(svg, blueprint, eventId, eventRows);
       } catch (error) {
-        eventMapPreviewDescription.textContent = error.message || "The event seat inventory could not be rendered.";
-        eventMapPreviewCanvas.innerHTML = '<p class="admin-map-preview__empty">The hall geometry is available, but this event\'s canonical seats could not be rendered.</p>';
+        eventMapPreviewDescription.textContent =
+          error.message || "The event seat inventory could not be rendered.";
+        eventMapPreviewCanvas.innerHTML =
+          '<p class="admin-map-preview__empty">The hall geometry is available, but this event\'s canonical seats could not be rendered.</p>';
         return;
       }
       eventMapPreviewCanvas.appendChild(svg);
       return;
     }
-    const tierByLabel = { "Cheap / Standard": "cheap", "Medium / Premium": "medium", Expensive: "expensive", VIP: "vip" };
+    const tierByLabel = {
+      "Cheap / Standard": "cheap",
+      "Medium / Premium": "medium",
+      Expensive: "expensive",
+      VIP: "vip",
+    };
     if (blueprint.outerBoundary) {
       const ellipse = document.createElementNS(svg.namespaceURI, "ellipse");
-      Object.entries(blueprint.outerBoundary).filter(([key]) => key !== "type").forEach(([key, value]) => ellipse.setAttribute(key, value));
+      Object.entries(blueprint.outerBoundary)
+        .filter(([key]) => key !== "type")
+        .forEach(([key, value]) => ellipse.setAttribute(key, value));
       ellipse.setAttribute("class", "preview-focal");
       svg.appendChild(ellipse);
     }
     if (blueprint.stage) {
       const stage = document.createElementNS(svg.namespaceURI, "ellipse");
-      Object.entries(blueprint.stage).forEach(([key, value]) => stage.setAttribute(key, value));
+      Object.entries(blueprint.stage).forEach(([key, value]) =>
+        stage.setAttribute(key, value),
+      );
       stage.setAttribute("class", "preview-focal");
       svg.appendChild(stage);
     }
     const focal = blueprint.field || blueprint.focalElement;
     if (focal) {
       const rect = document.createElementNS(svg.namespaceURI, "rect");
-      ["x", "y", "width", "height", "rx"].forEach((key) => focal[key] != null && rect.setAttribute(key, focal[key]));
+      ["x", "y", "width", "height", "rx"].forEach(
+        (key) => focal[key] != null && rect.setAttribute(key, focal[key]),
+      );
       rect.setAttribute("class", "preview-focal");
       svg.appendChild(rect);
     }
-    (blueprint.sections || []).filter((section) => section.selectable !== false).forEach((section) => {
-      const polygon = document.createElementNS(svg.namespaceURI, "polygon");
-      const tier = tierByLabel[section.ticketTier];
-      polygon.setAttribute("points", section.polygon.map((point) => point.join(",")).join(" "));
-      polygon.setAttribute("fill", state.wizardTickets?.[tier]?.color || ticketColorForTier(tier));
-      polygon.setAttribute("fill-opacity", "0.72");
-      polygon.setAttribute("class", "preview-seat-section");
-      svg.appendChild(polygon);
-    });
+    (blueprint.sections || [])
+      .filter((section) => section.selectable !== false)
+      .forEach((section) => {
+        const polygon = document.createElementNS(svg.namespaceURI, "polygon");
+        const tier = tierByLabel[section.ticketTier];
+        polygon.setAttribute(
+          "points",
+          section.polygon.map((point) => point.join(",")).join(" "),
+        );
+        polygon.setAttribute(
+          "fill",
+          state.wizardTickets?.[tier]?.color || ticketColorForTier(tier),
+        );
+        polygon.setAttribute("fill-opacity", "0.72");
+        polygon.setAttribute("class", "preview-seat-section");
+        svg.appendChild(polygon);
+      });
     eventMapPreviewCanvas.appendChild(svg);
   }
 
   function activeDashboardPanel() {
-    return document.querySelector(".admin-panel.is-active")?.dataset.panel || "overview";
+    return (
+      document.querySelector(".admin-panel.is-active")?.dataset.panel ||
+      "overview"
+    );
   }
 
   function setActiveDashboardPanel(panel) {
-    document.querySelectorAll(".admin-nav button, .admin-panel").forEach((element) => {
-      element.classList.toggle("is-active", element.dataset.panel === panel);
-    });
+    document
+      .querySelectorAll(".admin-nav button, .admin-panel")
+      .forEach((element) => {
+        element.classList.toggle("is-active", element.dataset.panel === panel);
+      });
+  }
+
+  const adminBurgerBreakpoint = window.matchMedia("(max-width: 850px)");
+  let adminMenuOpen = false;
+
+  function setAdminMenuOpen(open) {
+    adminMenuOpen = Boolean(open) && adminBurgerBreakpoint.matches;
+    adminMenu?.classList.toggle("is-open", adminMenuOpen);
+    adminMenuToggle?.classList.toggle("is-open", adminMenuOpen);
+    adminMenuToggle?.setAttribute("aria-expanded", String(adminMenuOpen));
+    adminMenu?.setAttribute("aria-hidden", String(!adminMenuOpen));
+    document.body.classList.toggle("admin-menu-open", adminMenuOpen);
+  }
+
+  function placeAdminResponsiveNodes() {
+    if (
+      !adminNav ||
+      !adminLogout ||
+      !adminShell ||
+      !adminMenuNav ||
+      !adminMenuLogout
+    )
+      return;
+    if (adminBurgerBreakpoint.matches) {
+      adminMenuNav.append(adminNav);
+      adminMenuLogout.append(adminLogout);
+      return;
+    }
+    adminShell.insertBefore(adminNav, adminMessage);
+    adminHeaderActions?.append(adminLogout);
+    setAdminMenuOpen(false);
   }
 
   function playEventEditorEntrance() {
     eventEditor.classList.remove("is-entering");
     void eventEditor.offsetWidth;
-    window.requestAnimationFrame(() => eventEditor.classList.add("is-entering"));
+    window.requestAnimationFrame(() =>
+      eventEditor.classList.add("is-entering"),
+    );
   }
 
   function enterEventEditor() {
     if (!document.body.classList.contains("event-editor-mode")) {
       const currentPanel = activeDashboardPanel();
-      state.editorReturnPanel = currentPanel === "add-event" ? "overview" : currentPanel;
+      state.editorReturnPanel =
+        currentPanel === "add-event" ? "overview" : currentPanel;
       state.editorReturnScrollY = window.scrollY;
     }
     setActiveDashboardPanel("add-event");
@@ -1401,22 +1900,29 @@
     playEventEditorEntrance();
   }
 
-  function leaveEventEditor(destination = state.editorReturnPanel, scrollY = state.editorReturnScrollY) {
+  function leaveEventEditor(
+    destination = state.editorReturnPanel,
+    scrollY = state.editorReturnScrollY,
+  ) {
     if (eventMapPreviewDialog.open) eventMapPreviewDialog.close();
     eventEditor.classList.remove("is-entering");
     document.body.classList.remove("event-editor-mode");
     setActiveDashboardPanel(destination || "overview");
-    window.requestAnimationFrame(() => window.scrollTo({ top: scrollY, left: 0 }));
+    window.requestAnimationFrame(() =>
+      window.scrollTo({ top: scrollY, left: 0 }),
+    );
   }
 
   function requestEventEditorExit(destination) {
-    if (state.wizardDirty && !window.confirm("Discard unsaved event changes?")) return;
+    if (state.wizardDirty && !window.confirm("Discard unsaved event changes?"))
+      return;
     resetForm();
     leaveEventEditor(destination, destination ? 0 : state.editorReturnScrollY);
   }
 
   document.querySelectorAll(".admin-nav button").forEach((button) =>
     button.addEventListener("click", () => {
+      setAdminMenuOpen(false);
       if (button.dataset.panel === "add-event") {
         resetForm();
         enterEventEditor();
@@ -1425,28 +1931,58 @@
       setActiveDashboardPanel(button.dataset.panel);
     }),
   );
+  adminMenuToggle?.addEventListener("click", () => {
+    setAdminMenuOpen(!adminMenuOpen);
+  });
+  adminMenu?.addEventListener("click", (event) => {
+    if (event.target === adminMenu) setAdminMenuOpen(false);
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") setAdminMenuOpen(false);
+  });
+  window.addEventListener("resize", placeAdminResponsiveNodes);
+  placeAdminResponsiveNodes();
   heroForm.addEventListener("change", (event) => {
     if (event.target.name !== "hero_mode") return;
     state.heroConfig.mode = heroForm.elements.hero_mode.value;
     renderHeroForm();
   });
   heroSearch.addEventListener("input", renderHeroForm);
+  heroLimit.addEventListener("change", () => {
+    const availableCount = state.events.filter(
+      (event) =>
+        event.status === "active" &&
+        event.event_date >= new Date().toISOString().slice(0, 10),
+    ).length;
+    const value = Number.parseInt(heroLimit.value, 10);
+    state.heroConfig.display_limit = Number.isInteger(value)
+      ? Math.min(Math.max(value, 1), Math.max(1, availableCount))
+      : 3;
+    renderHeroForm();
+  });
   heroForm.addEventListener("click", (event) => {
     const add = event.target.closest("[data-hero-add]");
     const remove = event.target.closest("[data-hero-remove]");
     const move = event.target.closest("[data-hero-move]");
     const edit = event.target.closest("[data-hero-edit]");
     const ids = state.heroConfig.event_ids.map(String);
-    if (add && !ids.includes(add.dataset.heroAdd)) state.heroConfig.event_ids = [...ids, add.dataset.heroAdd];
-    if (remove) state.heroConfig.event_ids = ids.filter((id) => id !== remove.dataset.heroRemove);
+    if (add && !ids.includes(add.dataset.heroAdd))
+      state.heroConfig.event_ids = [...ids, add.dataset.heroAdd];
+    if (remove)
+      state.heroConfig.event_ids = ids.filter(
+        (id) => id !== remove.dataset.heroRemove,
+      );
     if (move) {
       const index = ids.indexOf(move.dataset.heroId);
       const nextIndex = move.dataset.heroMove === "up" ? index - 1 : index + 1;
-      if (index >= 0 && nextIndex >= 0 && nextIndex < ids.length) [ids[index], ids[nextIndex]] = [ids[nextIndex], ids[index]];
+      if (index >= 0 && nextIndex >= 0 && nextIndex < ids.length)
+        [ids[index], ids[nextIndex]] = [ids[nextIndex], ids[index]];
       state.heroConfig.event_ids = ids;
     }
     if (edit) {
-      const item = state.events.find((candidate) => String(candidate.id) === edit.dataset.heroEdit);
+      const item = state.events.find(
+        (candidate) => String(candidate.id) === edit.dataset.heroEdit,
+      );
       if (item) fillForm(item);
     }
     if (add || remove || move) renderHeroForm();
@@ -1454,20 +1990,53 @@
   heroForm.addEventListener("submit", async (event) => {
     event.preventDefault();
     const heroMode = heroForm.elements.hero_mode.value;
-    const heroIds = heroMode === "custom_selection" ? state.heroConfig.event_ids : [];
+    const availableCount = state.events.filter(
+      (candidate) =>
+        candidate.status === "active" &&
+        candidate.event_date >= new Date().toISOString().slice(0, 10),
+    ).length;
+    const displayLimit = Number.parseInt(heroLimit.value, 10);
+    if (
+      !Number.isInteger(displayLimit) ||
+      displayLimit < 1 ||
+      displayLimit > availableCount
+    ) {
+      setMessage(
+        "Hero event count must be a positive number no greater than the available events.",
+        "error",
+      );
+      return;
+    }
+    const heroIds =
+      heroMode === "custom_selection" ? state.heroConfig.event_ids : [];
+    if (heroMode === "custom_selection" && heroIds.length > displayLimit) {
+      setMessage(
+        "Reduce the selected Custom events or increase the Hero event count before saving.",
+        "error",
+      );
+      return;
+    }
     try {
-      const { error } = await client.rpc("admin_save_homepage_hero_config", { p_mode: heroMode, p_event_ids: heroIds });
+      const { error } = await client.rpc("admin_save_homepage_hero_config", {
+        p_mode: heroMode,
+        p_display_limit: displayLimit,
+        p_event_ids: heroIds,
+      });
       if (error) throw error;
       setMessage("Homepage Hero saved.", "success");
       await loadData();
     } catch (error) {
       console.error(error);
-      setMessage("Homepage Hero could not be saved. Please review your selection and try again.", "error");
+      setMessage(
+        "Homepage Hero could not be saved. Please review your selection and try again.",
+        "error",
+      );
     }
     return;
     const mode = heroForm.elements.hero_mode.value;
-    const ids = [1, 2, 3]
-      .map((slot) => heroForm.elements[`hero_slot_${slot}`].value || null);
+    const ids = [1, 2, 3].map(
+      (slot) => heroForm.elements[`hero_slot_${slot}`].value || null,
+    );
     const selectedIds = ids.filter(Boolean);
     if (new Set(selectedIds).size !== selectedIds.length) {
       setMessage("Choose each Hero event only once.", "error");
@@ -1483,12 +2052,16 @@
       await loadData();
     } catch (error) {
       console.error(error);
-      setMessage("Homepage Hero could not be saved. Please review your selection and try again.", "error");
+      setMessage(
+        "Homepage Hero could not be saved. Please review your selection and try again.",
+        "error",
+      );
     }
   });
   upcomingShowsForm.addEventListener("change", (event) => {
     if (event.target.name !== "upcoming_mode") return;
-    state.upcomingShowsConfig.mode = upcomingShowsForm.elements.upcoming_mode.value;
+    state.upcomingShowsConfig.mode =
+      upcomingShowsForm.elements.upcoming_mode.value;
     renderUpcomingShowsForm();
   });
   upcomingShowsSearch.addEventListener("input", renderUpcomingShowsForm);
@@ -1503,12 +2076,15 @@
       renderUpcomingShowsForm();
     }
     if (remove) {
-      state.upcomingShowsConfig.event_ids = ids.filter((id) => id !== remove.dataset.upcomingRemove);
+      state.upcomingShowsConfig.event_ids = ids.filter(
+        (id) => id !== remove.dataset.upcomingRemove,
+      );
       renderUpcomingShowsForm();
     }
     if (move) {
       const index = ids.indexOf(move.dataset.upcomingId);
-      const nextIndex = move.dataset.upcomingMove === "up" ? index - 1 : index + 1;
+      const nextIndex =
+        move.dataset.upcomingMove === "up" ? index - 1 : index + 1;
       if (index >= 0 && nextIndex >= 0 && nextIndex < ids.length) {
         [ids[index], ids[nextIndex]] = [ids[nextIndex], ids[index]];
         state.upcomingShowsConfig.event_ids = ids;
@@ -1516,25 +2092,35 @@
       }
     }
     if (edit) {
-      const item = state.events.find((candidate) => String(candidate.id) === edit.dataset.upcomingEdit);
+      const item = state.events.find(
+        (candidate) => String(candidate.id) === edit.dataset.upcomingEdit,
+      );
       if (item) fillForm(item);
     }
   });
   upcomingShowsForm.addEventListener("submit", async (event) => {
     event.preventDefault();
     const mode = upcomingShowsForm.elements.upcoming_mode.value;
-    const eventIds = mode === "custom_selection" ? state.upcomingShowsConfig.event_ids : [];
+    const eventIds =
+      mode === "custom_selection" ? state.upcomingShowsConfig.event_ids : [];
     try {
-      const { error } = await client.rpc("admin_save_homepage_upcoming_shows_config", {
-        p_mode: mode,
-        p_event_ids: eventIds,
-      });
+      const { error } = await client.rpc(
+        "admin_save_homepage_upcoming_shows_config",
+        {
+          p_mode: mode,
+          p_event_ids: eventIds,
+        },
+      );
       if (error) throw error;
       setMessage("Upcoming Shows saved.", "success");
       await loadData();
     } catch (error) {
       console.error(error);
-      setMessage(error.message || "Upcoming Shows could not be saved. Please review your selection and try again.", "error");
+      setMessage(
+        error.message ||
+          "Upcoming Shows could not be saved. Please review your selection and try again.",
+        "error",
+      );
     }
   });
   ["eventSearch", "eventStatus", "eventCategory", "eventAvailability"].forEach(
@@ -1552,7 +2138,10 @@
       setMessage("Dashboard refreshed.", "success");
     } catch (error) {
       console.error("Admin dashboard refresh failed", error);
-      setMessage(error.message || "Dashboard data could not be refreshed.", "error");
+      setMessage(
+        error.message || "Dashboard data could not be refreshed.",
+        "error",
+      );
     } finally {
       setRefreshLoading(false);
     }
@@ -1576,11 +2165,16 @@
     requestEventEditorExit();
   }
 
-  document.querySelector("#cancelEventEdit").addEventListener("click", requestWizardCancel);
-  document.querySelector("#cancelEventWizard").addEventListener("click", requestWizardCancel);
+  document
+    .querySelector("#cancelEventEdit")
+    .addEventListener("click", requestWizardCancel);
+  document
+    .querySelector("#cancelEventWizard")
+    .addEventListener("click", requestWizardCancel);
   eventEditorBack.addEventListener("click", () => requestEventEditorExit());
   eventEditorHome.addEventListener("click", () => {
-    if (state.wizardDirty && !window.confirm("Discard unsaved event changes?")) return;
+    if (state.wizardDirty && !window.confirm("Discard unsaved event changes?"))
+      return;
     window.location.href = "index.html#hero";
   });
   venueSelect.addEventListener("change", () => {
@@ -1601,18 +2195,34 @@
         details: error?.details || null,
         hint: error?.hint || null,
       });
-      setWizardMessage("Could not save the event. Please review the form and try again.");
+      setWizardMessage(
+        "Could not save the event. Please review the form and try again.",
+      );
     });
   });
-  wizardContinue.addEventListener("click", () => showWizardStep(state.wizardStep + 1, true));
-  wizardBack.addEventListener("click", () => showWizardStep(state.wizardStep - 1));
-  wizardStepButtons.forEach((button) => button.addEventListener("click", () => showWizardStep(Number(button.dataset.eventStep))));
+  wizardContinue.addEventListener("click", () =>
+    showWizardStep(state.wizardStep + 1, true),
+  );
+  wizardBack.addEventListener("click", () =>
+    showWizardStep(state.wizardStep - 1),
+  );
+  wizardStepButtons.forEach((button) =>
+    button.addEventListener("click", () =>
+      showWizardStep(Number(button.dataset.eventStep)),
+    ),
+  );
   form.addEventListener("input", (event) => {
     state.wizardDirty = true;
     if (event.target.name === "image_url") updateImagePreview();
-    if (event.target === placementPage || event.target === placementPagePosition) updatePlacementControls();
+    if (
+      event.target === placementPage ||
+      event.target === placementPagePosition
+    )
+      updatePlacementControls();
   });
-  form.addEventListener("change", () => { state.wizardDirty = true; });
+  form.addEventListener("change", () => {
+    state.wizardDirty = true;
+  });
   placementMode.addEventListener("change", () => {
     if (placementMode.value === "custom") {
       if (!placementPage.value) placementPage.value = "1";
@@ -1624,8 +2234,10 @@
     const row = event.target.closest("[data-ticket-tier]");
     if (!row || !state.wizardTickets) return;
     const tier = row.dataset.ticketTier;
-    if (event.target.matches("[data-ticket-quantity]")) state.wizardTickets[tier].quantity = event.target.value;
-    if (event.target.matches("[data-ticket-price]")) state.wizardTickets[tier].price = event.target.value;
+    if (event.target.matches("[data-ticket-quantity]"))
+      state.wizardTickets[tier].quantity = event.target.value;
+    if (event.target.matches("[data-ticket-price]"))
+      state.wizardTickets[tier].price = event.target.value;
     state.wizardDirty = true;
     updateTicketInventorySummary();
   });
@@ -1634,10 +2246,13 @@
     if (button) showWizardStep(Number(button.dataset.reviewEdit));
   });
   previewSeatMap.addEventListener("click", () => {
-    if (typeof eventMapPreviewDialog.showModal === "function") eventMapPreviewDialog.showModal();
+    if (typeof eventMapPreviewDialog.showModal === "function")
+      eventMapPreviewDialog.showModal();
     renderHallMapPreview();
   });
-  document.querySelector("#eventMapPreviewClose").addEventListener("click", () => eventMapPreviewDialog.close());
+  document
+    .querySelector("#eventMapPreviewClose")
+    .addEventListener("click", () => eventMapPreviewDialog.close());
   document
     .querySelector("#cancelCatalogEdit")
     .addEventListener("click", resetCatalogForm);
@@ -1741,7 +2356,9 @@
     confirmEventDelete.classList.add("is-loading");
     eventDeleteMessage.hidden = true;
     try {
-      const result = await client.rpc("admin_delete_event_with_display_order", { p_event_id: item.id });
+      const result = await client.rpc("admin_delete_event_with_display_order", {
+        p_event_id: item.id,
+      });
       if (result.error) throw result.error;
       deleted = true;
       state.deletingEvent = false;
@@ -1751,9 +2368,13 @@
     } catch (error) {
       console.error("Admin event deletion failed", error);
       if (deleted) {
-        setMessage("Event was deleted, but dashboard data could not be refreshed.", "error");
+        setMessage(
+          "Event was deleted, but dashboard data could not be refreshed.",
+          "error",
+        );
       } else {
-        eventDeleteMessage.textContent = "Event could not be deleted. Related tickets or orders may reference it.";
+        eventDeleteMessage.textContent =
+          "Event could not be deleted. Related tickets or orders may reference it.";
         eventDeleteMessage.hidden = false;
       }
     } finally {
