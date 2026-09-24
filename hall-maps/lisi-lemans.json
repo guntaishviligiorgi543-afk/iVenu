@@ -1,0 +1,155 @@
+{
+  "venue": "Lisi Lemans",
+  "canonicalVenue": "Lisi Wonderland",
+  "venueId": "cc298c54-ee8a-4782-b7ad-b115b5231d61",
+  "mapKey": "lisi-lemans",
+  "layoutType": "outdoor-amphitheatre",
+  "viewBox": "0 0 1600 900",
+  "stage": {
+    "id": "stage",
+    "label": "STAGE",
+    "shape": "polygon",
+    "points": [
+      [590, 55],
+      [1010, 55],
+      [1040, 235],
+      [560, 235]
+    ],
+    "selectable": false
+  },
+  "sections": [
+    {
+      "key": "center-vip",
+      "ticketTier": "VIP",
+      "shape": "polygon",
+      "points": [
+        [625, 270],
+        [975, 270],
+        [1000, 375],
+        [600, 375]
+      ],
+      "seatFlow": { "rows": 5, "direction": "curved-horizontal" }
+    },
+    {
+      "key": "left-expensive",
+      "ticketTier": "Expensive",
+      "shape": "polygon",
+      "points": [
+        [340, 225],
+        [565, 300],
+        [520, 420],
+        [285, 340]
+      ],
+      "seatFlow": { "rows": 6, "direction": "fan" }
+    },
+    {
+      "key": "center-expensive",
+      "ticketTier": "Expensive",
+      "shape": "polygon",
+      "points": [
+        [555, 395],
+        [1045, 395],
+        [1080, 510],
+        [520, 510]
+      ],
+      "seatFlow": { "rows": 6, "direction": "curved-horizontal" }
+    },
+    {
+      "key": "right-expensive",
+      "ticketTier": "Expensive",
+      "shape": "polygon",
+      "points": [
+        [1035, 300],
+        [1260, 225],
+        [1315, 340],
+        [1080, 420]
+      ],
+      "seatFlow": { "rows": 6, "direction": "fan" }
+    },
+    {
+      "key": "left-medium",
+      "ticketTier": "Medium",
+      "shape": "polygon",
+      "points": [
+        [205, 345],
+        [500, 440],
+        [455, 595],
+        [150, 490]
+      ],
+      "seatFlow": { "rows": 7, "direction": "fan" }
+    },
+    {
+      "key": "center-medium",
+      "ticketTier": "Medium",
+      "shape": "polygon",
+      "points": [
+        [485, 535],
+        [1115, 535],
+        [1160, 665],
+        [440, 665]
+      ],
+      "seatFlow": { "rows": 7, "direction": "curved-horizontal" }
+    },
+    {
+      "key": "right-medium",
+      "ticketTier": "Medium",
+      "shape": "polygon",
+      "points": [
+        [1100, 440],
+        [1395, 345],
+        [1450, 490],
+        [1145, 595]
+      ],
+      "seatFlow": { "rows": 7, "direction": "fan" }
+    },
+    {
+      "key": "left-cheap",
+      "ticketTier": "Cheap",
+      "shape": "polygon",
+      "points": [
+        [95, 515],
+        [420, 620],
+        [365, 790],
+        [45, 675]
+      ],
+      "seatFlow": { "rows": 8, "direction": "fan" }
+    },
+    {
+      "key": "center-cheap",
+      "ticketTier": "Cheap",
+      "shape": "polygon",
+      "points": [
+        [400, 690],
+        [1200, 690],
+        [1245, 845],
+        [355, 845]
+      ],
+      "seatFlow": { "rows": 8, "direction": "curved-horizontal" }
+    },
+    {
+      "key": "right-cheap",
+      "ticketTier": "Cheap",
+      "shape": "polygon",
+      "points": [
+        [1180, 620],
+        [1505, 515],
+        [1555, 675],
+        [1235, 790]
+      ],
+      "seatFlow": { "rows": 8, "direction": "fan" }
+    }
+  ],
+  "tierColors": {
+    "Cheap": "#2878ff",
+    "Medium": "#16a085",
+    "Expensive": "#e63232",
+    "VIP": "#8e44ad"
+  },
+  "visual": {
+    "showTierLabelsInsideSections": false,
+    "showStageLabel": true,
+    "sectionBorderUsesTierColor": true,
+    "preserveSectionBorderWhenFiltered": true,
+    "environment": "outdoor"
+  }
+}

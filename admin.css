@@ -383,6 +383,33 @@
   min-width: 0;
 }
 
+.admin-content-block {
+  padding: 24px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.13);
+}
+
+.admin-content-block:first-of-type {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.admin-content-block__heading {
+  margin-bottom: 18px;
+}
+
+.admin-content-block__heading h3 {
+  margin: 4px 0 8px;
+  color: #fff;
+  font-family: "Fjalla One", Impact, sans-serif;
+  font-size: clamp(1.35rem, 3vw, 1.8rem);
+  font-weight: 400;
+}
+
+.admin-content-block__heading p:last-child {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.62);
+}
+
 .admin-panel h2 {
   font-size: clamp(1.8rem, 4vw, 2.5rem);
   line-height: 1.1;
@@ -780,8 +807,7 @@
   font-size: 1rem;
   line-height: 1.3;
   -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-}
+ }
 
 .admin-event-group__details span,
 .admin-event-group__details time,

@@ -341,6 +341,12 @@ body.ticket-open .selectionCountdown {
   box-sizing: border-box;
 }
 
+.mobileTicketPanelToggle,
+.mobileTicketPanelClose,
+.mobileFilterPanel {
+  display: none;
+}
+
 /* =========================================================
          LEFT / ASIDE
       ========================================================= */
@@ -921,6 +927,16 @@ body.ticket-open .selectionCountdown {
     "Helvetica Neue",
     sans-serif;
 }
+
+.responsiveMapControls {
+  position: static;
+  display: block;
+}
+
+.mobileFilterToggle {
+  display: none;
+}
+
 .closedMapLegend,
 .opendMapLegend {
   padding: 15px;
@@ -1459,7 +1475,7 @@ body.ticket-open .socIcons {
   background: #fff;
 }
 
-@media (max-width: 700px) {
+@media (max-width: 1050px) {
   .selectTktContainer {
     top: 0;
     width: 100vw;
@@ -1606,7 +1622,11 @@ body.ticket-open .socIcons {
   box-shadow: 0 3px 14px rgb(0 0 0 / 0.14);
   cursor: default;
   touch-action: manipulation;
+  width: fit-content;
+  max-width: calc(100% - 18px);
   height: fit-content;
+  align-items: start;
+  justify-items: start;
 }
 
 .hall-map-zoom-controls {
@@ -1873,6 +1893,173 @@ body.ticket-open .socIcons {
   pointer-events: none;
 }
 
+.silk-factory-studio-map-viewport {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  background: #f5f4f1;
+}
+
+.silk-factory-studio-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+  user-select: none;
+  cursor: grab;
+}
+
+.silk-factory-studio-svg.is-panning {
+  cursor: grabbing;
+}
+
+.silk-factory-studio-section {
+  fill-opacity: 0.14;
+  stroke: currentColor;
+  stroke-width: 3;
+  vector-effect: non-scaling-stroke;
+  pointer-events: none;
+}
+
+.stageMap .silk-factory-studio-section.is-filter-dimmed {
+  opacity: 1 !important;
+  filter: none !important;
+}
+
+.silk-factory-studio-stage {
+  fill: #151515;
+  stroke: #050505;
+  stroke-width: 4;
+  vector-effect: non-scaling-stroke;
+  pointer-events: none;
+}
+
+.silk-factory-studio-stage-label,
+.silk-factory-studio-section-label {
+  fill: #111;
+  font-size: 27px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-anchor: middle;
+  pointer-events: none;
+}
+
+.silk-factory-studio-stage-label {
+  fill: #fff;
+  font-size: 34px;
+  letter-spacing: 0.12em;
+}
+
+.stageMap .silk-factory-studio-svg .seat {
+  position: static;
+  width: auto;
+  height: auto;
+  opacity: 1;
+  visibility: visible;
+  transform-box: fill-box;
+  transform-origin: center;
+  transform: none;
+  transition:
+    opacity 0.16s ease,
+    filter 0.16s ease,
+    transform 0.16s ease;
+}
+
+.stageMap .silk-factory-studio-svg .seat:hover {
+  transform: scale(1.45);
+}
+
+.stageMap .silk-factory-studio-svg .seat.selected {
+  stroke: #111;
+  stroke-width: 1.5;
+}
+
+.stageMap .silk-factory-studio-svg .seat.unavailable {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.lisi-lemans-map-viewport {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  background: #e8efe7;
+}
+
+.lisi-lemans-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+  user-select: none;
+  cursor: grab;
+}
+
+.lisi-lemans-section {
+  fill-opacity: 0.12;
+  stroke-width: 3;
+  vector-effect: non-scaling-stroke;
+  pointer-events: none;
+}
+
+.stageMap .lisi-lemans-section.is-filter-dimmed {
+  opacity: 1 !important;
+  filter: none !important;
+}
+
+.lisi-lemans-stage {
+  fill: #171717;
+  stroke: #050505;
+  stroke-width: 4;
+  vector-effect: non-scaling-stroke;
+  pointer-events: none;
+}
+
+.lisi-lemans-stage-label {
+  fill: #fff;
+  font-size: 34px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-anchor: middle;
+  pointer-events: none;
+}
+
+.stageMap .lisi-lemans-svg .seat {
+  position: static;
+  width: auto;
+  height: auto;
+  opacity: 1;
+  visibility: visible;
+  transform-box: fill-box;
+  transform-origin: center;
+  transform: none;
+  transition:
+    opacity 0.16s ease,
+    filter 0.16s ease,
+    transform 0.16s ease;
+}
+
+.stageMap .lisi-lemans-svg .seat:hover {
+  transform: scale(1.4);
+}
+
+.stageMap .lisi-lemans-svg .seat.selected {
+  fill: transparent !important;
+  stroke: #111;
+  stroke-width: 1.5;
+}
+
+.stageMap .lisi-lemans-svg .seat.unavailable {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
 .stageMap .theatre-svg .seat {
   position: static;
   width: auto;
@@ -2093,26 +2280,171 @@ body.ticket-open .socIcons {
   pointer-events: none;
 }
 
-@media (max-width: 700px) {
+@media (max-width: 1050px) {
   .selectTktContainer {
-    flex-direction: column;
+    top: 0;
+    left: 0;
+    width: 100%;
+    max-width: 100%;
+    height: 100dvh;
+    transform: none;
+    flex-direction: row;
   }
   .selectTktAside {
-    flex: 0 0 44%;
-    width: 100%;
+    position: absolute;
+    inset: 0 auto 0 0;
+    z-index: 70;
+    flex: none;
+    width: min(390px, calc(100% - 28px));
+    height: 100%;
     min-height: 0;
+    border-right: 1px solid #dedede;
+    box-shadow: 12px 0 30px rgb(0 0 0 / 0.22);
+    transform: translateX(-105%);
+    transition: transform 0.22s ease;
+  }
+  .selectTktContainer.is-mobile-aside-open .selectTktAside {
+    transform: translateX(0);
   }
   .selectTktMap {
     display: block;
-    flex: 1 1 56%;
+    flex: 1 1 auto;
     width: 100%;
+    height: 100%;
     min-height: 0;
     overflow: hidden;
   }
-  .mapLegend {
+  .mobileTicketPanelToggle {
+    position: absolute;
+    top: 74px;
     left: 12px;
+    z-index: 50;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 32px;
+    padding: 0 10px;
+    border: 1px solid rgb(17 24 39 / 0.32);
+    border-radius: 5px;
+    background: rgb(255 255 255 / 0.94);
+    color: #111;
+    font:
+      800 11px/1 Arial,
+      sans-serif;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+  }
+  .responsiveMapControls {
+    position: absolute;
+    right: 12px;
     bottom: 12px;
-    max-width: calc(100% - 24px);
+    z-index: 30;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: calc(100% - 24px);
+    max-width: none;
+    gap: 12px;
+  }
+  .responsiveMapControls .mobileFilterToggle {
+    display: flex;
+    flex: 0 0 auto;
+    width: auto;
+    min-height: 32px;
+    align-items: center;
+    justify-content: center;
+    padding: 0 12px;
+    border: 0;
+    border-left: 1px solid #ddd;
+    border-radius: 0;
+    background: rgb(255 255 255 / 0.94);
+    color: #111;
+    font-size: 16px;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+  }
+  .responsiveMapControls .mobileFilterPanel {
+    position: absolute;
+    right: 0;
+    bottom: calc(100% + 8px);
+    z-index: 60;
+    display: block;
+    width: min(280px, calc(100% - 24px));
+    padding: 12px;
+    border: 1px solid rgb(17 24 39 / 0.25);
+    border-radius: 6px;
+    background: rgb(255 255 255 / 0.97);
+    box-shadow: 0 10px 24px rgb(0 0 0 / 0.16);
+  }
+  .mobileFilterPanel[hidden] {
+    display: none;
+  }
+  .mobileFilterPanelHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    font:
+      800 12px/1 Arial,
+      sans-serif;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .mobileFilterPanelClose {
+    width: 26px;
+    height: 26px;
+    border: 0;
+    background: transparent;
+    color: #111;
+    font:
+      700 20px/1 Arial,
+      sans-serif;
+    cursor: pointer;
+  }
+  .mobileFilterPanel label {
+    display: grid;
+    gap: 6px;
+    margin-top: 12px;
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .mobileFilterPanel .fillterByTktType {
+    width: 100%;
+  }
+  .mobileTicketPanelClose {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 2;
+    display: inline-flex;
+    width: 32px;
+    height: 32px;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #111;
+    border-radius: 50%;
+    background: #fff;
+    color: #111;
+    font:
+      700 20px/1 Arial,
+      sans-serif;
+    cursor: pointer;
+  }
+  .responsiveMapControls .mapLegend {
+    position: static;
+    left: auto;
+    right: auto;
+    bottom: auto;
+    width: auto;
+    max-width: none;
+    display: flex;
+    align-items: stretch;
+  }
+  .responsiveMapControls .mapLegend .closedMapLegend {
+    flex: 0 1 auto;
+  }
+  .responsiveMapControls .mapLegend .opendMapLegend {
+    flex-basis: 100%;
   }
   .selectionCountdown {
     top: 12px;
@@ -2121,7 +2453,87 @@ body.ticket-open .socIcons {
   .hall-map-controls {
     top: 8px;
     right: 8px;
-    transform: scale(0.92);
-    transform-origin: top right;
+    bottom: auto;
+    width: fit-content;
+    padding: 4px;
+    transform: none;
   }
+  .hall-map-zoom-controls {
+    grid-template-columns: repeat(3, 28px);
+    gap: 3px;
+  }
+  .hall-map-controls button {
+    width: 28px;
+    height: 28px;
+  }
+  .closeSelectTktContainer {
+    top: clamp(58px, 14vw, 68px);
+    right: 8px;
+    width: 34px;
+    height: 34px;
+  }
+}
+
+@media (max-width: 430px) {
+  .mobileTicketPanelToggle,
+  .responsiveMapControls .mobileFilterToggle {
+    min-height: 30px;
+    padding: 0 8px;
+    font-size: 10px;
+    letter-spacing: 0.025em;
+  }
+  .mobileFilterPanel {
+    width: min(270px, calc(100% - 16px));
+  }
+}
+
+.ticketPurchaseDialog {
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  box-sizing: border-box;
+  background: rgb(0 0 0 / 0.5);
+}
+
+.ticketPurchaseDialog[hidden] {
+  display: none;
+}
+
+.ticketPurchaseDialogContent {
+  width: min(420px, 100%);
+  padding: clamp(24px, 5vw, 34px);
+  box-sizing: border-box;
+  background: #fff;
+  color: #111;
+  text-align: center;
+}
+
+.ticketPurchaseDialogContent h2,
+.ticketPurchaseDialogContent p {
+  margin: 0;
+}
+
+.ticketPurchaseDialogContent h2 {
+  font-size: clamp(1.2rem, 4vw, 1.55rem);
+}
+
+.ticketPurchaseDialogContent p {
+  margin-top: 12px;
+  line-height: 1.5;
+}
+
+.ticketPurchaseDialogContent button {
+  min-width: 96px;
+  margin-top: 24px;
+  padding: 10px 24px;
+  border: 0;
+  background: #000;
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
 }

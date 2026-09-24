@@ -106,8 +106,9 @@
       .join("");
   }
 
-  function renderCart(items, ticketTypes) {
+  function renderCart(items, ticketTypes, events) {
     const ticketMap = new Map(ticketTypes.map((ticket) => [ticket.id, ticket]));
+    const eventMap = new Map(events.map((event) => [event.id, event]));
     const totalItems = items.reduce(
       (sum, item) => sum + Number(item.quantity || 0),
       0,
@@ -119,22 +120,47 @@
       return;
     }
 
-    cartEmpty.hidden = true;
-    cartList.innerHTML = items
-      .map(
-        (item) =>
-          `<article class="dashboard-row"><div><strong>${escapeHtml(ticketMap.get(item.ticket_type_id)?.name || "Ticket")}</strong><span>Quantity ${Number(item.quantity || 0)}</span></div><strong>${(Number(ticketMap.get(item.ticket_type_id)?.price || 0) * Number(item.quantity || 0)).toFixed(2)}₾</strong></article>`,
-      )
-      .join("");
-
-    cartList.querySelectorAll(".dashboard-row").forEach((row, index) => {
-      const item = items[index];
-      const ticketName = ticketMap.get(item.ticket_type_id)?.name || "Ticket";
-      row.insertAdjacentHTML(
-        "beforeend",
-        `<button class="dashboard-cart-remove" type="button" data-cart-item-id="${escapeHtml(item.id)}" data-event-seat-id="${escapeHtml(item.event_seat_id || "")}" aria-label="Remove ${escapeHtml(ticketName)} from cart">Remove</button>`,
-      );
+    const eventGroups = new Map();
+    items.forEach((item) => {
+      const ticket = ticketMap.get(item.ticket_type_id);
+      const eventId = ticket?.event_id;
+      const groupKey = eventId || `ticket-${item.ticket_type_id}`;
+      if (!eventGroups.has(groupKey)) {
+        eventGroups.set(groupKey, {
+          event: eventMap.get(eventId) || null,
+          items: [],
+        });
+      }
+      eventGroups.get(groupKey).items.push({ item, ticket });
     });
+
+    cartEmpty.hidden = true;
+    cartList.innerHTML = [...eventGroups.values()]
+      .map(({ event, items: eventItems }) => {
+        const primaryTicket = eventItems[0].ticket;
+        const title = event?.title || event?.performer || primaryTicket?.name || "Event";
+        const image = event?.image_url || event?.bands?.image_url || "";
+        const venue = event?.venues?.name || event?.venue || "Venue to be announced";
+        const dateTime = [event?.event_date, event?.event_time?.slice(0, 5)]
+          .filter(Boolean)
+          .join(" — ");
+        const ticketDetails = eventItems
+          .map(({ item, ticket }) => {
+            const ticketName = ticket?.name || "Ticket";
+            const total = Number(ticket?.price || 0) * Number(item.quantity || 0);
+            return `<div class="cart-event-ticket"><span><strong>${escapeHtml(ticketName)}</strong><small>Quantity ${Number(item.quantity || 0)}</small></span><strong>${total.toFixed(2)}₾</strong></div>`;
+          })
+          .join("");
+        const actions = eventItems
+          .map(({ item, ticket }) => {
+            const ticketName = ticket?.name || "Ticket";
+            return `<button class="dashboard-cart-remove" type="button" data-cart-item-id="${escapeHtml(item.id)}" data-event-seat-id="${escapeHtml(item.event_seat_id || "")}" aria-label="Remove ${escapeHtml(ticketName)} from cart">Remove</button>`;
+          })
+          .join("");
+
+        return `<article class="cart-event-item"><div class="cart-event-image">${image ? `<img src="${escapeHtml(image)}" alt="${escapeHtml(title)}" />` : '<span aria-hidden="true">iVenue</span>'}</div><div class="cart-event-info"><h3>${escapeHtml(title)}</h3><p class="cart-event-meta">${escapeHtml(venue)}</p>${dateTime ? `<p class="cart-event-meta">${escapeHtml(dateTime)}</p>` : ""}<div class="cart-event-ticket-list">${ticketDetails}</div></div><div class="cart-event-actions">${actions}</div></article>`;
+      })
+      .join("");
   }
 
   async function removeCartItem({ cartItemId, eventSeatId }) {
@@ -158,6 +184,8 @@
     }
 
     await loadAccount();
+    window.eventCart?.render().catch((error) => console.error(error));
+    window.eventCart?.broadcastChange();
   }
 
   function updateProfilePreview(profile) {
@@ -261,13 +289,34 @@
     const ticketResult = ticketIds.length
       ? await client
           .from("ticket_types")
-          .select("id, name, price")
+          .select("id, event_id, name, price")
           .in("id", ticketIds)
       : { data: [] };
     if (ticketResult.error) throw ticketResult.error;
-    renderCart(cartItems, ticketResult.data || []);
-    window.eventCart?.render().catch((error) => console.error(error));
+    const eventIds = [
+      ...new Set(
+        (ticketResult.data || [])
+          .map((ticket) => ticket.event_id)
+          .filter(Boolean),
+      ),
+    ];
+    const eventResult = eventIds.length
+      ? await client
+          .from("events")
+          .select(
+            "id, performer, title, event_date, event_time, venue, image_url, venues:venues!events_venue_id_fkey(name), bands(name, image_url)",
+          )
+          .in("id", eventIds)
+      : { data: [] };
+    if (eventResult.error) {
+      console.error("Unable to load cart event details", eventResult.error);
+    }
+    renderCart(cartItems, ticketResult.data || [], eventResult.data || []);
   }
+
+  window.addEventListener("eventCartChanged", () => {
+    loadAccount().catch((error) => console.error(error));
+  });
 
   document
     .querySelectorAll(".account-sidebar-item[data-section]")

@@ -213,8 +213,102 @@
       opacity: 1;
       transform: translateY(0);
     }
+    .eventCardCartButton {
+      position: absolute;
+      bottom: 14px;
+      left: 14px;
+      display: grid;
+      place-items: center;
+      width: 42px;
+      height: 42px;
+      padding: 0;
+      border: 1px solid rgba(255, 255, 255, 0.65);
+      border-radius: 50%;
+      color: #fff;
+      background: rgba(0, 0, 0, 0.5);
+      cursor: pointer;
+      opacity: 0;
+      transform: translateY(8px);
+      transition:
+        opacity 0.22s ease,
+        transform 0.22s ease,
+        color 0.22s ease,
+        background 0.22s ease;
+    }
+    .eventCardCartButton:hover,
+    .eventCardCartButton:focus-visible,
+    .eventCardCartButton.is-in-cart {
+      color: #ff9475;
+      background: rgba(0, 0, 0, 0.76);
+      outline: none;
+    }
+    .vntCrd:hover .eventCardCartButton,
+    .eventCardCartButton:focus-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .eventCardCartButton:disabled {
+      cursor: wait;
+      opacity: 0.72;
+    }
+    .eventCardCartButton.is-pending svg {
+      animation: event-card-cart-pending 0.75s linear infinite;
+    }
+    .showsCartMessage {
+      position: fixed;
+      right: 24px;
+      bottom: 88px;
+      z-index: 1000002;
+      margin: 0;
+      padding: 11px 14px;
+      border: 1px solid rgba(255, 148, 117, 0.72);
+      color: #fff;
+      background: rgba(18, 18, 18, 0.96);
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.28);
+    }
+    .showsCartMessage.error {
+      border-color: rgba(255, 107, 107, 0.8);
+    }
+    .eventCardCartFeedback {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      display: grid;
+      width: 100%;
+      height: 100%;
+      place-items: center;
+      box-sizing: border-box;
+      margin: 0;
+      padding: 20px;
+      border: 0;
+      border-radius: 0;
+      color: #fff;
+      background: rgba(0, 0, 0, 0.58);
+      box-shadow: none;
+      font-family: Inter, Arial, Helvetica, sans-serif;
+      font-size: clamp(0.9rem, 2.1vw, 1.3rem);
+      font-weight: 600;
+      line-height: 1.25;
+      text-align: center;
+      letter-spacing: 0.035em;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.24s ease;
+    }
+    .eventCardCartFeedback.is-visible {
+      opacity: 1;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .eventCardCartFeedback {
+        transition: none;
+      }
+    }
+    @keyframes event-card-cart-pending {
+      to { transform: rotate(360deg); }
+    }
     @media (hover: none), (pointer: coarse) {
-      .eventCardShareButton {
+      .eventCardShareButton,
+      .eventCardCartButton {
         opacity: 1;
         transform: translateY(0);
       }
@@ -467,6 +561,7 @@
           </div>
           <div class="eventCards"></div>
           <div class="pagination" aria-label="Event pages"></div>
+          <p class="showsCartMessage" id="showsCartMessage" role="status" aria-live="polite" hidden></p>
         </div>
       </section>
       <section class="sec4" aria-labelledby="newsletter-title">
@@ -507,6 +602,7 @@
     <script src="supabase-data.js"></script>
     <script src="event-share.js"></script>
     <script src="auth.js"></script>
+    <script src="cart-sync.js"></script>
     <script src="event-cart.js"></script>
     <script src="auth-ui.js"></script>
     <script>
@@ -514,11 +610,77 @@
       const pagination = document.querySelector(".pagination");
       const eventSearch = document.querySelector("#eventSearch");
       const eventCategory = document.querySelector("#eventCategory");
+      const showsCartMessage = document.querySelector("#showsCartMessage");
       const releaseShowsInitialLoad = window.pageLoading?.lock("shows-first-section");
       const EVENTS_PER_PAGE = window.iVenueEventListing.pageSize;
       let loadedEvents = [];
       let filteredEvents = [];
       let currentPage = 1;
+      let cartEventIds = new Set();
+      const pendingCartEventIds = new Set();
+      let cartMessageTimeout;
+
+      function showCartMessage(message, isError = false) {
+        window.clearTimeout(cartMessageTimeout);
+        showsCartMessage.textContent = message;
+        showsCartMessage.classList.toggle("error", isError);
+        showsCartMessage.hidden = false;
+        cartMessageTimeout = window.setTimeout(() => {
+          showsCartMessage.hidden = true;
+        }, 2000);
+      }
+
+      function showCardCartFeedback(button, message) {
+        const imageWrapper = button.closest(".eventCardImage");
+        if (!imageWrapper) return;
+        imageWrapper.querySelector(".eventCardCartFeedback")?.remove();
+
+        const feedback = document.createElement("p");
+        feedback.className = "eventCardCartFeedback";
+        feedback.textContent = message;
+        feedback.setAttribute("role", "status");
+        feedback.setAttribute("aria-live", "polite");
+        imageWrapper.append(feedback);
+
+        window.requestAnimationFrame(() => feedback.classList.add("is-visible"));
+        window.setTimeout(() => {
+          feedback.classList.remove("is-visible");
+          window.setTimeout(() => feedback.remove(), 220);
+        }, 2000);
+      }
+
+      function updateCartButton(button) {
+        const eventId = String(button.dataset.showCartEvent);
+        const isInCart = cartEventIds.has(eventId);
+        const isPending = pendingCartEventIds.has(eventId);
+        const event = loadedEvents.find((item) => String(item.id) === eventId);
+        const label = event?.title || event?.performer || "event";
+        button.classList.toggle("is-in-cart", isInCart);
+        button.classList.toggle("is-pending", isPending);
+        button.disabled = isPending;
+        button.setAttribute("aria-busy", String(isPending));
+        button.setAttribute("aria-pressed", String(isInCart));
+        button.setAttribute(
+          "aria-label",
+          `${isInCart ? "Remove" : "Add"} ${label} ${isInCart ? "from" : "to"} cart`,
+        );
+      }
+
+      function syncVisibleCartButtons() {
+        eventCards
+          .querySelectorAll("[data-show-cart-event]")
+          .forEach(updateCartButton);
+      }
+
+      async function refreshCartState() {
+        if (!window.eventCart?.getEventIds) return;
+        try {
+          cartEventIds = new Set(await window.eventCart.getEventIds());
+          syncVisibleCartButtons();
+        } catch (error) {
+          console.error("Could not refresh Shows cart state:", error);
+        }
+      }
 
       function showEventsMessage(message, isError = false) {
         eventCards.innerHTML = `<p class="eventsMessage${isError ? " error" : ""}">${message}</p>`;
@@ -557,6 +719,15 @@
           <svg xmlns="http://www.w3.org/2000/svg" width="1.69em" height="1.5em" viewBox="0 0 1792 1600" aria-hidden="true">
             <path d="M0 0h1792v1600H0z" fill="none" />
             <path fill="currentColor" d="M1792 576q0 26-19 45l-512 512q-19 19-45 19t-45-19t-19-45V832H928q-98 0-175.5 6t-154 21.5t-133 42.5T360 971.5t-80 101t-48.5 138.5t-17.5 181q0 55 5 123q0 6 2.5 23.5t2.5 26.5q0 15-8.5 25t-23.5 10q-16 0-28-17q-7-9-13-22t-13.5-30t-10.5-24Q0 1222 0 1056q0-199 53-333q162-403 875-403h224V64q0-26 19-45t45-19t45 19l512 512q19 19 19 45" />
+          </svg>
+        </button>
+        <button class="eventCardCartButton" type="button" data-show-cart-event="${event.id}" aria-label="Add ${performer} to cart" aria-pressed="false">
+          <svg xmlns="http://www.w3.org/2000/svg" width="1.45em" height="1.45em" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M0 0h24v24H0z" fill="none" />
+            <g fill="none" stroke="currentColor" stroke-linejoin="round" stroke-width="2">
+              <path d="M5 7h13.79a2 2 0 0 1 1.99 2.199l-.6 6A2 2 0 0 1 18.19 17H8.64a2 2 0 0 1-1.962-1.608z" />
+              <path stroke-linecap="round" d="m5 7l-.81-3.243A1 1 0 0 0 3.22 3H2m6 18h2m6 0h2" />
+            </g>
           </svg>
         </button>
       </div>
@@ -660,6 +831,7 @@
         filteredEvents
           .slice(start, start + EVENTS_PER_PAGE)
           .forEach(renderEventCard);
+        syncVisibleCartButtons();
         bindEventCardInteractions();
         renderPagination();
         window.scrollTo({ top: 0, behavior: "smooth" });
@@ -700,6 +872,35 @@
       eventSearch.addEventListener("input", applyEventFilters);
       eventCategory.addEventListener("change", applyEventFilters);
       eventCards.addEventListener("click", (clickEvent) => {
+        const cartButton = clickEvent.target.closest("[data-show-cart-event]");
+        if (cartButton) {
+          clickEvent.preventDefault();
+          clickEvent.stopPropagation();
+          const eventId = String(cartButton.dataset.showCartEvent);
+          if (pendingCartEventIds.has(eventId)) return;
+          const wasInCart = cartEventIds.has(eventId);
+          pendingCartEventIds.add(eventId);
+          updateCartButton(cartButton);
+          (async () => {
+            try {
+              if (wasInCart) {
+                await window.eventCart.removeEvent(eventId);
+                showCardCartFeedback(cartButton, "Event removed from cart");
+              } else {
+                await window.eventCart.addEvent(eventId);
+                showCardCartFeedback(cartButton, "Event added to cart");
+              }
+              await refreshCartState();
+            } catch (error) {
+              console.error("Shows cart toggle failed:", error);
+              showCartMessage(error.message || "Cart could not be updated.", true);
+            } finally {
+              pendingCartEventIds.delete(eventId);
+              syncVisibleCartButtons();
+            }
+          })();
+          return;
+        }
         const shareButton = clickEvent.target.closest(
           "[data-show-share-event]",
         );
@@ -728,6 +929,7 @@
           filteredEvents = loadedEvents;
           currentPage = 1;
           renderPage();
+          await refreshCartState();
         } catch (error) {
           console.error(error);
           showEventsMessage("Events are temporarily unavailable.", true);
@@ -735,6 +937,11 @@
           releaseShowsInitialLoad?.();
         }
       }
+
+      window.addEventListener("eventCartChanged", (event) => {
+        cartEventIds = new Set(event.detail?.eventIds || []);
+        syncVisibleCartButtons();
+      });
     </script>
 
     <script>

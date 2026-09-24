@@ -35,13 +35,8 @@
     heroConfig: { mode: "latest_added", display_limit: 3, event_ids: [] },
     heroPreview: [],
     heroPreviewMode: "latest_added",
-    upcomingShowsConfig: {
-      mode: "latest_added",
-      display_limit: 4,
-      event_ids: [],
-    },
+    upcomingShowsConfig: { display_limit: 5 },
     upcomingShowsPreview: [],
-    upcomingShowsPreviewMode: "latest_added",
     refreshing: false,
     deletingEvent: false,
     eventPendingDeletion: null,
@@ -156,13 +151,7 @@
   const upcomingShowsAutomatic = document.querySelector(
     "#upcomingShowsAutomatic",
   );
-  const upcomingShowsCustom = document.querySelector("#upcomingShowsCustom");
-  const upcomingShowsSearch = document.querySelector("#upcomingShowsSearch");
-  const upcomingShowsResults = document.querySelector("#upcomingShowsResults");
-  const upcomingShowsCount = document.querySelector("#upcomingShowsCount");
-  const upcomingShowsSelected = document.querySelector(
-    "#upcomingShowsSelected",
-  );
+  const upcomingShowsLimit = document.querySelector("#upcomingShowsLimit");
 
   const escapeHtml = (value) =>
     String(value ?? "")
@@ -327,14 +316,9 @@
     state.heroPreview = heroPreview.data || [];
     state.heroPreviewMode = state.heroConfig.mode;
     state.upcomingShowsConfig = upcomingShowsConfig.data || {
-      mode: "latest_added",
-      display_limit: 4,
-      event_ids: [],
+      display_limit: 5,
     };
-    state.upcomingShowsConfig.event_ids =
-      state.upcomingShowsConfig.event_ids || [];
     state.upcomingShowsPreview = upcomingShowsPreview.data || [];
-    state.upcomingShowsPreviewMode = state.upcomingShowsConfig.mode;
     state.eventPage = 1;
     state.statsPage = 1;
     await loadAnalytics();
@@ -451,83 +435,24 @@
     return `${escapeHtml(event.title || event.performer || "Untitled event")} — ${escapeHtml(date)} · ${escapeHtml(venue)} · ${escapeHtml(category)}`;
   }
 
+  function isEligibleUpcomingShow(event) {
+    if (event.status !== "active" || !event.event_date) return false;
+    const startsAt = new Date(
+      `${event.event_date}T${event.event_time || "23:59:59"}`,
+    );
+    return Number.isFinite(startsAt.getTime()) && startsAt >= new Date();
+  }
+
   function renderUpcomingShowsForm() {
     const config = state.upcomingShowsConfig;
-    const mode = [
-      "latest_added",
-      "most_added_to_cart",
-      "best_selling",
-      "custom_selection",
-    ].includes(config.mode)
-      ? config.mode
-      : "latest_added";
-    upcomingShowsForm.elements.upcoming_mode.value = mode;
-    upcomingShowsCustom.hidden = mode !== "custom_selection";
-    upcomingShowsAutomatic.hidden = mode === "custom_selection";
-    const limit = Number(config.display_limit) || 4;
-    const help = {
-      latest_added: `Automatically shows the ${limit} newest active, upcoming events.`,
-      most_added_to_cart: `Automatically ranks active, upcoming events by recorded add-to-cart ticket units.`,
-      best_selling: `Automatically ranks active, upcoming events by ticket quantities in paid orders.`,
-      custom_selection: `Choose and order up to ${limit} active, upcoming events. Removing one here does not delete the event.`,
-    };
-    upcomingShowsHelp.textContent = help[mode];
-
-    if (mode !== "custom_selection") {
-      if (mode !== state.upcomingShowsPreviewMode) {
-        upcomingShowsAutomatic.innerHTML =
-          '<p class="admin-message">Save this display mode to update the current homepage preview.</p>';
-        return;
-      }
-      upcomingShowsAutomatic.innerHTML = state.upcomingShowsPreview.length
-        ? `<div class="upcoming-shows-preview">${state.upcomingShowsPreview.map((event) => `<div><span>${formatUpcomingEvent(event)}</span><button type="button" data-upcoming-edit="${event.id}">Edit Event</button></div>`).join("")}</div>`
-        : '<p class="admin-message">No eligible events are available for this mode.</p>';
-      return;
-    }
-
-    const selectedIds = config.event_ids.map(String);
-    const selected = selectedIds
-      .map((id) => state.events.find((event) => String(event.id) === id))
-      .filter(Boolean);
-    upcomingShowsCount.textContent = `${selected.length} of ${limit} events selected for the homepage accordion.`;
-    upcomingShowsSelected.innerHTML = selected.length
-      ? selected
-          .map(
-            (event, index) =>
-              `<div class="upcoming-shows-row"><span>${index + 1}. ${formatUpcomingEvent(event)}</span><div><button type="button" data-upcoming-move="up" data-upcoming-id="${event.id}" ${index === 0 ? "disabled" : ""}>Move up</button><button type="button" data-upcoming-move="down" data-upcoming-id="${event.id}" ${index === selected.length - 1 ? "disabled" : ""}>Move down</button><button type="button" data-upcoming-edit="${event.id}">Edit Event</button><button type="button" data-upcoming-remove="${event.id}">Remove</button></div></div>`,
-          )
-          .join("")
-      : '<p class="admin-message">No custom events selected.</p>';
-    const search = upcomingShowsSearch.value.trim().toLowerCase();
-    const matches = state.events
-      .filter((event) => {
-        const text = [
-          event.title,
-          event.performer,
-          event.event_date,
-          event.venues?.name || event.venue,
-          event.categories?.name,
-        ]
-          .join(" ")
-          .toLowerCase();
-        return (
-          event.status === "active" &&
-          event.event_date >= new Date().toISOString().slice(0, 10) &&
-          !selectedIds.includes(String(event.id)) &&
-          (!search || text.includes(search))
-        );
-      })
-      .slice(0, 12);
-    upcomingShowsResults.innerHTML =
-      selected.length >= limit
-        ? ""
-        : matches
-            .map(
-              (event) =>
-                `<div class="upcoming-shows-row"><span>${formatUpcomingEvent(event)}</span><button type="button" data-upcoming-add="${event.id}">Add</button></div>`,
-            )
-            .join("") ||
-          '<p class="admin-message">No eligible matching events found.</p>';
+    const eligibleCount = state.events.filter(isEligibleUpcomingShow).length;
+    const limit = Math.max(1, Math.floor(Number(config.display_limit) || 5));
+    upcomingShowsLimit.max = String(Math.max(1, eligibleCount));
+    upcomingShowsLimit.value = String(limit);
+    upcomingShowsHelp.textContent = `Displays the ${limit} nearest active upcoming event${limit === 1 ? "" : "s"}, ordered by date and time.`;
+    upcomingShowsAutomatic.innerHTML = state.upcomingShowsPreview.length
+      ? `<div class="upcoming-shows-preview">${state.upcomingShowsPreview.map((event) => `<div><span>${formatUpcomingEvent(event)}</span><button type="button" data-upcoming-edit="${event.id}">Edit Event</button></div>`).join("")}</div>`
+      : '<p class="admin-message">No eligible upcoming events are available.</p>';
   }
 
   function resetCatalogForm() {
@@ -1550,6 +1475,10 @@
       return window.dinamoArenaBlueprint;
     if (venue.id === window.theatreBlueprint?.venueId)
       return window.theatreBlueprint;
+    if (venue.id === window.silkFactoryStudioBlueprint?.venueId)
+      return window.silkFactoryStudioBlueprint;
+    if (venue.id === window.lisiLemansBlueprint?.venueId)
+      return window.lisiLemansBlueprint;
     const expoBlueprint = await expoGeorgiaPavilion11Blueprint();
     if (venue.id === expoBlueprint.venueId) return expoBlueprint;
     return null;
@@ -1746,7 +1675,14 @@
     }
     const eventId = form.elements.id.value;
     let eventRows = [];
-    if (blueprint.slug === "expo-georgia-pavilion-11" && eventId) {
+    if (
+      [
+        "expo-georgia-pavilion-11",
+        "silk-factory-studio",
+        "lisi-lemans",
+      ].includes(blueprint.slug) &&
+      eventId
+    ) {
       try {
         eventRows = await expoPreviewRowsForEvent();
       } catch (error) {
@@ -1758,7 +1694,11 @@
       }
     }
     eventMapPreviewDescription.textContent =
-      blueprint.slug === "expo-georgia-pavilion-11" && eventId
+      [
+        "expo-georgia-pavilion-11",
+        "silk-factory-studio",
+        "lisi-lemans",
+      ].includes(blueprint.slug) && eventId
         ? `${venue.name} geometry with ${formatSeatNumber(eventRows.length)} canonical event seats. This preview does not modify seat state.`
         : `${venue.name} geometry with draft ticket-tier colors. This preview does not create, reserve, or sell seats.`;
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
@@ -1778,6 +1718,51 @@
           error.message || "The event seat inventory could not be rendered.";
         eventMapPreviewCanvas.innerHTML =
           '<p class="admin-map-preview__empty">The hall geometry is available, but this event\'s canonical seats could not be rendered.</p>';
+        return;
+      }
+      eventMapPreviewCanvas.appendChild(svg);
+      return;
+    }
+    if (blueprint.slug === "silk-factory-studio") {
+      try {
+        const tickets = eventTickets(eventId);
+        const colors = new Map(
+          tickets.map((ticket) => [String(ticket.id), ticket.display_color]),
+        );
+        window.silkFactoryStudioSeatMap.renderPreview({
+          svg,
+          rows: eventRows,
+          tickets,
+          colors,
+        });
+      } catch (error) {
+        eventMapPreviewDescription.textContent =
+          error.message ||
+          "The Silk Factory Studio preview could not be rendered.";
+        eventMapPreviewCanvas.innerHTML =
+          '<p class="admin-map-preview__empty">The Silk Factory Studio geometry is available, but canonical seats could not be rendered.</p>';
+        return;
+      }
+      eventMapPreviewCanvas.appendChild(svg);
+      return;
+    }
+    if (blueprint.slug === "lisi-lemans") {
+      try {
+        const tickets = eventTickets(eventId);
+        const colors = new Map(
+          tickets.map((ticket) => [String(ticket.id), ticket.display_color]),
+        );
+        window.lisiLemansSeatMap.renderPreview({
+          svg,
+          rows: eventRows,
+          tickets,
+          colors,
+        });
+      } catch (error) {
+        eventMapPreviewDescription.textContent =
+          error.message || "The Lisi Lemans preview could not be rendered.";
+        eventMapPreviewCanvas.innerHTML =
+          '<p class="admin-map-preview__empty">The Lisi Lemans geometry is available, but canonical seats could not be rendered.</p>';
         return;
       }
       eventMapPreviewCanvas.appendChild(svg);
@@ -2059,39 +2044,8 @@
       );
     }
   });
-  upcomingShowsForm.addEventListener("change", (event) => {
-    if (event.target.name !== "upcoming_mode") return;
-    state.upcomingShowsConfig.mode =
-      upcomingShowsForm.elements.upcoming_mode.value;
-    renderUpcomingShowsForm();
-  });
-  upcomingShowsSearch.addEventListener("input", renderUpcomingShowsForm);
   upcomingShowsForm.addEventListener("click", (event) => {
-    const add = event.target.closest("[data-upcoming-add]");
-    const remove = event.target.closest("[data-upcoming-remove]");
-    const move = event.target.closest("[data-upcoming-move]");
     const edit = event.target.closest("[data-upcoming-edit]");
-    const ids = state.upcomingShowsConfig.event_ids.map(String);
-    if (add && !ids.includes(add.dataset.upcomingAdd)) {
-      state.upcomingShowsConfig.event_ids = [...ids, add.dataset.upcomingAdd];
-      renderUpcomingShowsForm();
-    }
-    if (remove) {
-      state.upcomingShowsConfig.event_ids = ids.filter(
-        (id) => id !== remove.dataset.upcomingRemove,
-      );
-      renderUpcomingShowsForm();
-    }
-    if (move) {
-      const index = ids.indexOf(move.dataset.upcomingId);
-      const nextIndex =
-        move.dataset.upcomingMove === "up" ? index - 1 : index + 1;
-      if (index >= 0 && nextIndex >= 0 && nextIndex < ids.length) {
-        [ids[index], ids[nextIndex]] = [ids[nextIndex], ids[index]];
-        state.upcomingShowsConfig.event_ids = ids;
-        renderUpcomingShowsForm();
-      }
-    }
     if (edit) {
       const item = state.events.find(
         (candidate) => String(candidate.id) === edit.dataset.upcomingEdit,
@@ -2099,17 +2053,34 @@
       if (item) fillForm(item);
     }
   });
+  upcomingShowsLimit.addEventListener("change", () => {
+    const eligibleCount = state.events.filter(isEligibleUpcomingShow).length;
+    const value = Number.parseInt(upcomingShowsLimit.value, 10);
+    state.upcomingShowsConfig.display_limit = Number.isInteger(value)
+      ? Math.min(Math.max(value, 1), Math.max(1, eligibleCount))
+      : 5;
+    renderUpcomingShowsForm();
+  });
   upcomingShowsForm.addEventListener("submit", async (event) => {
     event.preventDefault();
-    const mode = upcomingShowsForm.elements.upcoming_mode.value;
-    const eventIds =
-      mode === "custom_selection" ? state.upcomingShowsConfig.event_ids : [];
+    const eligibleCount = state.events.filter(isEligibleUpcomingShow).length;
+    const displayLimit = Number.parseInt(upcomingShowsLimit.value, 10);
+    if (
+      !Number.isInteger(displayLimit) ||
+      displayLimit < 1 ||
+      displayLimit > eligibleCount
+    ) {
+      setMessage(
+        "Upcoming Shows count must be a positive number no greater than the available upcoming events.",
+        "error",
+      );
+      return;
+    }
     try {
       const { error } = await client.rpc(
         "admin_save_homepage_upcoming_shows_config",
         {
-          p_mode: mode,
-          p_event_ids: eventIds,
+          p_display_limit: displayLimit,
         },
       );
       if (error) throw error;
@@ -2119,7 +2090,7 @@
       console.error(error);
       setMessage(
         error.message ||
-          "Upcoming Shows could not be saved. Please review your selection and try again.",
+          "Upcoming Shows could not be saved. Please review the count and try again.",
         "error",
       );
     }

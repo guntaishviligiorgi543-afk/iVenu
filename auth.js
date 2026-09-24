@@ -99,45 +99,24 @@
     return "";
   }
 
-  async function requestPasswordOtp(email) {
+  async function requestPasswordRecoveryOtp(email) {
     if (!window.location.protocol.startsWith("http")) {
       throw new Error(
         "Open the site through its local HTTP development URL before requesting a verification code.",
       );
     }
 
-    const { error } = await client.auth.signInWithOtp({
-      email: normalizeEmail(email),
-      options: { shouldCreateUser: false },
-    });
-    if (error) throw error;
-  }
-
-  async function requestAdminPasswordOtp(email) {
-    const { error } = await client.auth.signInWithOtp({
-      email: normalizeEmail(email),
-      options: { shouldCreateUser: false },
-    });
-    if (error) throw error;
-  }
-
-  async function requestAdminPasswordReset(email) {
-    if (!window.location.protocol.startsWith("http")) {
-      throw new Error("Use the site through its local HTTP URL.");
-    }
-    const redirectTo = `${window.location.origin}/reset-password.html?mode=admin`;
     const { error } = await client.auth.resetPasswordForEmail(
       normalizeEmail(email),
-      { redirectTo },
     );
     if (error) throw error;
   }
 
-  async function verifyPasswordOtp(email, token) {
+  async function verifyPasswordRecoveryOtp(email, token) {
     const { data, error } = await client.auth.verifyOtp({
       email: normalizeEmail(email),
       token: String(token || "").trim(),
-      type: "email",
+      type: "recovery",
     });
     if (error) throw error;
     return data;
@@ -266,10 +245,8 @@
     requestEmailOtp,
     resendSignupConfirmation,
     refreshSession,
-    requestPasswordOtp,
-    requestAdminPasswordOtp,
-    requestAdminPasswordReset,
-    verifyPasswordOtp,
+    requestPasswordRecoveryOtp,
+    verifyPasswordRecoveryOtp,
     normalizeEmail,
     validatePassword,
     subscribeToAuthChanges,

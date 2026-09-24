@@ -253,8 +253,15 @@
       ========================================================= -->
 
       <div class="selectTktContainer">
-        <div class="selectTktAside">
+        <div class="selectTktAside" id="ticketPurchaseAside">
           <div class="selectTktAside-header">
+            <button
+              class="mobileTicketPanelClose"
+              type="button"
+              aria-label="Close ticket list"
+            >
+              ×
+            </button>
             <h2 class="bandNam"></h2>
             <p class="vntDate">date & time</p>
             <p class="vntLocation">location</p>
@@ -512,6 +519,14 @@
 
         <div class="selectTktMap">
           <button class="closeSelectTktContainer">X</button>
+          <button
+            class="mobileTicketPanelToggle"
+            type="button"
+            aria-controls="ticketPurchaseAside"
+            aria-expanded="false"
+          >
+            TKT LIST
+          </button>
 
           <div
             class="selectionCountdown"
@@ -524,34 +539,62 @@
 
           <div class="stageMap"></div>
 
-          <div class="mapLegend">
-            <div class="closedMapLegend">
-              <div class="header">
-                <span>shows prices</span>
+          <div class="responsiveMapControls">
+            <button
+              class="mobileFilterToggle"
+              type="button"
+              aria-controls="mobileFilterPanel"
+              aria-expanded="false"
+            >
+              FILTER
+            </button>
 
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="1.25em"
-                  height="1.25em"
-                  viewBox="0 0 24 24"
-                >
-                  <path d="M0 0h24v24H0z" fill="none" />
-                  <path
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M12 20V4m-7 7l7-7l7 7"
-                  />
-                </svg>
+            <div class="mapLegend" id="ticketMapLegend">
+              <div class="closedMapLegend">
+                <div class="header">
+                  <span>shows prices</span>
+
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="1.25em"
+                    height="1.25em"
+                    viewBox="0 0 24 24"
+                  >
+                    <path d="M0 0h24v24H0z" fill="none" />
+                    <path
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M12 20V4m-7 7l7-7l7 7"
+                    />
+                  </svg>
+                </div>
+              </div>
+
+              <div class="opendMapLegend">
+                <div class="legendTitle">Ticket prices</div>
+
+                <div class="legendItems" id="legendItems"></div>
               </div>
             </div>
 
-            <div class="opendMapLegend">
-              <div class="legendTitle">Ticket prices</div>
-
-              <div class="legendItems" id="legendItems"></div>
+            <div class="mobileFilterPanel" id="mobileFilterPanel" hidden>
+              <div class="mobileFilterPanelHeader">
+                <span>Filter tickets</span>
+                <button
+                  class="mobileFilterPanelClose"
+                  type="button"
+                  aria-label="Close ticket filter"
+                >
+                  ×
+                </button>
+              </div>
+              <label>
+                Ticket type
+                <select class="fillterByTktType"></select>
+              </label>
             </div>
           </div>
         </div>
@@ -577,6 +620,22 @@
       </div>
     </main>
 
+    <div
+      class="ticketPurchaseDialog"
+      id="ticketPurchaseDialog"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="ticketPurchaseDialogTitle"
+      aria-describedby="ticketPurchaseDialogMessage"
+      hidden
+    >
+      <div class="ticketPurchaseDialogContent">
+        <h2 id="ticketPurchaseDialogTitle"></h2>
+        <p id="ticketPurchaseDialogMessage"></p>
+        <button type="button" id="ticketPurchaseDialogClose">OK</button>
+      </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-config.js"></script>
     <script src="supabase-data.js"></script>
@@ -598,6 +657,109 @@
       const selectTktBtns = document.querySelectorAll(".selectTktBtn");
 
       const closeSelectTkt = document.querySelector(".closeSelectTktContainer");
+
+      const mobileTicketPanelToggle = document.querySelector(
+        ".mobileTicketPanelToggle",
+      );
+      const mobileTicketPanelClose = document.querySelector(
+        ".mobileTicketPanelClose",
+      );
+      const mobileFilterToggle = document.querySelector(".mobileFilterToggle");
+      const mobileFilterPanel = document.querySelector("#mobileFilterPanel");
+      const mobileFilterPanelClose = document.querySelector(
+        ".mobileFilterPanelClose",
+      );
+      const ticketPurchaseDialog = document.querySelector(
+        "#ticketPurchaseDialog",
+      );
+      const ticketPurchaseDialogTitle = document.querySelector(
+        "#ticketPurchaseDialogTitle",
+      );
+      const ticketPurchaseDialogMessage = document.querySelector(
+        "#ticketPurchaseDialogMessage",
+      );
+      const ticketPurchaseDialogClose = document.querySelector(
+        "#ticketPurchaseDialogClose",
+      );
+      let ticketPurchaseDialogReturnFocus = null;
+
+      function closeTicketPurchaseDialog() {
+        if (!ticketPurchaseDialog || ticketPurchaseDialog.hidden) return;
+        ticketPurchaseDialog.hidden = true;
+        ticketPurchaseDialogReturnFocus?.focus?.();
+        ticketPurchaseDialogReturnFocus = null;
+      }
+
+      function showTicketPurchaseDialog(title, message) {
+        if (!ticketPurchaseDialog) return;
+        ticketPurchaseDialogReturnFocus = document.activeElement;
+        ticketPurchaseDialogTitle.textContent = title;
+        ticketPurchaseDialogMessage.textContent = message;
+        ticketPurchaseDialog.hidden = false;
+        ticketPurchaseDialogClose.focus();
+      }
+
+      window.showTicketLimitDialog = () =>
+        showTicketPurchaseDialog(
+          "Ticket limit reached",
+          "You can purchase up to 4 tickets per account.",
+        );
+
+      ticketPurchaseDialogClose?.addEventListener(
+        "click",
+        closeTicketPurchaseDialog,
+      );
+      ticketPurchaseDialog?.addEventListener("click", (event) => {
+        if (event.target === ticketPurchaseDialog) closeTicketPurchaseDialog();
+      });
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") closeTicketPurchaseDialog();
+      });
+
+      function setMobileTicketPanel(open) {
+        selectTktContainer?.classList.toggle("is-mobile-aside-open", open);
+        mobileTicketPanelToggle?.setAttribute("aria-expanded", String(open));
+        if (open) {
+          setMobileFilterPanel(false);
+          setMapLegendOpen(false);
+        }
+      }
+
+      function setMobileFilterPanel(open) {
+        if (!mobileFilterPanel) return;
+        mobileFilterPanel.hidden = !open;
+        mobileFilterToggle?.setAttribute("aria-expanded", String(open));
+        if (open) {
+          setMobileTicketPanel(false);
+          setMapLegendOpen(false);
+        }
+      }
+
+      function setMapLegendOpen(open) {
+        const closedLegend = document.querySelector(".closedMapLegend");
+        const openLegend = document.querySelector(".opendMapLegend");
+        if (!closedLegend || !openLegend) return;
+        closedLegend.style.display = open ? "none" : "block";
+        openLegend.style.display = open ? "block" : "none";
+        if (open) setMobileFilterPanel(false);
+      }
+
+      window.setMapLegendOpen = setMapLegendOpen;
+
+      mobileTicketPanelToggle?.addEventListener("click", () => {
+        setMobileTicketPanel(
+          !selectTktContainer.classList.contains("is-mobile-aside-open"),
+        );
+      });
+      mobileTicketPanelClose?.addEventListener("click", () => {
+        setMobileTicketPanel(false);
+      });
+      mobileFilterToggle?.addEventListener("click", () => {
+        setMobileFilterPanel(mobileFilterPanel?.hidden);
+      });
+      mobileFilterPanelClose?.addEventListener("click", () => {
+        setMobileFilterPanel(false);
+      });
 
       const RESERVATION_DURATION_SECONDS = 10 * 60;
       const RESERVATION_EXPIRY_KEY = "launchReservationExpiry";
@@ -713,6 +875,28 @@
         }
       }
 
+      function exitTicketPurchase({ expired = false } = {}) {
+        document.body.classList.remove("ticket-open");
+        setMobileTicketPanel(false);
+        setMobileFilterPanel(false);
+        setMapLegendOpen(false);
+        eventState.selectedSeat = null;
+        document.querySelector("#confirmDialog").style.display = "none";
+        document.querySelector(".opendMapLegend").style.display = "none";
+        document.querySelector(".closedMapLegend").style.display = "block";
+        stopSelectionCountdown();
+
+        if (expired) {
+          clearStoredSelectionState();
+          showTicketPurchaseDialog(
+            "Reservation expired",
+            "Your reserved tickets were released because the reservation time expired.",
+          );
+        }
+      }
+
+      window.exitTicketPurchase = exitTicketPurchase;
+
       function startSelectionCountdown(
         remainingSeconds = RESERVATION_DURATION_SECONDS,
       ) {
@@ -760,11 +944,7 @@
               confirmDialogElement.style.display = "none";
             }
 
-            basketTickets.length = 0;
-            clearStoredSelectionState();
-            renderBasket();
-            document.body.classList.remove("ticket-open");
-            stopSelectionCountdown();
+            window.handleTicketSelectionExpiry?.();
             return;
           }
 
@@ -786,6 +966,7 @@
             return;
           }
           document.body.classList.add("ticket-open");
+          setMobileTicketPanel(false);
 
           setTimeout(() => {
             renderHallMap();
@@ -795,16 +976,7 @@
       });
 
       closeSelectTkt?.addEventListener("click", () => {
-        document.body.classList.remove("ticket-open");
-
-        if (eventState.selectedSeat) {
-          eventState.selectedSeat = null;
-        }
-
-        const confirmDialogElement = document.querySelector("#confirmDialog");
-        if (confirmDialogElement) {
-          confirmDialogElement.style.display = "none";
-        }
+        exitTicketPurchase();
 
         if (basketTickets.length === 0 && !eventState.countdownId) {
           clearStoredSelectionState();
@@ -993,14 +1165,12 @@
     <script>
       const closedMapLegend = document.querySelector(".closedMapLegend");
       const opendMapLegend = document.querySelector(".opendMapLegend");
-      opendMapLegend.style.display = "none";
+      window.setMapLegendOpen?.(false);
       closedMapLegend.addEventListener("click", () => {
-        closedMapLegend.style.display = "none";
-        opendMapLegend.style.display = "block";
+        window.setMapLegendOpen?.(true);
       });
       opendMapLegend.addEventListener("click", () => {
-        opendMapLegend.style.display = "none";
-        closedMapLegend.style.display = "block";
+        window.setMapLegendOpen?.(false);
       });
     </script>
 
@@ -1052,37 +1222,29 @@
       confirmYes.addEventListener("click", () => {
         if (!eventState.selectedSeat) return;
 
+        if (window.canonicalTicketSeatMap?.hasReachedTicketLimit()) {
+          confirmDialog.style.display = "none";
+          eventState.selectedSeat = null;
+          window.showTicketLimitDialog?.();
+          return;
+        }
+
         const selectedSeat = eventState.selectedSeat;
         const sectionId = selectedSeat.dataset.section;
         const row = Number(selectedSeat.dataset.row);
         const seatNumber = Number(selectedSeat.dataset.seat);
 
-        const section = hallMap.sections.find(
-          (section) => section.id === sectionId,
-        );
-
-        if (!section) return;
-
-        const ticket = selectedBand.tickets[section.ticketType];
-
-        if (!ticket) return;
-
         const ticketData = {
           eventSeatId: selectedSeat.dataset.eventSeatId,
-          section: section.id,
+          section: sectionId,
           row,
           seat: seatNumber,
-          type: ticket.name,
-          price: Number(ticket.price),
-          currency: ticket.currency,
-          serviceFee: Number(ticket.serviceFee || 0),
         };
 
         Promise.resolve(addTicketToBasket(ticketData)).catch((error) => {
           console.error("Unable to reserve seat", error);
           confirmDialog.style.display = "none";
         });
-        selectedSeat.classList.add("selected");
         confirmDialog.style.display = "none";
         eventState.selectedSeat = null;
       });
@@ -1104,6 +1266,10 @@
     <script src="hall-maps/dinamo-arena-seat-map.js"></script>
     <script src="hall-maps/theatre-blueprint.js"></script>
     <script src="hall-maps/theatre-seat-map.js"></script>
+    <script src="hall-maps/silk-factory-studio-blueprint.js"></script>
+    <script src="hall-maps/silk-factory-studio-seat-map.js"></script>
+      <script src="hall-maps/lisi-lemans-blueprint.js"></script>
+      <script src="hall-maps/lisi-lemans-seat-map.js"></script>
     <script src="event-seat-map.js"></script>
   </body>
 </html>

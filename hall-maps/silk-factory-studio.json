@@ -1,0 +1,140 @@
+{
+  "venue": "Silk Factory Studio",
+  "mapKey": "silk-factory-studio",
+  "viewBox": "0 0 1600 900",
+  "stage": {
+    "id": "stage",
+    "label": "STAGE",
+    "shape": "rect",
+    "x": 565,
+    "y": 55,
+    "width": 470,
+    "height": 190,
+    "rx": 28
+  },
+  "sections": [
+    {
+      "key": "left-expensive",
+      "label": "EXPENSIVE",
+      "ticketTier": "Expensive",
+      "shape": "polygon",
+      "points": [
+        [345, 135],
+        [515, 275],
+        [445, 405],
+        [260, 255]
+      ],
+      "seatFlow": { "rows": 7, "direction": "diagonal" }
+    },
+    {
+      "key": "left-medium",
+      "label": "MEDIUM",
+      "ticketTier": "Medium",
+      "shape": "polygon",
+      "points": [
+        [235, 300],
+        [425, 445],
+        [355, 565],
+        [165, 415]
+      ],
+      "seatFlow": { "rows": 6, "direction": "diagonal" }
+    },
+    {
+      "key": "left-cheap",
+      "label": "CHEAP",
+      "ticketTier": "Cheap",
+      "shape": "polygon",
+      "points": [
+        [165, 455],
+        [345, 595],
+        [280, 735],
+        [115, 585]
+      ],
+      "seatFlow": { "rows": 6, "direction": "diagonal" }
+    },
+    {
+      "key": "center-vip",
+      "label": "VIP",
+      "ticketTier": "VIP",
+      "shape": "polygon",
+      "points": [
+        [585, 260],
+        [1015, 260],
+        [1040, 380],
+        [560, 380]
+      ],
+      "seatFlow": { "rows": 5, "direction": "horizontal" }
+    },
+    {
+      "key": "center-medium",
+      "label": "MEDIUM",
+      "ticketTier": "Medium",
+      "shape": "polygon",
+      "points": [
+        [520, 395],
+        [1080, 395],
+        [1120, 560],
+        [480, 560]
+      ],
+      "seatFlow": { "rows": 7, "direction": "horizontal" }
+    },
+    {
+      "key": "center-cheap",
+      "label": "CHEAP",
+      "ticketTier": "Cheap",
+      "shape": "polygon",
+      "points": [
+        [430, 575],
+        [1170, 575],
+        [1220, 760],
+        [380, 760]
+      ],
+      "seatFlow": { "rows": 7, "direction": "horizontal" }
+    },
+    {
+      "key": "right-expensive",
+      "label": "EXPENSIVE",
+      "ticketTier": "Expensive",
+      "shape": "polygon",
+      "points": [
+        [1255, 135],
+        [1085, 275],
+        [1155, 405],
+        [1340, 255]
+      ],
+      "seatFlow": { "rows": 7, "direction": "diagonal" }
+    },
+    {
+      "key": "right-medium",
+      "label": "MEDIUM",
+      "ticketTier": "Medium",
+      "shape": "polygon",
+      "points": [
+        [1365, 300],
+        [1175, 445],
+        [1245, 565],
+        [1435, 415]
+      ],
+      "seatFlow": { "rows": 6, "direction": "diagonal" }
+    },
+    {
+      "key": "right-cheap",
+      "label": "CHEAP",
+      "ticketTier": "Cheap",
+      "shape": "polygon",
+      "points": [
+        [1435, 455],
+        [1255, 595],
+        [1320, 735],
+        [1485, 585]
+      ],
+      "seatFlow": { "rows": 6, "direction": "diagonal" }
+    }
+  ],
+  "tierColors": {
+    "Cheap": "#2878ff",
+    "Medium": "#16a085",
+    "Expensive": "#e63232",
+    "VIP": "#8e44ad"
+  }
+}

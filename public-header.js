@@ -1,11 +1,9 @@
 (() => {
-  const isHome =
-    /(?:^|\/)index\.html$/.test(location.pathname) ||
-    location.pathname.endsWith("/");
   const isDashboard =
     document.body.classList.contains("account-page") ||
     /(?:^|\/)admin-dashboard\.html$/.test(location.pathname);
-  if (isHome || isDashboard) return;
+  if (isDashboard) return;
+
   let header = document.querySelector("header");
   if (!header) {
     header = document.createElement("header");
@@ -13,6 +11,7 @@
   }
   if (header.dataset.publicHeaderReady) return;
   header.dataset.publicHeaderReady = "true";
+
   const isAuthPage =
     document.body.className.includes("auth") ||
     /login|register|verify|reset|forgot/.test(location.pathname);
@@ -26,6 +25,7 @@
     toggle.innerHTML = "<span></span><span></span><span></span>";
     header.append(toggle);
   }
+
   let menu = document.querySelector("#mobileMenu");
   if (!menu) {
     menu = document.createElement("div");
@@ -36,20 +36,38 @@
       '<div class="mobileMenuPanel"><nav class="mobileMenuNav" aria-label="Mobile navigation"><a href="index.html">home</a><a href="shows.html">shows</a><a href="venue.html">venue</a><a href="contact.html">contact</a><a href="profile.html#cart">Cart</a><a href="profile.html">Dashboard</a></nav><div class="mobileMenuSocial"></div><div class="mobileMenuAccount"></div></div>';
     document.body.append(menu);
   }
+
   const panel = menu.querySelector(".mobileMenuPanel");
   const nav = menu.querySelector(".mobileMenuNav");
-  if (nav && !nav.querySelector('[href="profile.html#cart"]'))
+  if (nav && !nav.querySelector('[href="profile.html#cart"]')) {
     nav.insertAdjacentHTML(
       "beforeend",
       '<a href="profile.html#cart">Cart</a><a href="profile.html">Dashboard</a>',
     );
+  }
   let socialSlot = menu.querySelector(".mobileMenuSocial");
-  const account = menu.querySelector(".mobileMenuAccount");
+  let account = menu.querySelector(".mobileMenuAccount");
   if (!socialSlot && panel) {
     socialSlot = document.createElement("div");
     socialSlot.className = "mobileMenuSocial";
     panel.insertBefore(socialSlot, account || null);
   }
+  if (!account && panel) {
+    account = document.createElement("div");
+    account.className = "mobileMenuAccount";
+    panel.append(account);
+  }
+
+  const headerNav = header.querySelector("nav");
+  const headerAuth = document.createElement("a");
+  headerAuth.className = "authNavLink";
+  const headerAccount = document.createElement("a");
+  headerAccount.className = "authNavLink";
+  headerAccount.href = "profile.html";
+  headerAccount.textContent = "account";
+  headerNav?.querySelectorAll(".authNavLink").forEach((link) => link.remove());
+  headerNav?.append(headerAuth, headerAccount);
+
   const social = document.querySelector(".socIcons");
   const socialParent = social?.parentNode;
   const socialNext = social?.nextSibling;
@@ -70,6 +88,51 @@
     cart?.classList.toggle("header-cart-hidden", open || isAuthPage);
     placeSocial(open);
   };
+
+  const renderAuth = (session) => {
+    const signedIn = Boolean(session?.user);
+    headerAuth.textContent = signedIn ? "logout" : "login";
+    headerAuth.href = signedIn ? "#" : "login.html";
+    headerAccount.hidden = !signedIn;
+    account.replaceChildren();
+
+    if (!signedIn) {
+      const login = document.createElement("a");
+      login.href = "login.html";
+      login.textContent = "login";
+      account.append(login);
+      return;
+    }
+
+    const logout = document.createElement("button");
+    logout.type = "button";
+    logout.textContent = "logout";
+    logout.className = "mobileLogoutButton";
+    logout.addEventListener("click", async () => {
+      try {
+        await window.authApi.signOut();
+        setOpen(false);
+        renderAuth(null);
+      } catch (error) {
+        console.error("Logout failed:", error);
+      }
+    });
+    const mobileAccount = document.createElement("a");
+    mobileAccount.href = "profile.html";
+    mobileAccount.textContent = "account";
+    account.append(logout, mobileAccount);
+  };
+
+  headerAuth.addEventListener("click", async (event) => {
+    if (headerAuth.textContent !== "logout") return;
+    event.preventDefault();
+    try {
+      await window.authApi.signOut();
+      renderAuth(null);
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  });
   toggle.addEventListener("click", () =>
     setOpen(!menu.classList.contains("is-open")),
   );
@@ -86,17 +149,16 @@
   });
   placeSocial();
   if (isAuthPage) cart?.classList.add("header-cart-hidden");
-  if (!account) return;
-  const renderAccount = async () => {
-    account.replaceChildren();
-    const client = window.supabaseClient || window.supabase;
-    const { data } = (await client?.auth?.getSession?.()) || {};
-    if (!data?.session?.user) {
-      account.innerHTML =
-        '<a href="login.html">log in</a><a href="register.html">sign up</a>';
-      return;
-    }
-    account.innerHTML = '<a href="profile.html">account</a>';
-  };
-  renderAccount().catch(console.error);
+
+  if (!window.authApi) {
+    renderAuth(null);
+    return;
+  }
+  window.authApi
+    .getSession()
+    .then(renderAuth)
+    .catch(() => renderAuth(null));
+  window.authApi.subscribeToAuthChanges((_event, session) =>
+    renderAuth(session),
+  );
 })();

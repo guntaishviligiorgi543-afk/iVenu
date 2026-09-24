@@ -50,13 +50,11 @@
           Overview
         </button>
         <button data-panel="events" type="button">Events</button>
-        <button data-panel="hero" type="button">Homepage Hero</button>
-        <button data-panel="upcoming-shows" type="button">
-          Upcoming Shows
+        <button data-panel="homepage-content" type="button">
+          Homepage Content
         </button>
         <button data-panel="add-event" type="button">Add Event</button>
         <button data-panel="stats" type="button">Ticket statistics</button>
-        <button data-panel="catalog" type="button">Venue catalog</button>
       </nav>
       <p class="admin-message" id="adminMessage" role="status"></p>
 
@@ -214,103 +212,125 @@
         ></div>
       </section>
 
-      <section class="admin-panel" data-panel="hero">
+      <section class="admin-panel" data-panel="homepage-content">
         <div class="admin-panel-heading">
           <div>
-            <p class="admin-eyebrow">Homepage Hero</p>
-            <h2>Hero events</h2>
+            <p class="admin-eyebrow">Homepage management</p>
+            <h2>Homepage Content</h2>
+            <p>Manage the Hero Slider, Upcoming Shows, and Venue Catalog.</p>
+          </div>
+        </div>
+        <section
+          class="admin-content-block"
+          aria-labelledby="heroContentHeading"
+        >
+          <div class="admin-content-block__heading">
+            <p class="admin-eyebrow">Hero Slider</p>
+            <h3 id="heroContentHeading">Hero events</h3>
             <p>Control which events appear in the homepage slider.</p>
           </div>
-        </div>
-        <form class="admin-form" id="heroForm">
-          <fieldset class="admin-hero-mode">
-            <legend>Hero selection</legend>
-            <label class="admin-check"
-              ><input type="radio" name="hero_mode" value="automatic" checked />
-              Automatic — 3 newest events</label
-            ><label class="admin-check"
-              ><input type="radio" name="hero_mode" value="manual" />
-              Manual</label
-            >
-          </fieldset>
-          <p class="admin-hero-help" id="heroHelp">
-            The three newest active events will be displayed automatically.
-          </p>
-          <div class="admin-form-grid" id="heroSlots" hidden>
-            <label>Slot 1<select name="hero_slot_1"></select></label
-            ><label>Slot 2<select name="hero_slot_2"></select></label
-            ><label>Slot 3<select name="hero_slot_3"></select></label>
-          </div>
-          <div class="admin-form-actions">
-            <button class="auth-submit" type="submit">Save Hero</button>
-          </div>
-        </form>
-      </section>
+          <form class="admin-form" id="heroForm">
+            <fieldset class="admin-hero-mode">
+              <legend>Hero selection</legend>
+              <label class="admin-check"
+                ><input
+                  type="radio"
+                  name="hero_mode"
+                  value="automatic"
+                  checked
+                />
+                Automatic — 3 newest events</label
+              ><label class="admin-check"
+                ><input type="radio" name="hero_mode" value="manual" />
+                Manual</label
+              >
+            </fieldset>
+            <p class="admin-hero-help" id="heroHelp">
+              The three newest active events will be displayed automatically.
+            </p>
+            <div class="admin-form-grid" id="heroSlots" hidden>
+              <label>Slot 1<select name="hero_slot_1"></select></label
+              ><label>Slot 2<select name="hero_slot_2"></select></label
+              ><label>Slot 3<select name="hero_slot_3"></select></label>
+            </div>
+            <div class="admin-form-actions">
+              <button class="auth-submit" type="submit">Save Hero</button>
+            </div>
+          </form>
+        </section>
 
-      <section class="admin-panel" data-panel="upcoming-shows">
-        <div class="admin-panel-heading">
-          <div>
+        <section
+          class="admin-content-block"
+          aria-labelledby="upcomingShowsHeading"
+        >
+          <div class="admin-content-block__heading">
             <p class="admin-eyebrow">Homepage accordion</p>
-            <h2>Upcoming Shows</h2>
-            <p>Choose which real events appear in the homepage accordion.</p>
+            <h3 id="upcomingShowsHeading">Upcoming Shows</h3>
+            <p>Automatically displays the nearest active future events.</p>
           </div>
-        </div>
-        <form class="admin-form" id="upcomingShowsForm">
-          <fieldset class="admin-hero-mode">
-            <legend>Display mode</legend>
-            <label class="admin-check"
-              ><input
-                type="radio"
-                name="upcoming_mode"
-                value="latest_added"
-                checked
-              />
-              Latest Added</label
-            >
-            <label class="admin-check"
-              ><input
-                type="radio"
-                name="upcoming_mode"
-                value="most_added_to_cart"
-              />
-              Most Added to Cart</label
-            >
-            <label class="admin-check"
-              ><input type="radio" name="upcoming_mode" value="best_selling" />
-              Best Selling</label
-            >
-            <label class="admin-check"
-              ><input
-                type="radio"
-                name="upcoming_mode"
-                value="custom_selection"
-              />
-              Custom Selection</label
-            >
-          </fieldset>
-          <p class="admin-hero-help" id="upcomingShowsHelp"></p>
-          <div id="upcomingShowsAutomatic"></div>
-          <div id="upcomingShowsCustom" hidden>
-            <label
-              >Find eligible events<input
-                id="upcomingShowsSearch"
-                type="search"
-                placeholder="Search title, date, venue or category"
-                autocomplete="off"
+          <form class="admin-form" id="upcomingShowsForm">
+            <label class="admin-hero-limit"
+              >Upcoming Shows count<input
+                id="upcomingShowsLimit"
+                type="number"
+                min="1"
+                step="1"
+                inputmode="numeric"
+                required
             /></label>
-            <div class="upcoming-shows-results" id="upcomingShowsResults"></div>
-            <p class="admin-hero-help" id="upcomingShowsCount"></p>
-            <div
-              class="upcoming-shows-selected"
-              id="upcomingShowsSelected"
-            ></div>
+            <p class="admin-hero-help" id="upcomingShowsHelp"></p>
+            <div id="upcomingShowsAutomatic"></div>
+            <div class="admin-form-actions">
+              <button class="auth-submit" type="submit">
+                Save Upcoming Shows
+              </button>
+            </div>
+          </form>
+        </section>
+
+        <section
+          class="admin-content-block"
+          aria-labelledby="venueCatalogHeading"
+        >
+          <div class="admin-content-block__heading">
+            <p class="admin-eyebrow">Venue gallery</p>
+            <h3 id="venueCatalogHeading">Venue Catalog</h3>
           </div>
-          <div class="admin-form-actions">
-            <button class="auth-submit" type="submit">
-              Save Upcoming Shows
+          <form class="admin-form" id="catalogForm">
+            <input type="hidden" name="id" />
+            <label
+              >Image URL<input name="image_url" type="url" required
+            /></label>
+            <label
+              >Display order<input
+                name="display_order"
+                type="number"
+                min="1"
+                required
+            /></label>
+            <div class="admin-form-actions">
+              <button class="auth-submit" type="submit">Save image</button>
+              <button
+                class="admin-outline"
+                id="cancelCatalogEdit"
+                type="button"
+                hidden
+              >
+                Cancel edit
+              </button>
+            </div>
+          </form>
+          <div class="admin-catalog-grid" id="catalogList"></div>
+          <div class="admin-catalog-more" id="catalogMore" hidden>
+            <button
+              class="admin-catalog-more-button"
+              id="catalogMoreButton"
+              type="button"
+            >
+              See More
             </button>
           </div>
-        </form>
+        </section>
       </section>
 
       <section class="admin-panel event-editor-panel" data-panel="add-event">
@@ -728,47 +748,6 @@
           aria-label="Ticket statistics pagination"
         ></div>
       </section>
-
-      <section class="admin-panel" data-panel="catalog">
-        <div class="admin-panel-heading">
-          <div>
-            <p class="admin-eyebrow">Venue gallery</p>
-            <h2>Venue catalog</h2>
-          </div>
-        </div>
-        <form class="admin-form" id="catalogForm">
-          <input type="hidden" name="id" />
-          <label>Image URL<input name="image_url" type="url" required /></label>
-          <label
-            >Display order<input
-              name="display_order"
-              type="number"
-              min="1"
-              required
-          /></label>
-          <div class="admin-form-actions">
-            <button class="auth-submit" type="submit">Save image</button>
-            <button
-              class="admin-outline"
-              id="cancelCatalogEdit"
-              type="button"
-              hidden
-            >
-              Cancel edit
-            </button>
-          </div>
-        </form>
-        <div class="admin-catalog-grid" id="catalogList"></div>
-        <div class="admin-catalog-more" id="catalogMore" hidden>
-          <button
-            class="admin-catalog-more-button"
-            id="catalogMoreButton"
-            type="button"
-          >
-            See More
-          </button>
-        </div>
-      </section>
     </main>
     <dialog
       class="admin-map-preview"
@@ -808,6 +787,10 @@
     <script src="hall-maps/black-sea-arena-blueprint.js"></script>
     <script src="hall-maps/dinamo-arena-blueprint.js"></script>
     <script src="hall-maps/theatre-blueprint.js"></script>
+    <script src="hall-maps/silk-factory-studio-blueprint.js"></script>
+    <script src="hall-maps/silk-factory-studio-seat-map.js"></script>
+    <script src="hall-maps/lisi-lemans-blueprint.js"></script>
+    <script src="hall-maps/lisi-lemans-seat-map.js"></script>
     <script src="admin-dashboard.js"></script>
   </body>
 </html>

@@ -1649,6 +1649,143 @@ header nav .authNavLink[hidden] {
   background: rgba(255, 255, 255, 0.025);
 }
 
+.account-page .cart-event-item {
+  display: grid;
+  grid-template-columns: clamp(104px, 15vw, 154px) minmax(0, 1fr) auto;
+  align-items: stretch;
+  gap: 18px;
+  padding: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.025);
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease;
+}
+
+.account-page .cart-event-item:hover {
+  border-color: rgba(255, 148, 117, 0.5);
+  background: rgba(255, 148, 117, 0.06);
+}
+
+.account-page .cart-event-image {
+  display: grid;
+  min-width: 0;
+  min-height: 112px;
+  overflow: hidden;
+  place-items: center;
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.48);
+  background: rgba(0, 0, 0, 0.28);
+  font-family: "Fjalla One", Impact, sans-serif;
+}
+
+.account-page .cart-event-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.account-page .cart-event-info {
+  display: grid;
+  min-width: 0;
+  align-content: center;
+  gap: 5px;
+}
+
+.account-page .cart-event-info h3,
+.account-page .cart-event-info p {
+  margin: 0;
+}
+
+.account-page #cartList .cart-event-info p {
+  margin: 0;
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.account-page .cart-event-info h3 {
+  color: #fff;
+  font-family: "Fjalla One", Impact, sans-serif;
+  font-size: clamp(1.1rem, 2vw, 1.45rem);
+  font-weight: 400;
+  line-height: 1.1;
+  overflow-wrap: anywhere;
+}
+
+.account-page .cart-event-meta {
+  color: rgba(255, 255, 255, 0.58);
+  font-size: 0.82rem;
+}
+
+.account-page .cart-event-ticket-list {
+  display: grid;
+  gap: 6px;
+  margin-top: 7px;
+}
+
+.account-page .cart-event-ticket {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 12px;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.82rem;
+}
+
+.account-page .cart-event-ticket span,
+.account-page .cart-event-ticket strong,
+.account-page .cart-event-ticket small {
+  display: block;
+}
+
+.account-page .cart-event-ticket small {
+  margin-top: 2px;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.76rem;
+}
+
+.account-page .cart-event-actions {
+  display: grid;
+  align-content: center;
+  justify-items: end;
+  gap: 7px;
+  min-width: max-content;
+}
+
+@media (max-width: 680px) {
+  .account-page .cart-event-item {
+    grid-template-columns: 92px minmax(0, 1fr);
+    gap: 14px;
+  }
+
+  .account-page .cart-event-image {
+    min-height: 92px;
+  }
+
+  .account-page .cart-event-actions {
+    grid-column: 2;
+    justify-items: start;
+    min-width: 0;
+  }
+}
+
+@media (max-width: 430px) {
+  .account-page .cart-event-item {
+    grid-template-columns: 1fr;
+  }
+
+  .account-page .cart-event-image {
+    min-height: 0;
+    aspect-ratio: 16 / 8;
+  }
+
+  .account-page .cart-event-actions {
+    grid-column: auto;
+    justify-items: start;
+  }
+}
+
 .account-page .section-count {
   padding: 6px 9px;
   border: 1px solid rgba(255, 255, 255, 0.11);
@@ -2714,8 +2851,7 @@ header nav .authNavLink[hidden] {
   font-weight: 400;
   line-height: 1.12;
   -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  overflow: hidden;
+   overflow: hidden;
   overflow-wrap: anywhere;
 }
 

@@ -1,5 +1,9 @@
 (() => {
   const client = window.supabaseClient;
+  const cartChannel =
+    typeof BroadcastChannel === "function"
+      ? new BroadcastChannel("ivenue-event-cart")
+      : null;
   const escapeHtml = (value) =>
     String(value ?? "")
       .replaceAll("&", "&amp;")
@@ -90,6 +94,10 @@
     return rows;
   }
 
+  function broadcastChange() {
+    cartChannel?.postMessage({ type: "cart-changed" });
+  }
+
   async function addEvent(eventId) {
     const session = await window.authApi.getSession();
     if (!session?.user)
@@ -99,12 +107,18 @@
       throw new Error("No tickets are available for this event.");
     await window.cartSync.syncTicket(tickets[0].id, 1);
     await render();
+    broadcastChange();
     return true;
   }
 
   async function hasEvent(eventId) {
     const rows = await getRows();
     return rows.some((item) => String(item.event.id) === String(eventId));
+  }
+
+  async function getEventIds() {
+    const rows = await getRows();
+    return rows.map((item) => String(item.event.id));
   }
 
   async function remove(eventId) {
@@ -126,6 +140,7 @@
     const { error } = await query;
     if (error) throw error;
     await render();
+    broadcastChange();
   }
 
   async function removeEvent(eventId) {
@@ -147,6 +162,7 @@
       if (error) throw error;
     }
     await render();
+    broadcastChange();
     return true;
   }
 
@@ -186,7 +202,19 @@
     }
   });
 
-  window.eventCart = { addEvent, hasEvent, removeEvent, render, createUi };
+  window.eventCart = {
+    addEvent,
+    hasEvent,
+    getEventIds,
+    removeEvent,
+    render,
+    broadcastChange,
+    createUi,
+  };
+  cartChannel?.addEventListener("message", (event) => {
+    if (event.data?.type !== "cart-changed") return;
+    render().catch((error) => console.error(error));
+  });
   createUi();
   render().catch((error) => console.error(error));
   window.addEventListener("focus", () =>

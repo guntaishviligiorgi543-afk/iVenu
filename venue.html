@@ -10,10 +10,8 @@
     <link rel="stylesheet" href="auth.css" />
   </head>
   <style>
- 
     * {
       box-sizing: border-box;
-       
     }
 
     html {
@@ -213,7 +211,7 @@
     .img-line-top {
       position: absolute;
 
-      top: -15px;
+      top: 0;
       right: 0;
 
       width: 300px;
@@ -227,7 +225,7 @@
     .img-line-right {
       position: absolute;
 
-      top: -15px;
+      top: 0px;
       right: -15px;
 
       width: 15px;
@@ -1016,11 +1014,21 @@
       }
 
       .img-Par p {
-        left: -7%;
+        left: calc(10% + clamp(16px, 3vw, 40px));
 
-        width: min(340px, 48%);
+        right: 16px;
 
-        font-size: 16px;
+        bottom: clamp(16px, 28%, 50%);
+
+        width: auto;
+
+        max-width: 340px;
+
+        font-size: clamp(0.9rem, 1.9vw, 1rem);
+
+        line-height: 1.5;
+
+        z-index: 1;
       }
 
       /* =======================================================
@@ -1190,21 +1198,27 @@
       }
 
       .img-Par p {
-        position: static;
+        position: absolute;
 
-        width: 100%;
+        right: 15px;
 
-        max-width: 520px;
+        bottom: clamp(12px, 12%, 36px);
+
+        left: clamp(12px, 4vw, 28px);
+
+        width: auto;
+
+        max-width: 340px;
 
         margin: 0;
 
-        color: #000;
+        color: #fff;
 
-        font-size: 16px;
+        font-size: clamp(0.72rem, 2.7vw, 0.95rem);
 
-        line-height: 1.6;
+        line-height: 1.4;
 
-        text-shadow: none;
+        text-shadow: 2px 2px rgb(0, 0, 0);
       }
 
       /* =======================================================
@@ -1357,13 +1371,19 @@
       }
 
       .img-Par p {
-        width: 100%;
+        bottom: clamp(10px, 10%, 24px);
+
+        right: 12px;
+
+        left: 12px;
+
+        width: auto;
 
         max-width: none;
 
-        font-size: 15px;
+        font-size: clamp(0.72rem, 3.2vw, 0.88rem);
 
-        line-height: 1.6;
+        line-height: 1.35;
       }
 
       /* =======================================================
@@ -1827,8 +1847,8 @@
             <span class="about-title__pattern"></span>
           </h1>
           <div class="img-Par">
-            <div class="img">'
-              3'
+            <div class="img">
+              ' 3'
               <img
                 src="https://static.wixstatic.com/media/ea71bb_18e4ed30a3964208a297ab5f76c85930~mv2_d_4217_2758_s_4_2.jpg/v1/fill/w_1478,h_946,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/ea71bb_18e4ed30a3964208a297ab5f76c85930~mv2_d_4217_2758_s_4_2.jpg"
                 alt=""
