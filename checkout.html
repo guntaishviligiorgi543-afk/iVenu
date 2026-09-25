@@ -1,0 +1,470 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>i venue | checkout</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      text-decoration: none;
+      list-style: none;
+      border: none;
+      background: none;
+    }
+    button,
+    input {
+      cursor: pointer;
+    }
+    :root {
+      --peach: #f3b391;
+      --peach-dark: #e99a73;
+      --peach-light: #fff1e9;
+      --cream: #fffaf7;
+      --white: #ffffff;
+      --black: #171717;
+      --gray: #747474;
+      --border: #eaded8;
+    }
+
+    body {
+      min-height: 100vh;
+      background: var(--cream);
+      color: var(--black);
+      font-family: "Inter", sans-serif;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* =========================
+   HEADER
+========================= */
+
+    header {
+      width: 100%;
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+    }
+
+    nav {
+      width: min(92%, 1250px);
+      height: 90px;
+      margin: 0 auto;
+
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo img {
+      width: 145px;
+      display: block;
+    }
+
+    nav button {
+      border: 1px solid var(--black);
+      background: transparent;
+      color: var(--black);
+
+      padding: 11px 22px;
+      font-size: 14px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+
+      cursor: pointer;
+      transition: 0.25s ease;
+    }
+
+    nav button:hover {
+      background: var(--black);
+      color: var(--white);
+    }
+
+    /* =========================
+   MAIN
+========================= */
+
+    main {
+      flex: 1;
+      width: 100%;
+      padding: 70px 20px;
+    }
+
+    .checkout {
+      width: min(100%, 1150px);
+      margin: 0 auto;
+
+      display: grid;
+      grid-template-columns: 1.5fr 0.8fr;
+      gap: 60px;
+      align-items: start;
+    }
+
+    .checkout[hidden] {
+      display: none;
+    }
+
+    .checkoutStatus {
+      width: min(92%, 520px);
+      margin: 50px auto;
+      text-align: center;
+      color: var(--gray);
+    }
+
+    .reservationTimer {
+      margin: -10px 0 24px;
+      color: var(--gray);
+      font-size: 14px;
+    }
+
+    .reservationTimer.warning {
+      color: #b42318;
+      font-weight: 700;
+    }
+
+    .summaryItems {
+      display: grid;
+      gap: 12px;
+    }
+    .summaryItem {
+      display: grid;
+      gap: 4px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #ddc7bb;
+    }
+    .summaryItem span {
+      font-size: 12px;
+      color: var(--gray);
+    }
+    .summaryItem strong {
+      justify-self: end;
+    }
+
+    .checkoutNotice {
+      margin-top: 16px;
+      color: var(--gray);
+      font-size: 13px;
+    }
+
+    /* =========================
+   LEFT SIDE
+========================= */
+
+    .leftSide {
+      background: var(--white);
+      padding: 45px;
+      border: 1px solid var(--border);
+      box-shadow: 0 15px 40px rgba(33, 20, 14, 0.06);
+    }
+
+    .leftSide h1 {
+      font-size: clamp(32px, 4vw, 48px);
+      line-height: 1;
+      margin-bottom: 40px;
+      letter-spacing: -2px;
+    }
+
+    .leftSide h1::after {
+      content: "";
+      display: block;
+      width: 55px;
+      height: 4px;
+      margin-top: 16px;
+      background: var(--peach);
+    }
+
+    /* =========================
+   FORM
+========================= */
+
+    form {
+      display: flex;
+      flex-direction: column;
+    }
+
+    form label {
+      margin-bottom: 8px;
+      color: var(--black);
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    form input,
+    form textarea {
+      width: 100%;
+      margin-bottom: 24px;
+      padding: 15px 16px;
+
+      border: 1px solid var(--border);
+      outline: none;
+
+      background: #fffdfc;
+      color: var(--black);
+
+      font-family: inherit;
+      font-size: 15px;
+
+      transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease,
+        background 0.2s ease;
+    }
+
+    form textarea {
+      min-height: 110px;
+      resize: vertical;
+    }
+
+    form input:focus,
+    form textarea:focus {
+      border-color: var(--peach-dark);
+      background: var(--white);
+      box-shadow: 0 0 0 3px rgba(243, 179, 145, 0.16);
+    }
+
+    /* PLACE ORDER */
+
+    form button {
+      width: 100%;
+      margin-top: 5px;
+      padding: 17px 20px;
+
+      border: none;
+      background: var(--peach);
+      color: var(--black);
+
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+
+      cursor: pointer;
+      transition:
+        background 0.25s ease,
+        transform 0.25s ease,
+        box-shadow 0.25s ease;
+    }
+
+    form button:hover {
+      background: var(--peach-dark);
+      box-shadow: 0 10px 25px rgba(233, 154, 115, 0.25);
+    }
+
+    form button:active {
+      transform: translateY(0);
+    }
+
+    .rightSide {
+      background: var(--peach-light);
+      padding: 35px;
+      border: 1px solid #f0d7c9;
+      position: sticky;
+      top: 30px;
+    }
+
+    .rightSide h2 {
+      font-size: 24px;
+      margin-bottom: 30px;
+      letter-spacing: -0.7px;
+    }
+
+    .order-summary {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .order-summary p {
+      font-size: 14px;
+      color: #454545;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .order-summary hr {
+      border: 0;
+      height: 1px;
+      background: #ddc7bb;
+      margin: 5px 0;
+    }
+
+    /* TOTAL */
+
+    .order-summary p:last-child {
+      color: var(--black);
+      font-size: 20px;
+      font-weight: 700;
+      margin-top: 4px;
+    }
+
+    /* =========================
+   FOOTER
+========================= */
+
+    footer {
+      width: 100%;
+      padding: 25px 20px;
+      background: var(--black);
+      color: #d9d9d9;
+      text-align: center;
+    }
+
+    footer p {
+      font-size: 12px;
+      letter-spacing: 0.4px;
+    }
+
+    /* =========================
+   RESPONSIVE
+========================= */
+
+    @media (max-width: 900px) {
+      main {
+        padding: 45px 20px;
+      }
+
+      .checkout {
+        grid-template-columns: 1fr;
+        gap: 25px;
+      }
+
+      .rightSide {
+        position: static;
+        grid-row: 1;
+      }
+
+      .leftSide {
+        grid-row: 2;
+      }
+    }
+
+    @media (max-width: 600px) {
+      nav {
+        width: calc(100% - 30px);
+        height: 75px;
+      }
+
+      .logo img {
+        width: 115px;
+      }
+
+      nav button {
+        padding: 9px 14px;
+        font-size: 11px;
+      }
+
+      main {
+        padding: 25px 15px 40px;
+      }
+
+      .checkout {
+        gap: 18px;
+      }
+
+      .leftSide,
+      .rightSide {
+        padding: 25px 20px;
+      }
+
+      .leftSide h1 {
+        font-size: 34px;
+        margin-bottom: 30px;
+      }
+
+      .rightSide h2 {
+        font-size: 21px;
+        margin-bottom: 22px;
+      }
+
+      form input,
+      form textarea {
+        padding: 14px;
+        margin-bottom: 20px;
+      }
+    }
+
+    @media (max-width: 380px) {
+      .leftSide,
+      .rightSide {
+        padding: 22px 16px;
+      }
+
+      .logo img {
+        width: 100px;
+      }
+    }
+  </style>
+  <body>
+    <header>
+      <nav>
+        <button type="button" id="goBack">go back</button>
+        <div class="logo">
+          <img src="images/logo.png" alt="i venue logo" />
+        </div>
+      </nav>
+    </header>
+
+    <main>
+      <p class="checkoutStatus" id="checkoutStatus" role="status">
+        Validating your reserved tickets…
+      </p>
+      <section class="checkout" id="checkoutContent" hidden aria-busy="true">
+        <div class="leftSide">
+          <h1>Checkout</h1>
+          <p class="reservationTimer" id="reservationTimer" hidden></p>
+          <form id="checkoutForm" novalidate>
+            <label for="name">Full Name:</label>
+            <input
+              type="text"
+              id="name"
+              name="name"
+              autocomplete="name"
+              required
+            />
+
+            <label for="email">Email Address:</label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              autocomplete="email"
+              required
+            />
+
+            <button type="submit" id="placeOrder">Place Order</button>
+          </form>
+          <p class="checkoutNotice" id="checkoutNotice">
+            Payment is not configured yet. No card details are collected or
+            stored.
+          </p>
+        </div>
+        <div class="rightSide">
+          <h2>Order Summary</h2>
+          <div class="order-summary">
+            <div class="summaryItems" id="summaryItems"></div>
+            <hr />
+            <p><span>Subtotal</span><strong id="subtotal">₾0.00</strong></p>
+            <p><span>Total</span><strong id="total">₾0.00</strong></p>
+          </div>
+        </div>
+      </section>
+    </main>
+    <footer>
+      <p>&copy; 2023 i venue. All rights reserved.</p>
+    </footer>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <script src="auth.js"></script>
+    <script src="checkout.js"></script>
+  </body>
+</html>

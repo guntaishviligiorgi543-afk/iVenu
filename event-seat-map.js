@@ -1032,15 +1032,39 @@
       seatState.isCheckingOut = true;
       button.disabled = true;
       try {
-        const { data: orderId, error } = await client.rpc(
-          "checkout_reserved_event_seats",
-        );
+        const session = await window.authApi?.getSession();
+        if (!session?.user) {
+          window.location.assign("login.html");
+          return;
+        }
+        if (!selectedBand?.id) throw new Error("This event is unavailable.");
+
+        // Keep the checkout boundary event-specific.  The database remains the
+        // source of truth: a local basket can never authorize checkout.
+        const now = new Date().toISOString();
+        const { data, error } = await client
+          .from("cart_items")
+          .select(
+            "event_seat_id, event_seats!inner(status, reserved_until, event_id)",
+          )
+          .eq("user_id", session.user.id)
+          .eq("event_seats.event_id", selectedBand.id)
+          .eq("event_seats.reserved_by", session.user.id)
+          .eq("event_seats.status", "reserved")
+          .gt("event_seats.reserved_until", now)
+          .not("event_seat_id", "is", null);
         if (error) throw error;
-        await loadEventSeatMap();
-        window.alert(`Order ${String(orderId).slice(0, 8)} confirmed.`);
+        if (!data?.length) {
+          await loadEventSeatMap();
+          window.alert("Select currently reserved tickets before checking out.");
+          return;
+        }
+        window.location.assign(
+          `checkout.html?event=${encodeURIComponent(selectedBand.id)}`,
+        );
       } catch (error) {
-        console.error("Checkout failed", error);
-        window.alert(error.message || "Checkout could not be completed.");
+        console.error("Checkout access validation failed", error);
+        window.alert(error.message || "Checkout could not be opened.");
       } finally {
         seatState.isCheckingOut = false;
         button.disabled = false;
