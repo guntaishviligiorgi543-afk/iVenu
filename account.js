@@ -37,6 +37,7 @@
   const ordersCount = document.querySelector("#ordersCount");
   const cartCount = document.querySelector("#cartCount");
   const logoutButton = document.querySelector("#dashboardLogout");
+  let avatarPreviewUrl = "";
 
   function setMessage(text, type = "", target = message) {
     target.className = `auth-message ${type}`;
@@ -398,6 +399,23 @@
     const session = await window.authApi.getSession();
     if (!session?.user) return;
 
+    const submitButton = form.querySelector('button[type="submit"]');
+    const avatarFile = form.elements.avatarFile?.files?.[0];
+    if (avatarFile) {
+      try {
+        submitButton.disabled = true;
+        setMessage("Uploading avatar...");
+        const { publicUrl } = await window.iVenueImageUpload.upload(
+          avatarFile,
+          `avatars/${session.user.id}`,
+        );
+        form.elements.avatarUrl.value = publicUrl;
+      } catch (error) {
+        setMessage(error.message || "Avatar upload failed.", "error");
+        submitButton.disabled = false;
+        return;
+      }
+    }
     const values = new FormData(form);
     setMessage("Saving profile...");
 
@@ -417,6 +435,7 @@
         "Profile could not be saved by the current RLS policy.",
         "error",
       );
+      submitButton.disabled = false;
       return;
     }
 
@@ -429,6 +448,26 @@
     form.hidden = true;
     editProfileButton.hidden = false;
     setMessage("Profile saved.", "success");
+    if (avatarPreviewUrl) {
+      window.iVenueImageUpload.revoke(avatarPreviewUrl);
+      avatarPreviewUrl = "";
+    }
+    submitButton.disabled = false;
+  });
+
+  form.elements.avatarFile?.addEventListener("change", () => {
+    const file = form.elements.avatarFile.files?.[0];
+    if (!file) return;
+    try {
+      if (avatarPreviewUrl) window.iVenueImageUpload.revoke(avatarPreviewUrl);
+      avatarPreviewUrl = window.iVenueImageUpload.preview(file);
+      profileAvatar.style.backgroundImage = `url("${avatarPreviewUrl}")`;
+      profileAvatar.classList.add("has-image");
+      profileAvatar.textContent = "";
+    } catch (error) {
+      form.elements.avatarFile.value = "";
+      setMessage(error.message, "error");
+    }
   });
 
   securityForm.addEventListener("submit", async (event) => {

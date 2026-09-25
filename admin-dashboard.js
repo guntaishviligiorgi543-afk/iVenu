@@ -1413,6 +1413,20 @@
   }
 
   async function saveEvent() {
+    const imageFile = document.querySelector("#eventImageFile")?.files?.[0];
+    if (imageFile) {
+      setWizardMessage("Uploading event image...");
+      const eventFolder = form.elements.id.value
+        ? `events/${form.elements.id.value}`
+        : "events/drafts";
+      const { publicUrl } = await window.iVenueImageUpload.upload(
+        imageFile,
+        eventFolder,
+      );
+      form.elements.image_url.value = publicUrl;
+      updateImagePreview();
+      setWizardMessage("");
+    }
     const values = new FormData(form);
     const eventId = String(values.get("id") || "").trim();
     const isEdit = Boolean(eventId);
@@ -2243,6 +2257,34 @@
     )
       updatePlacementControls();
   });
+  document.querySelector("#eventImageFile")?.addEventListener("change", (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    try {
+      const objectUrl = window.iVenueImageUpload.preview(file);
+      eventImagePreviewImage.src = objectUrl;
+    } catch (error) {
+      event.target.value = "";
+      setWizardMessage(error.message || "Image could not be selected.");
+    }
+  });
+  catalogForm.elements.image_file?.addEventListener("change", (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    try {
+      const objectUrl = window.iVenueImageUpload.preview(file);
+      catalogForm.elements.image_url.value = "";
+      setMessage("Catalog image selected and ready to upload.");
+      catalogDialog.querySelector(".catalog-upload-preview")?.remove();
+      catalogDialog.querySelector("h2").insertAdjacentHTML(
+        "afterend",
+        `<img class="catalog-upload-preview" src="${objectUrl}" alt="Selected catalog preview" />`,
+      );
+    } catch (error) {
+      event.target.value = "";
+      setMessage(error.message || "Image could not be selected.", "error");
+    }
+  });
   form.addEventListener("change", () => {
     state.wizardDirty = true;
   });
@@ -2316,7 +2358,25 @@
   });
   catalogForm.addEventListener("submit", async (event) => {
     event.preventDefault();
+    const imageFile = catalogForm.elements.image_file?.files?.[0];
+    const submitButton = catalogForm.querySelector('button[type="submit"]');
+    if (imageFile) {
+      try {
+        submitButton.disabled = true;
+        const { publicUrl } = await window.iVenueImageUpload.upload(imageFile, "catalog");
+        catalogForm.elements.image_url.value = publicUrl;
+      } catch (error) {
+        setMessage(error.message || "Catalog image upload failed.", "error");
+        submitButton.disabled = false;
+        return;
+      }
+    }
     const values = new FormData(catalogForm);
+    if (!String(values.get("image_url") || "").trim()) {
+      setMessage("Provide an image URL or choose an image to upload.", "error");
+      submitButton.disabled = false;
+      return;
+    }
     const payload = {
       image_url: values.get("image_url").trim(),
       display_order: Number(values.get("display_order")),
@@ -2336,6 +2396,8 @@
     } catch (error) {
       console.error(error);
       setMessage(error.message || "Catalog image could not be saved.", "error");
+    } finally {
+      submitButton.disabled = false;
     }
   });
   catalogList.addEventListener("click", async (event) => {

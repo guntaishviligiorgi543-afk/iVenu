@@ -1034,6 +1034,15 @@
 
 .homepage-catalog-dialog .admin-form { display: grid; gap: 16px; }
 
+.catalog-upload-preview {
+  display: block;
+  width: min(100%, 280px);
+  aspect-ratio: 4 / 3;
+  margin: 0 auto;
+  border-radius: 6px;
+  object-fit: cover;
+}
+
 .admin-catalog-more {
   display: flex;
   justify-content: center;
