@@ -41,6 +41,13 @@
   if (isAuthMenuLayerPage && menu.parentElement !== header) header.append(menu);
 
   const panel = menu.querySelector(".mobileMenuPanel");
+  if (panel && !panel.querySelector(".mobileMenuHeader")) {
+    panel.insertAdjacentHTML(
+      "afterbegin",
+      '<div class="mobileMenuHeader"><a class="mobileMenuLogo" href="index.html" aria-label="iVenue home"><img src="assets/ivenue-logo.png" alt="iVenue" /></a><button class="mobileMenuClose" type="button" aria-label="Close menu">&times;</button></div>',
+    );
+  }
+  const menuClose = panel?.querySelector(".mobileMenuClose");
   const nav = menu.querySelector(".mobileMenuNav");
   if (nav && !nav.querySelector('[href="profile.html#cart"]')) {
     nav.insertAdjacentHTML(
@@ -110,6 +117,7 @@
     }
     placeSocial(open);
   };
+  menuClose?.addEventListener("click", () => setOpen(false));
 
   let authRenderId = 0;
   const renderAuth = async (session) => {
