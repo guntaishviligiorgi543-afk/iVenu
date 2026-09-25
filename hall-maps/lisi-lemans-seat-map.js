@@ -467,6 +467,7 @@
       const placement = positions(section, bySection.get(section.id) || []);
       const group = svg("g");
       group.classList.add("lisi-lemans-seats");
+      const fragment = document.createDocumentFragment();
       placement.items.forEach(({ row, x, y }) => {
         const seat = svg("circle");
         const selected = selectedIds.has(row.event_seat_id);
@@ -488,9 +489,10 @@
           role: "button",
           "aria-label": `${row.section_name}, row ${row.row_number}, seat ${row.seat_number}, ${row.ticket_type_name}, ₾${row.price}`,
         });
-        group.appendChild(seat);
+        fragment.appendChild(seat);
         assigned.push(row.event_seat_id);
       });
+      group.appendChild(fragment);
       sectionGroup.appendChild(group);
       target.appendChild(sectionGroup);
       sectionDiagnostics.push({

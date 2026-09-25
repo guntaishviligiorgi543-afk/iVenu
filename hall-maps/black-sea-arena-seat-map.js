@@ -2,6 +2,7 @@
   "use strict";
 
   const SVG_NS = "http://www.w3.org/2000/svg";
+  const RENDER_BATCH_SIZE = 180;
   const blueprint = window.blackSeaArenaBlueprint;
   if (!blueprint) return;
 
@@ -126,11 +127,13 @@
     return { positions, radius: Math.max(0.85, Math.min(5, smallestGap * 0.34)) };
   }
 
-  function renderSeats(svg, section, seats, color, selectedIds) {
+  async function renderSeats(svg, section, seats, color, selectedIds) {
     const placement = seatPositions(section, seats);
     const group = createSvg("g");
     group.classList.add("black-sea-arena-seats");
-    placement.positions.forEach(({ row, x, y }) => {
+    const fragment = document.createDocumentFragment();
+    for (let index = 0; index < placement.positions.length; index += 1) {
+      const { row, x, y } = placement.positions[index];
       const seat = createSvg("circle");
       const selected = selectedIds.has(row.event_seat_id);
       seat.classList.add("seat", "is-visible");
@@ -148,8 +151,11 @@
         role: "button",
         "aria-label": `${row.section_name}, row ${row.row_number}, seat ${row.seat_number}, ${row.ticket_type_name}, ₾${row.price}`,
       });
-      group.appendChild(seat);
-    });
+      fragment.appendChild(seat);
+      if ((index + 1) % RENDER_BATCH_SIZE === 0)
+        await new Promise((resolve) => requestAnimationFrame(resolve));
+    }
+    group.appendChild(fragment);
     svg.appendChild(group);
     return placement.positions.length;
   }
@@ -226,7 +232,7 @@
     return diagnostics;
   }
 
-  function render({ stageMap, rows, ticketTypes, colors, selectedIds }) {
+  async function render({ stageMap, rows, ticketTypes, colors, selectedIds }) {
     const diagnostics = buildBindingDiagnostics(rows, ticketTypes);
     const { sectionsByTicketType, ticketById } = resolveSectionsByTicketType(ticketTypes, diagnostics);
     const rowsByTicketType = new Map();
@@ -254,14 +260,15 @@
     stageLabel.textContent = "STAGE";
     svg.appendChild(stageLabel);
 
-    [...sectionsByTicketType.entries()].forEach(([ticketTypeId, sections]) => {
+    for (const [ticketTypeId, sections] of sectionsByTicketType.entries()) {
       const canonicalRows = (rowsByTicketType.get(ticketTypeId) || []).sort(stableSeatSort);
       const allocations = allocateByWeight(canonicalRows.length, sections.map((section) => polygonArea(section.polygon)));
       if (allocations.reduce((sum, allocation) => sum + allocation, 0) !== canonicalRows.length) {
         bindingError(`Black Sea Arena allocation did not total the canonical seat count for ticket type UUID ${ticketTypeId}.`, diagnostics);
       }
       let offset = 0;
-      sections.forEach((section, index) => {
+      for (let index = 0; index < sections.length; index += 1) {
+        const section = sections[index];
         const seats = canonicalRows.slice(offset, offset + allocations[index]);
         offset += allocations[index];
         const ticket = ticketById.get(ticketTypeId);
@@ -273,7 +280,7 @@
         svg.appendChild(polygon);
         let generatedPositions;
         try {
-          generatedPositions = renderSeats(svg, section, seats, color, selectedIds);
+          generatedPositions = await renderSeats(svg, section, seats, color, selectedIds);
         } catch (error) {
           finalizeDiagnostics(diagnostics, expectedIds, assignedIds);
           bindingError(error.message || `Could not generate seat positions for ${section.id}.`, diagnostics);
@@ -284,8 +291,8 @@
           assignedIds.push(seat.event_seat_id);
           diagnostics.perTier[section.ticketTier].assigned += 1;
         });
-      });
-    });
+      }
+    }
     finalizeDiagnostics(diagnostics, expectedIds, assignedIds);
     if (
       diagnostics.generatedPositions !== diagnostics.canonicalEventSeats

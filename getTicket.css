@@ -1507,6 +1507,19 @@ body.ticket-open .socIcons {
   background: #f5f4f1;
 }
 
+.stageMap[data-map-loading="true"]::after {
+  content: "Loading seat map…";
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  background: rgb(245 244 241 / 0.9);
+  color: #111;
+  font: 700 14px/1 Arial, sans-serif;
+  pointer-events: all;
+}
+
 /* Temporary canonical presentation: no venue-specific geometry or guessed coordinates. */
 .canonical-seat-map-canvas {
   display: grid;
@@ -1624,7 +1637,12 @@ body.ticket-open .socIcons {
   touch-action: manipulation;
   width: fit-content;
   max-width: calc(100% - 18px);
-  height: fit-content;
+  /* Safari can stretch an absolutely positioned grid with fit-content here.
+     Leave the block-size automatic and explicitly prevent flex/grid stretching. */
+  height: auto;
+  min-height: 0;
+  align-self: start;
+  justify-self: start;
   align-items: start;
   justify-items: start;
 }
@@ -2457,6 +2475,9 @@ body.ticket-open .socIcons {
     width: fit-content;
     padding: 4px;
     transform: none;
+    height: auto;
+    min-height: 0;
+    align-self: start;
   }
   .hall-map-zoom-controls {
     grid-template-columns: repeat(3, 28px);

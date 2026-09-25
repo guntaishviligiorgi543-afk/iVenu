@@ -970,7 +970,11 @@
           setMobileTicketPanel(false);
 
           setTimeout(() => {
-            renderHallMap();
+            // The canonical map may have been prepared while the panel was
+            // closed. Rebuilding thousands of SVG seats on every open is both
+            // unnecessary and especially expensive on mobile Safari.
+            if (!stageMap?.querySelector("[data-seat-interaction-root]"))
+              renderHallMap();
             attachSeatClickHandlers();
           }, 50);
         });
@@ -1156,12 +1160,9 @@
         syncSelectedSeatStateOnMap();
       }
 
-      window.addEventListener("resize", () => {
-        if (document.body.classList.contains("ticket-open")) {
-          renderHallMap();
-          attachSeatClickHandlers();
-        }
-      });
+      // HallMapViewportController observes its viewport and recalculates its
+      // layout itself. Do not recreate every SVG seat after an iOS Safari
+      // toolbar resize or orientation change.
     </script>
     <script>
       const closedMapLegend = document.querySelector(".closedMapLegend");

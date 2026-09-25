@@ -340,6 +340,7 @@
       });
       const seats = createSvg("g");
       seats.classList.add("silk-factory-studio-seats");
+      const fragment = document.createDocumentFragment();
       placement.positions.forEach(({ row, x, y }) => {
         const seat = createSvg("circle");
         const selected = selectedIds.has(row.event_seat_id);
@@ -362,9 +363,10 @@
           role: "button",
           "aria-label": `${row.section_name}, row ${row.row_number}, seat ${row.seat_number}, ${row.ticket_type_name}, ₾${row.price}`,
         });
-        seats.appendChild(seat);
+        fragment.appendChild(seat);
         assigned.push(row.event_seat_id);
       });
+      seats.appendChild(fragment);
       svg.appendChild(seats);
     });
     const expected = new Set(rows.map((row) => row.event_seat_id));

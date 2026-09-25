@@ -12,6 +12,8 @@
     isCheckingOut: false,
     isExpiring: false,
     loadRequestId: 0,
+    activeLoadEventId: null,
+    activeLoadPromise: null,
     eventId: null,
     runtimeDiagnostics: null,
   };
@@ -398,20 +400,43 @@
     });
   }
 
-  async function loadEventSeatMap() {
+  function loadEventSeatMap() {
     if (!selectedBand?.id) return;
     const eventId = selectedBand.id;
+    if (
+      seatState.activeLoadEventId === eventId &&
+      seatState.activeLoadPromise
+    ) {
+      return seatState.activeLoadPromise;
+    }
+    const loadPromise = loadEventSeatMapForEvent(eventId);
+    seatState.activeLoadEventId = eventId;
+    seatState.activeLoadPromise = loadPromise;
+    const clearActiveLoad = () => {
+      if (seatState.activeLoadPromise === loadPromise) {
+        seatState.activeLoadEventId = null;
+        seatState.activeLoadPromise = null;
+      }
+    };
+    loadPromise.then(clearActiveLoad, clearActiveLoad);
+    return loadPromise;
+  }
+
+  async function loadEventSeatMapForEvent(eventId) {
+    const loadStartedAt = performance.now();
     const requestId = ++seatState.loadRequestId;
     const [seatResult, legendResult] = await Promise.all([
       loadAllEventSeatMapRows(eventId),
       client.rpc("get_event_ticket_legend", { p_event_id: eventId }),
     ]);
+    const rpcFinishedAt = performance.now();
     if (legendResult.error) throw legendResult.error;
     if (requestId !== seatState.loadRequestId || selectedBand?.id !== eventId)
       return;
     const isNewEvent = seatState.eventId !== eventId;
     seatState.eventId = eventId;
     seatState.rows = seatResult.map(normalizeCanonicalEventSeat);
+    const normalizedAt = performance.now();
     seatState.legendTypes = legendResult.data || [];
     seatState.byId = new Map(
       seatState.rows.map((row) => [row.event_seat_id, row]),
@@ -423,6 +448,10 @@
       mapAllocation: null,
       ticketListSource: null,
       ticketListRendered: null,
+      performanceMs: {
+        rpc: Math.round(rpcFinishedAt - loadStartedAt),
+        normalize: Math.round(normalizedAt - rpcFinishedAt),
+      },
     };
     console.info(
       "Canonical get_event_seat_map runtime counts",
@@ -435,12 +464,25 @@
     );
     reportTicketConfigurationIssues();
     const reservations = await loadOwnReservedSeats();
+    const reservationsFinishedAt = performance.now();
     if (requestId !== seatState.loadRequestId || selectedBand?.id !== eventId)
       return;
     replaceBasketWithReservations(reservations);
     window.renderTicketLegend();
-    window.renderHallMap();
+    const mapRenderStartedAt = performance.now();
+    await window.renderHallMap();
+    const mapRenderFinishedAt = performance.now();
     refreshTicketLists();
+    seatState.runtimeDiagnostics.performanceMs = {
+      ...seatState.runtimeDiagnostics.performanceMs,
+      reservations: Math.round(reservationsFinishedAt - normalizedAt),
+      mapRender: Math.round(mapRenderFinishedAt - mapRenderStartedAt),
+      total: Math.round(mapRenderFinishedAt - loadStartedAt),
+    };
+    console.info(
+      "Canonical seat-map performance (ms)",
+      seatState.runtimeDiagnostics.performanceMs,
+    );
   }
 
   window.renderTicketLegend = function renderDatabaseTicketLegend() {
@@ -482,7 +524,7 @@
     tooltip.hidden = false;
   }
 
-  window.renderHallMap = function renderCanonicalSeatMap() {
+  window.renderHallMap = async function renderCanonicalSeatMap() {
     const stageMap = document.querySelector(".stageMap");
     if (!stageMap) return;
     if (isExpoGeorgiaPavilion11Event() && window.expoGeorgiaPavilion11SeatMap) {
@@ -548,7 +590,9 @@
     }
     if (isBlackSeaArenaEvent() && window.blackSeaArenaSeatMap) {
       try {
-        const mapResult = window.blackSeaArenaSeatMap.render({
+        stageMap.dataset.mapLoading = "true";
+        await new Promise((resolve) => requestAnimationFrame(resolve));
+        const mapResult = await window.blackSeaArenaSeatMap.render({
           stageMap,
           rows: seatState.rows,
           ticketTypes: canonicalTicketTypes(),
@@ -578,6 +622,8 @@
           "The Black Sea Arena seat map could not be loaded without risking an incomplete seat binding.";
         stageMap.appendChild(message);
         return;
+      } finally {
+        delete stageMap.dataset.mapLoading;
       }
     }
     if (isDinamoArenaEvent() && window.dinamoArenaSeatMap) {
