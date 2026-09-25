@@ -15,6 +15,8 @@
   const isAuthPage =
     document.body.className.includes("auth") ||
     /login|register|verify|reset|forgot/.test(location.pathname);
+  const isAuthMenuLayerPage =
+    /(?:^|\/)(?:login|register|reset-password)\.html$/.test(location.pathname);
   let toggle = header.querySelector(".mobileMenuToggle");
   if (!toggle) {
     toggle = document.createElement("button");
@@ -36,6 +38,7 @@
       '<div class="mobileMenuPanel"><nav class="mobileMenuNav" aria-label="Mobile navigation"><a href="index.html">home</a><a href="shows.html">shows</a><a href="venue.html">venue</a><a href="contact.html">contact</a><a class="mobileCartLink" href="profile.html#cart" hidden>Cart</a><a class="mobileDashboardLink" href="profile.html" hidden>Dashboard</a></nav><div class="mobileMenuSocial"></div><div class="mobileMenuAccount"></div></div>';
     document.body.append(menu);
   }
+  if (isAuthMenuLayerPage && menu.parentElement !== header) header.append(menu);
 
   const panel = menu.querySelector(".mobileMenuPanel");
   const nav = menu.querySelector(".mobileMenuNav");
