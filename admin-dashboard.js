@@ -164,6 +164,15 @@
     message.className = `admin-message ${type}`;
     message.textContent = text;
   };
+  const formatSupabaseError = (error) =>
+    [
+      error?.code ? `Code: ${error.code}` : "",
+      error?.message || "Unknown database error.",
+      error?.details ? `Details: ${error.details}` : "",
+      error?.hint ? `Hint: ${error.hint}` : "",
+    ]
+      .filter(Boolean)
+      .join(" ");
   const setRefreshLoading = (isLoading) => {
     state.refreshing = isLoading;
     refreshAdmin.disabled = isLoading;
@@ -1365,7 +1374,8 @@
 
   async function saveEvent() {
     const values = new FormData(form);
-    const isEdit = Boolean(values.get("id"));
+    const eventId = String(values.get("id") || "").trim();
+    const isEdit = Boolean(eventId);
     const payload = Object.fromEntries(
       [
         "title",
@@ -1395,7 +1405,7 @@
       const { data, error } = await client.rpc(
         "admin_save_event_with_display_order",
         {
-          p_event_id: values.get("id") || null,
+          p_event_id: eventId || null,
           p_event: payload,
           p_ticket_inventory: currentTicketInventory().map(
             ({ canonical_tier, quantity, price }) => ({
@@ -1407,6 +1417,9 @@
         },
       );
       if (error) throw error;
+      if (isEdit && String(data || "") !== eventId)
+        throw new Error("The event save did not return the edited event UUID.");
+      console.info("Admin event saved", { eventId: data, isEdit });
       await loadData();
       showEventSaveSuccess(isEdit);
       return data;
@@ -2167,9 +2180,7 @@
         details: error?.details || null,
         hint: error?.hint || null,
       });
-      setWizardMessage(
-        "Could not save the event. Please review the form and try again.",
-      );
+      setWizardMessage(formatSupabaseError(error));
     });
   });
   wizardContinue.addEventListener("click", () =>
