@@ -305,7 +305,8 @@
 
 body.auth-login-page > header,
 body.auth-register-page > header,
-body.auth-recovery-page > header {
+body.auth-recovery-page > header,
+body.auth-verification-page > header {
   position: fixed;
   inset: 0 0 auto 0;
   z-index: 99999;
@@ -316,14 +317,16 @@ body.auth-recovery-page > header {
 
 body.auth-login-page > header > nav,
 body.auth-register-page > header > nav,
-body.auth-recovery-page > header > nav {
+body.auth-recovery-page > header > nav,
+body.auth-verification-page > header > nav {
   order: 0;
   margin-right: auto;
 }
 
 body.auth-login-page > header .auth-page-logo,
 body.auth-register-page > header .auth-page-logo,
-body.auth-recovery-page > header .auth-page-logo {
+body.auth-recovery-page > header .auth-page-logo,
+body.auth-verification-page > header .auth-page-logo {
   position: relative;
   z-index: 100000;
   display: block;
@@ -336,7 +339,8 @@ body.auth-recovery-page > header .auth-page-logo {
 
 body.auth-login-page > header .auth-page-logo img,
 body.auth-register-page > header .auth-page-logo img,
-body.auth-recovery-page > header .auth-page-logo img {
+body.auth-recovery-page > header .auth-page-logo img,
+body.auth-verification-page > header .auth-page-logo img {
   display: block;
   width: 100%;
   height: auto;
@@ -345,7 +349,8 @@ body.auth-recovery-page > header .auth-page-logo img {
 @media (max-width: 1290px) {
   body.auth-login-page > header,
   body.auth-register-page > header,
-  body.auth-recovery-page > header {
+  body.auth-recovery-page > header,
+  body.auth-verification-page > header {
     justify-content: flex-start;
     height: 110px;
     padding: 0 24px;
@@ -353,13 +358,15 @@ body.auth-recovery-page > header .auth-page-logo img {
 
   body.auth-login-page > header > nav,
   body.auth-register-page > header > nav,
-  body.auth-recovery-page > header > nav {
+  body.auth-recovery-page > header > nav,
+  body.auth-verification-page > header > nav {
     display: none;
   }
 
   body.auth-login-page > header .auth-page-logo,
   body.auth-register-page > header .auth-page-logo,
-  body.auth-recovery-page > header .auth-page-logo {
+  body.auth-recovery-page > header .auth-page-logo,
+  body.auth-verification-page > header .auth-page-logo {
     position: absolute;
     top: 16px;
     left: 24px;
@@ -374,10 +381,26 @@ body.auth-recovery-page > header .auth-page-logo img {
 @media (max-width: 600px) {
   body.auth-login-page > header .auth-page-logo,
   body.auth-register-page > header .auth-page-logo,
-  body.auth-recovery-page > header .auth-page-logo {
+  body.auth-recovery-page > header .auth-page-logo,
+  body.auth-verification-page > header .auth-page-logo {
     top: 18px;
     left: 16px;
     width: clamp(80px, 24vw, 120px);
+  }
+}
+
+/* Keep the verification logo in the header's right-hand brand slot. */
+@media (max-width: 1290px) {
+  body.auth-verification-page > header .auth-page-logo {
+    right: 24px;
+    left: auto;
+  }
+}
+
+@media (max-width: 600px) {
+  body.auth-verification-page > header .auth-page-logo {
+    right: 16px;
+    left: auto;
   }
 }
 
