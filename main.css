@@ -1837,6 +1837,14 @@ body.ticket-open #eventCartToggle {
       padding 0.2s ease;
   }
 
+  .mobileMenuNav .mobileDashboardLink[hidden] {
+    display: none;
+  }
+
+  .mobileMenuNav .mobileCartLink[hidden] {
+    display: none;
+  }
+
   .mobileMenuNav a:hover,
   .mobileMenuAccount a:hover,
   .mobileMenuAccount button:hover {

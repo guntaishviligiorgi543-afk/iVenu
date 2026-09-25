@@ -33,7 +33,7 @@
     menu.id = "mobileMenu";
     menu.setAttribute("aria-hidden", "true");
     menu.innerHTML =
-      '<div class="mobileMenuPanel"><nav class="mobileMenuNav" aria-label="Mobile navigation"><a href="index.html">home</a><a href="shows.html">shows</a><a href="venue.html">venue</a><a href="contact.html">contact</a><a href="profile.html#cart">Cart</a><a class="mobileDashboardLink" href="profile.html" hidden>Dashboard</a></nav><div class="mobileMenuSocial"></div><div class="mobileMenuAccount"></div></div>';
+      '<div class="mobileMenuPanel"><nav class="mobileMenuNav" aria-label="Mobile navigation"><a href="index.html">home</a><a href="shows.html">shows</a><a href="venue.html">venue</a><a href="contact.html">contact</a><a class="mobileCartLink" href="profile.html#cart" hidden>Cart</a><a class="mobileDashboardLink" href="profile.html" hidden>Dashboard</a></nav><div class="mobileMenuSocial"></div><div class="mobileMenuAccount"></div></div>';
     document.body.append(menu);
   }
 
@@ -42,9 +42,12 @@
   if (nav && !nav.querySelector('[href="profile.html#cart"]')) {
     nav.insertAdjacentHTML(
       "beforeend",
-      '<a href="profile.html#cart">Cart</a><a class="mobileDashboardLink" href="profile.html" hidden>Dashboard</a>',
+      '<a class="mobileCartLink" href="profile.html#cart" hidden>Cart</a><a class="mobileDashboardLink" href="profile.html" hidden>Dashboard</a>',
     );
   }
+  const mobileCart = nav?.querySelector('[href="profile.html#cart"]');
+  mobileCart?.classList.add("mobileCartLink");
+  if (mobileCart) mobileCart.hidden = true;
   let mobileDashboard = nav?.querySelector(".mobileDashboardLink");
   if (!mobileDashboard)
     mobileDashboard = nav?.querySelector('a[href="profile.html"]');
@@ -112,6 +115,7 @@
     headerAuth.textContent = signedIn ? "logout" : "login";
     headerAuth.href = signedIn ? "#" : "login.html";
     headerAccount.hidden = !signedIn;
+    if (mobileCart) mobileCart.hidden = !signedIn;
     mobileDashboard.hidden = true;
     account.replaceChildren();
 
