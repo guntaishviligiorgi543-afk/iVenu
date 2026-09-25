@@ -217,12 +217,21 @@
         <div class="admin-panel-heading">
           <div>
             <p class="admin-eyebrow">Homepage management</p>
-            <h2>Homepage Content</h2>
+            <h2>Homepage Management</h2>
             <p>Manage the Hero Slider, Upcoming Shows, and Venue Catalog.</p>
           </div>
         </div>
-        <section
-          class="admin-content-block"
+        <div class="homepage-summary" aria-label="Homepage content summary">
+          <article class="homepage-summary-card"><span>Hero Slider</span><strong id="homepageHeroSummaryCount">0 events</strong><small id="homepageHeroSummaryMode">Latest Added</small></article>
+          <article class="homepage-summary-card"><span>Upcoming Shows</span><strong id="homepageUpcomingSummaryCount">0 events</strong><small>Nearest-date ordering</small></article>
+          <article class="homepage-summary-card"><span>Venue Catalog</span><strong id="homepageCatalogSummaryCount">0 images</strong><small>Homepage gallery</small></article>
+        </div>
+        <div class="homepage-tabs" role="tablist" aria-label="Homepage management sections">
+          <button class="is-active" type="button" role="tab" aria-selected="true" aria-controls="homepageHeroTab" data-homepage-tab="hero">Hero Slider</button>
+          <button type="button" role="tab" aria-selected="false" aria-controls="homepageUpcomingTab" data-homepage-tab="upcoming">Upcoming Shows</button>
+          <button type="button" role="tab" aria-selected="false" aria-controls="homepageCatalogTab" data-homepage-tab="catalog">Venue Catalog</button>
+        </div>
+        <section id="homepageHeroTab" class="admin-content-block homepage-tab is-active" role="tabpanel"
           aria-labelledby="heroContentHeading"
         >
           <div class="admin-content-block__heading">
@@ -260,8 +269,7 @@
           </form>
         </section>
 
-        <section
-          class="admin-content-block"
+        <section id="homepageUpcomingTab" class="admin-content-block homepage-tab" role="tabpanel" hidden
           aria-labelledby="upcomingShowsHeading"
         >
           <div class="admin-content-block__heading">
@@ -289,38 +297,17 @@
           </form>
         </section>
 
-        <section
-          class="admin-content-block"
+        <section id="homepageCatalogTab" class="admin-content-block homepage-tab" role="tabpanel" hidden
           aria-labelledby="venueCatalogHeading"
         >
           <div class="admin-content-block__heading">
             <p class="admin-eyebrow">Venue gallery</p>
             <h3 id="venueCatalogHeading">Venue Catalog</h3>
           </div>
-          <form class="admin-form" id="catalogForm">
-            <input type="hidden" name="id" />
-            <label
-              >Image URL<input name="image_url" type="url" required
-            /></label>
-            <label
-              >Display order<input
-                name="display_order"
-                type="number"
-                min="1"
-                required
-            /></label>
-            <div class="admin-form-actions">
-              <button class="auth-submit" type="submit">Save image</button>
-              <button
-                class="admin-outline"
-                id="cancelCatalogEdit"
-                type="button"
-                hidden
-              >
-                Cancel edit
-              </button>
-            </div>
-          </form>
+          <div class="homepage-catalog-heading">
+            <p>Manage the images displayed in the venue gallery.</p>
+            <button class="auth-submit" id="addCatalogImage" type="button">+ Add Image</button>
+          </div>
           <div class="admin-catalog-grid" id="catalogList"></div>
           <div class="admin-catalog-more" id="catalogMore" hidden>
             <button
@@ -332,6 +319,30 @@
             </button>
           </div>
         </section>
+        <dialog class="admin-delete-dialog homepage-catalog-dialog" id="catalogDialog" aria-labelledby="catalogDialogTitle">
+          <form class="admin-delete-dialog__panel admin-form" id="catalogForm">
+            <input type="hidden" name="id" />
+            <p class="admin-eyebrow">Venue catalog</p>
+            <h2 id="catalogDialogTitle">Add Venue Image</h2>
+            <label>Image URL<input name="image_url" type="url" required /></label>
+            <label>Display order<input name="display_order" type="number" min="1" required /></label>
+            <div class="admin-delete-dialog__actions">
+              <button class="admin-outline" id="cancelCatalogEdit" type="button">Cancel</button>
+              <button class="auth-submit" type="submit">Save Image</button>
+            </div>
+          </form>
+        </dialog>
+        <dialog class="admin-delete-dialog" id="catalogDeleteDialog" aria-labelledby="catalogDeleteDialogTitle">
+          <form class="admin-delete-dialog__panel" method="dialog">
+            <p class="admin-eyebrow">Venue catalog</p>
+            <h2 id="catalogDeleteDialogTitle">Delete image?</h2>
+            <p>This will permanently delete this catalog image. This action cannot be undone.</p>
+            <div class="admin-delete-dialog__actions">
+              <button class="admin-outline" id="cancelCatalogDelete" type="button">Cancel</button>
+              <button class="admin-danger-button" id="confirmCatalogDelete" type="button">Delete Image</button>
+            </div>
+          </form>
+        </dialog>
       </section>
 
       <section class="admin-panel event-editor-panel" data-panel="add-event">

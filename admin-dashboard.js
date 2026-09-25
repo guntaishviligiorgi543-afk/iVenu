@@ -128,6 +128,12 @@
   const adminLogout = document.querySelector("#adminLogout");
   const catalogForm = document.querySelector("#catalogForm");
   const catalogList = document.querySelector("#catalogList");
+  const catalogDialog = document.querySelector("#catalogDialog");
+  const catalogDialogTitle = document.querySelector("#catalogDialogTitle");
+  const addCatalogImage = document.querySelector("#addCatalogImage");
+  const catalogDeleteDialog = document.querySelector("#catalogDeleteDialog");
+  const cancelCatalogDelete = document.querySelector("#cancelCatalogDelete");
+  const confirmCatalogDelete = document.querySelector("#confirmCatalogDelete");
   const catalogMore = document.querySelector("#catalogMore");
   const catalogMoreButton = document.querySelector("#catalogMoreButton");
   const refreshAdmin = document.querySelector("#refreshAdmin");
@@ -152,6 +158,35 @@
     "#upcomingShowsAutomatic",
   );
   const upcomingShowsLimit = document.querySelector("#upcomingShowsLimit");
+  let catalogPendingDeletion = null;
+
+  function renderHomepageSummary() {
+    const modeNames = {
+      latest_added: "Latest Added",
+      most_added_to_cart: "Most Added to Cart",
+      best_selling: "Best Selling",
+      custom_selection: "Custom Selection",
+    };
+    document.querySelector("#homepageHeroSummaryCount").textContent = `${state.heroPreview.length} event${state.heroPreview.length === 1 ? "" : "s"}`;
+    document.querySelector("#homepageHeroSummaryMode").textContent = modeNames[state.heroConfig.mode] || "Latest Added";
+    document.querySelector("#homepageUpcomingSummaryCount").textContent = `${state.upcomingShowsPreview.length} event${state.upcomingShowsPreview.length === 1 ? "" : "s"}`;
+    document.querySelector("#homepageCatalogSummaryCount").textContent = `${state.catalog.length} image${state.catalog.length === 1 ? "" : "s"}`;
+  }
+
+  function homepageEventList(events, editAttribute) {
+    return `<div class="homepage-event-list">${events
+      .map((event) => {
+        const title = escapeHtml(event.title || event.performer || "Untitled event");
+        const venue = escapeHtml(event.venues?.name || event.venue || "Venue TBA");
+        const category = escapeHtml(event.categories?.name || event.category || "Uncategorized");
+        const date = escapeHtml(event.event_date || "Date TBA");
+        const image = event.image_url
+          ? `<img src="${escapeHtml(event.image_url)}" alt="" />`
+          : '<span class="homepage-event-image__empty" aria-hidden="true">iVenue</span>';
+        return `<article class="homepage-event-card"><div class="homepage-event-image">${image}</div><div class="homepage-event-card__details"><strong>${title}</strong><time>${date}</time><span>${venue}</span><small>${category}</small></div><button type="button" ${editAttribute}="${escapeHtml(event.id)}">Edit Event</button></article>`;
+      })
+      .join("")}</div>`;
+  }
 
   const escapeHtml = (value) =>
     String(value ?? "")
@@ -337,6 +372,7 @@
     renderCatalog();
     renderHeroForm();
     renderUpcomingShowsForm();
+    renderHomepageSummary();
   }
 
   function renderHeroForm() {
@@ -375,7 +411,7 @@
         mode !== state.heroPreviewMode
           ? '<p class="admin-message">Save this display mode to update the current Hero preview.</p>'
           : state.heroPreview.length
-            ? `<div class="upcoming-shows-preview">${state.heroPreview.map((event) => `<div><span>${formatUpcomingEvent(event)}</span><button type="button" data-hero-edit="${event.id}">Edit Event</button></div>`).join("")}</div>`
+            ? homepageEventList(state.heroPreview, "data-hero-edit")
             : '<p class="admin-message">No eligible events are available for this mode.</p>';
       return;
     }
@@ -460,7 +496,7 @@
     upcomingShowsLimit.value = String(limit);
     upcomingShowsHelp.textContent = `Displays the ${limit} nearest active upcoming event${limit === 1 ? "" : "s"}, ordered by date and time.`;
     upcomingShowsAutomatic.innerHTML = state.upcomingShowsPreview.length
-      ? `<div class="upcoming-shows-preview">${state.upcomingShowsPreview.map((event) => `<div><span>${formatUpcomingEvent(event)}</span><button type="button" data-upcoming-edit="${event.id}">Edit Event</button></div>`).join("")}</div>`
+      ? homepageEventList(state.upcomingShowsPreview, "data-upcoming-edit")
       : '<p class="admin-message">No eligible upcoming events are available.</p>';
   }
 
@@ -468,7 +504,8 @@
     catalogForm.reset();
     catalogForm.elements.id.value = "";
     catalogForm.elements.display_order.value = state.catalog.length + 1;
-    document.querySelector("#cancelCatalogEdit").hidden = true;
+    catalogDialogTitle.textContent = "Add Venue Image";
+    if (catalogDialog?.open) catalogDialog.close();
   }
 
   function renderCatalog() {
@@ -477,7 +514,7 @@
       ? visibleCatalog
           .map(
             (item) =>
-              `<article class="admin-catalog-row"><img src="${escapeHtml(item.image_url)}" alt="Venue catalog image ${item.display_order}" /><div><strong>Image ${item.display_order}</strong><span>${escapeHtml(item.image_url)}</span></div><div class="admin-event-actions"><button type="button" data-catalog-edit="${item.id}">Edit</button><button type="button" data-catalog-delete="${item.id}">Delete</button></div></article>`,
+              `<article class="admin-catalog-card"><img src="${escapeHtml(item.image_url)}" alt="Venue catalog image ${item.display_order}" /><div class="admin-catalog-card__details"><strong>Image ${item.display_order}</strong><span>Display order: ${item.display_order}</span></div><div class="admin-event-actions"><button type="button" data-catalog-edit="${item.id}">Edit</button><button type="button" data-catalog-delete="${item.id}">Delete</button></div></article>`,
           )
           .join("")
       : '<p class="admin-message">No catalog images found.</p>';
@@ -497,7 +534,9 @@
     catalogForm.elements.id.value = item.id;
     catalogForm.elements.image_url.value = item.image_url;
     catalogForm.elements.display_order.value = item.display_order;
-    document.querySelector("#cancelCatalogEdit").hidden = false;
+    catalogDialogTitle.textContent = "Edit Venue Image";
+    if (typeof catalogDialog?.showModal === "function" && !catalogDialog.open)
+      catalogDialog.showModal();
   }
 
   async function loadAnalytics() {
@@ -759,6 +798,7 @@
     categorySelect.innerHTML =
       '<option value="">Select category</option>' +
       state.categories
+        .filter((category) => category.name !== "Sports")
         .map(
           (category) =>
             `<option value="${category.id}">${escapeHtml(category.name)}</option>`,
@@ -2239,6 +2279,27 @@
   document
     .querySelector("#cancelCatalogEdit")
     .addEventListener("click", resetCatalogForm);
+  addCatalogImage.addEventListener("click", () => {
+    resetCatalogForm();
+    if (typeof catalogDialog.showModal === "function") catalogDialog.showModal();
+  });
+  document.querySelectorAll("[data-homepage-tab]").forEach((tab) => {
+    tab.addEventListener("click", () => {
+      const key = tab.dataset.homepageTab;
+      document.querySelectorAll("[data-homepage-tab]").forEach((item) => {
+        const active = item === tab;
+        item.classList.toggle("is-active", active);
+        item.setAttribute("aria-selected", String(active));
+      });
+      ["hero", "upcoming", "catalog"].forEach((name) => {
+        const panel = document.querySelector(
+          `#homepage${name[0].toUpperCase()}${name.slice(1)}Tab`,
+        );
+        panel.hidden = name !== key;
+        panel.classList.toggle("is-active", name === key);
+      });
+    });
+  });
   catalogMoreButton.addEventListener("click", () => {
     if (state.catalogVisibleCount < state.catalog.length) {
       state.catalogVisibleCount = Math.min(
@@ -2290,22 +2351,29 @@
       const item = state.catalog.find(
         (candidate) => String(candidate.id) === remove.dataset.catalogDelete,
       );
-      if (!item || !window.confirm("Delete this catalog image?")) return;
-      try {
-        const result = await client
-          .from("venue_catalog")
-          .delete()
-          .eq("id", item.id);
-        if (result.error) throw result.error;
-        setMessage("Catalog image deleted.", "success");
-        await loadData();
-      } catch (error) {
-        console.error(error);
-        setMessage(
-          error.message || "Catalog image could not be deleted.",
-          "error",
-        );
-      }
+      if (!item) return;
+      catalogPendingDeletion = item;
+      if (typeof catalogDeleteDialog.showModal === "function")
+        catalogDeleteDialog.showModal();
+    }
+  });
+  cancelCatalogDelete.addEventListener("click", () => {
+    catalogPendingDeletion = null;
+    catalogDeleteDialog.close();
+  });
+  confirmCatalogDelete.addEventListener("click", async () => {
+    const item = catalogPendingDeletion;
+    if (!item) return;
+    try {
+      const result = await client.from("venue_catalog").delete().eq("id", item.id);
+      if (result.error) throw result.error;
+      setMessage("Catalog image deleted.", "success");
+      catalogDeleteDialog.close();
+      catalogPendingDeletion = null;
+      await loadData();
+    } catch (error) {
+      console.error(error);
+      setMessage(error.message || "Catalog image could not be deleted.", "error");
     }
   });
   eventList.addEventListener("click", async (event) => {
