@@ -264,6 +264,7 @@ header > nav a:hover span {
   height: calc(100vh - 125px);
 
   overflow: hidden;
+  touch-action: pan-y;
 }
 
 .header-cart-hidden {
