@@ -304,7 +304,8 @@
 }
 
 body.auth-login-page > header,
-body.auth-register-page > header {
+body.auth-register-page > header,
+body.auth-recovery-page > header {
   position: fixed;
   inset: 0 0 auto 0;
   z-index: 99999;
@@ -314,13 +315,15 @@ body.auth-register-page > header {
 }
 
 body.auth-login-page > header > nav,
-body.auth-register-page > header > nav {
+body.auth-register-page > header > nav,
+body.auth-recovery-page > header > nav {
   order: 0;
   margin-right: auto;
 }
 
 body.auth-login-page > header .auth-page-logo,
-body.auth-register-page > header .auth-page-logo {
+body.auth-register-page > header .auth-page-logo,
+body.auth-recovery-page > header .auth-page-logo {
   position: relative;
   z-index: 100000;
   display: block;
@@ -332,7 +335,8 @@ body.auth-register-page > header .auth-page-logo {
 }
 
 body.auth-login-page > header .auth-page-logo img,
-body.auth-register-page > header .auth-page-logo img {
+body.auth-register-page > header .auth-page-logo img,
+body.auth-recovery-page > header .auth-page-logo img {
   display: block;
   width: 100%;
   height: auto;
@@ -340,19 +344,22 @@ body.auth-register-page > header .auth-page-logo img {
 
 @media (max-width: 1290px) {
   body.auth-login-page > header,
-  body.auth-register-page > header {
+  body.auth-register-page > header,
+  body.auth-recovery-page > header {
     justify-content: flex-start;
     height: 110px;
     padding: 0 24px;
   }
 
   body.auth-login-page > header > nav,
-  body.auth-register-page > header > nav {
+  body.auth-register-page > header > nav,
+  body.auth-recovery-page > header > nav {
     display: none;
   }
 
   body.auth-login-page > header .auth-page-logo,
-  body.auth-register-page > header .auth-page-logo {
+  body.auth-register-page > header .auth-page-logo,
+  body.auth-recovery-page > header .auth-page-logo {
     position: absolute;
     top: 16px;
     left: 24px;
@@ -366,7 +373,8 @@ body.auth-register-page > header .auth-page-logo img {
 
 @media (max-width: 600px) {
   body.auth-login-page > header .auth-page-logo,
-  body.auth-register-page > header .auth-page-logo {
+  body.auth-register-page > header .auth-page-logo,
+  body.auth-recovery-page > header .auth-page-logo {
     top: 18px;
     left: 16px;
     width: clamp(80px, 24vw, 120px);
@@ -375,25 +383,29 @@ body.auth-register-page > header .auth-page-logo img {
 
 /* Keep the authentication-page navigation sized to its links. */
 body.auth-login-page > header > nav,
-body.auth-register-page > header > nav {
+body.auth-register-page > header > nav,
+body.auth-recovery-page > header > nav {
   width: fit-content;
 }
 
 @media (max-width: 400px) {
   body.auth-login-page > header,
-  body.auth-register-page > header {
+  body.auth-register-page > header,
+  body.auth-recovery-page > header {
     gap: 8px;
     padding: 14px;
   }
 
   body.auth-login-page > header > nav,
-  body.auth-register-page > header > nav {
+  body.auth-register-page > header > nav,
+  body.auth-recovery-page > header > nav {
     gap: 8px;
     padding: 8px;
   }
 
   body.auth-login-page > header > nav span,
-  body.auth-register-page > header > nav span {
+  body.auth-register-page > header > nav span,
+  body.auth-recovery-page > header > nav span {
     font-size: 14px;
   }
 }
@@ -1642,7 +1654,7 @@ header nav .authNavLink[hidden] {
 .account-page .account-danger,
 .account-page .auth-danger {
   border-radius: 7px;
- }
+}
 
 .account-page .dashboard-row {
   border-radius: 8px;
@@ -2851,7 +2863,7 @@ header nav .authNavLink[hidden] {
   font-weight: 400;
   line-height: 1.12;
   -webkit-box-orient: vertical;
-   overflow: hidden;
+  overflow: hidden;
   overflow-wrap: anywhere;
 }
 
