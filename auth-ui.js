@@ -13,6 +13,44 @@
       !visible || document.body.classList.contains("mobile-menu-open");
   };
 
+  const showAuthGate = () => {
+    let gate = document.querySelector(".auth-gate");
+    if (!gate) {
+      gate = document.createElement("div");
+      gate.className = "auth-gate";
+      gate.innerHTML = `
+        <div class="auth-gate__dialog" role="dialog" aria-modal="true" aria-labelledby="authGateTitle" aria-describedby="authGateMessage">
+          <button class="auth-gate__close" type="button" aria-label="Close">×</button>
+          <a class="auth-gate__logo" href="index.html" aria-label="iVenue home">
+            <img src="assets/ivenue-logo.png" alt="iVenue" />
+          </a>
+          <h2 id="authGateTitle">Sign in first</h2>
+          <p id="authGateMessage">You have to be signed in first to choose tickets.</p>
+          <div class="auth-gate__actions">
+            <a href="login.html">Log In</a>
+            <a href="register.html">Register</a>
+          </div>
+        </div>
+      `;
+      const close = () => {
+        gate.remove();
+        document.body.classList.remove("auth-gate-open");
+        document.removeEventListener("keydown", handleKeydown);
+      };
+      const handleKeydown = (event) => {
+        if (event.key === "Escape") close();
+      };
+      gate.addEventListener("click", (event) => {
+        if (event.target === gate) close();
+      });
+      gate.querySelector(".auth-gate__close").addEventListener("click", close);
+      document.addEventListener("keydown", handleKeydown);
+      document.body.appendChild(gate);
+    }
+    document.body.classList.add("auth-gate-open");
+    return false;
+  };
+
   if (window.authApi) {
     window.authApi
       .getSession()
@@ -34,30 +72,7 @@
     window.requireAuthForTickets = async () => {
       const session = await window.authApi.getSession();
       if (session) return true;
-
-      let gate = document.querySelector(".auth-gate");
-      if (!gate) {
-        gate = document.createElement("div");
-        gate.className = "auth-gate";
-        gate.innerHTML = `
-            <div class="auth-gate__dialog" role="dialog" aria-modal="true" aria-labelledby="authGateTitle">
-              <h2 id="authGateTitle">Sign in first</h2>
-              <p>You have to be signed in first to choose tickets.</p>
-              <div class="auth-gate__actions">
-                <a href="login.html">Log in</a>
-                <a href="register.html">Create account</a>
-                <button type="button" class="auth-gate__close">Close</button>
-              </div>
-            </div>
-          `;
-        gate
-          .querySelector(".auth-gate__close")
-          .addEventListener("click", () => {
-            gate.remove();
-          });
-        document.body.appendChild(gate);
-      }
-      return false;
+      return showAuthGate();
     };
     return;
   }
@@ -65,27 +80,6 @@
   window.requireAuthForTickets = async () => {
     const session = await window.authApi.getSession();
     if (session) return true;
-
-    let gate = document.querySelector(".auth-gate");
-    if (!gate) {
-      gate = document.createElement("div");
-      gate.className = "auth-gate";
-      gate.innerHTML = `
-        <div class="auth-gate__dialog" role="dialog" aria-modal="true" aria-labelledby="authGateTitle">
-          <h2 id="authGateTitle">Sign in first</h2>
-          <p>You have to be signed in first to choose tickets.</p>
-          <div class="auth-gate__actions">
-            <a href="login.html">Log in</a>
-            <a href="register.html">Create account</a>
-            <button type="button" class="auth-gate__close">Close</button>
-          </div>
-        </div>
-      `;
-      gate.querySelector(".auth-gate__close").addEventListener("click", () => {
-        gate.remove();
-      });
-      document.body.appendChild(gate);
-    }
-    return false;
+    return showAuthGate();
   };
 })();

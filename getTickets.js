@@ -12,7 +12,8 @@ function renderTicketHeroSkeleton() {
   skeleton.className = "ticketHeroSkeleton";
   skeleton.setAttribute("role", "status");
   skeleton.setAttribute("aria-label", "Loading event details");
-  skeleton.innerHTML = '<span class="skeletonBlock ticketHeroSkeletonMedia"></span><div class="ticketHeroSkeletonContent"><span class="skeletonBlock ticketHeroSkeletonTitle"></span><span class="skeletonBlock ticketHeroSkeletonDate"></span><span class="skeletonBlock ticketHeroSkeletonDescription"></span><span class="skeletonBlock ticketHeroSkeletonButton"></span></div>';
+  skeleton.innerHTML =
+    '<span class="skeletonBlock ticketHeroSkeletonMedia"></span><div class="ticketHeroSkeletonContent"><span class="skeletonBlock ticketHeroSkeletonTitle"></span><span class="skeletonBlock ticketHeroSkeletonDate"></span><span class="skeletonBlock ticketHeroSkeletonDescription"></span><span class="skeletonBlock ticketHeroSkeletonButton"></span></div>';
   ticketHero.append(skeleton);
 }
 
@@ -79,37 +80,38 @@ async function loadSelectedEvent() {
     const band = event.bands || {};
     const eventLocation = window.supabaseData.getEventLocation(event);
     selectedBand = {
-    id: event.id,
-    venueId: event.venue_id,
-    venueName: event.venues?.name || eventLocation.venue,
-    bandName: event.performer || band.name || event.title,
-    bandDescription: band.description || event.description || "",
-    bandImg2: event.image_url || band.image_url || "",
-    event: {
-      title: event.title,
-      description: event.description || "",
-      date: event.event_date,
-      time: event.event_time,
-      doorsOpen: event.doors_open,
-    },
-    tickets: createTicketAdapter(ticketTypes),
-    location: {
-      city: eventLocation.cityArea,
-      venue: eventLocation.venue,
-      region: eventLocation.region,
-      country: eventLocation.country,
-      address: eventLocation.address,
-      coordinates: {
-        lat: eventLocation.latitude,
-        lng: eventLocation.longitude,
+      id: event.id,
+      venueId: event.venue_id,
+      venueName: event.venues?.name || eventLocation.venue,
+      bandName: event.performer || band.name || event.title,
+      bandDescription: band.description || event.description || "",
+      bandImg2: event.image_url || band.image_url || "",
+      event: {
+        title: event.title,
+        description: event.description || "",
+        date: event.event_date,
+        time: event.event_time,
+        doorsOpen: event.doors_open,
       },
-    },
+      tickets: createTicketAdapter(ticketTypes),
+      location: {
+        city: eventLocation.cityArea,
+        venue: eventLocation.venue,
+        region: eventLocation.region,
+        country: eventLocation.country,
+        address: eventLocation.address,
+        coordinates: {
+          lat: eventLocation.latitude,
+          lng: eventLocation.longitude,
+        },
+      },
     };
 
     renderSelectedEvent();
     const heroImage = document.querySelector(".ticketHero .bandImg2");
     const imageReady = await window.pageLoading?.waitForImage(heroImage);
-    if (imageReady === false) ticketHero?.classList.add("ticketHero--image-fallback");
+    if (imageReady === false)
+      ticketHero?.classList.add("ticketHero--image-fallback");
     finishTicketHeroLoading();
     window.dispatchEvent(new CustomEvent("event-seat-context"));
     initializeBasket();
@@ -401,7 +403,6 @@ function bindTicketListControls() {
       toggleTicketList(parent, false);
     });
   });
-
 }
 
 function initializeBasket() {
@@ -458,6 +459,11 @@ function renderSelectedEvent() {
     };
 
     addToCartButton.onclick = async () => {
+      if (
+        window.requireAuthForTickets &&
+        !(await window.requireAuthForTickets())
+      )
+        return;
       addToCartButton.disabled = true;
       addToCartButton.classList.add("cart-action-pending");
       addToCartButton.setAttribute("aria-busy", "true");

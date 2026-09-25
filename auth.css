@@ -756,11 +756,16 @@ header nav .authNavLink[hidden] {
   background: rgba(0, 0, 0, 0.78);
 }
 
+body.auth-gate-open {
+  overflow: hidden;
+}
+
 .auth-gate[hidden] {
   display: none;
 }
 
 .auth-gate__dialog {
+  position: relative;
   width: min(430px, 100%);
   padding: 32px;
   border: 1px solid rgba(255, 148, 117, 0.75);
@@ -768,6 +773,39 @@ header nav .authNavLink[hidden] {
   box-shadow: 10px 10px 0 rgba(255, 148, 117, 0.75);
   color: #fff;
   font-family: "Cabin", sans-serif;
+}
+
+.auth-gate__logo {
+  display: block;
+  width: min(150px, 48%);
+  margin: 0 auto 24px;
+  line-height: 0;
+}
+
+.auth-gate__logo img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.auth-gate__close {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 0;
+  color: #fff;
+  background: transparent;
+  font-size: 1.6rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.auth-gate__close:hover,
+.auth-gate__close:focus-visible {
+  color: #ff9475;
 }
 
 .auth-gate__dialog h2 {

@@ -284,14 +284,16 @@
       border: 0;
       border-radius: 0;
       color: #fff;
-      background: rgba(0, 0, 0, 0.58);
+      background: rgba(0, 0, 0, 0.72);
+      backdrop-filter: blur(2px);
       box-shadow: none;
-      font-family: Inter, Arial, Helvetica, sans-serif;
+      font-family: "Cabin", sans-serif;
       font-size: clamp(0.9rem, 2.1vw, 1.3rem);
       font-weight: 600;
       line-height: 1.25;
       text-align: center;
       letter-spacing: 0.035em;
+      justify-items: center;
       opacity: 0;
       pointer-events: none;
       transition: opacity 0.24s ease;
@@ -931,10 +933,17 @@
               await refreshCartState();
             } catch (error) {
               console.error("Shows cart toggle failed:", error);
-              showCartMessage(
-                error.message || "Cart could not be updated.",
-                true,
-              );
+              if (
+                error.message ===
+                "Please sign in before adding an event to your cart."
+              ) {
+                showCardCartFeedback(cartButton, error.message);
+              } else {
+                showCartMessage(
+                  error.message || "Cart could not be updated.",
+                  true,
+                );
+              }
             } finally {
               pendingCartEventIds.delete(eventId);
               syncVisibleCartButtons();
