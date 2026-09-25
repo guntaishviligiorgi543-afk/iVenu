@@ -571,11 +571,8 @@ body.ticket-open #eventCartToggle {
 
   font-size: clamp(0.9rem, 1.65vw, 1.5rem);
   font-weight: 700;
-
   line-height: 1.35;
-
   text-transform: uppercase;
-
   overflow-wrap: anywhere;
 }
 
@@ -596,11 +593,9 @@ body.ticket-open #eventCartToggle {
 
 .heroEventCta svg {
   flex: 0 0 auto;
-
   color: #000;
   background: #fff;
-
-  transform: rotateY(180deg) scaleX(2);
+   transform: rotateY(180deg) scaleX(2) scaleY(1.02) translateX(-2px) translateY(-0.4px);
 }
 
 .heroEventCta button {
