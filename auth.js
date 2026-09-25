@@ -17,6 +17,20 @@
     return data.user;
   }
 
+  async function isAdmin(session) {
+    if (!session?.user) return false;
+    const { data, error } = await client
+      .from("admin_users")
+      .select("user_id")
+      .eq("user_id", session.user.id)
+      .maybeSingle();
+    if (error) {
+      console.error(error);
+      return false;
+    }
+    return Boolean(data);
+  }
+
   async function signIn(email, password) {
     const { data, error } = await client.auth.signInWithPassword({
       email: normalizeEmail(email),
@@ -234,6 +248,7 @@
   window.authApi = {
     getSession,
     getUser,
+    isAdmin,
     signIn,
     verifyCurrentPassword,
     signUp,

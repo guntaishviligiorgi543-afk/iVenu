@@ -33,7 +33,7 @@
     menu.id = "mobileMenu";
     menu.setAttribute("aria-hidden", "true");
     menu.innerHTML =
-      '<div class="mobileMenuPanel"><nav class="mobileMenuNav" aria-label="Mobile navigation"><a href="index.html">home</a><a href="shows.html">shows</a><a href="venue.html">venue</a><a href="contact.html">contact</a><a href="profile.html#cart">Cart</a><a href="profile.html">Dashboard</a></nav><div class="mobileMenuSocial"></div><div class="mobileMenuAccount"></div></div>';
+      '<div class="mobileMenuPanel"><nav class="mobileMenuNav" aria-label="Mobile navigation"><a href="index.html">home</a><a href="shows.html">shows</a><a href="venue.html">venue</a><a href="contact.html">contact</a><a href="profile.html#cart">Cart</a><a class="mobileDashboardLink" href="profile.html" hidden>Dashboard</a></nav><div class="mobileMenuSocial"></div><div class="mobileMenuAccount"></div></div>';
     document.body.append(menu);
   }
 
@@ -42,9 +42,20 @@
   if (nav && !nav.querySelector('[href="profile.html#cart"]')) {
     nav.insertAdjacentHTML(
       "beforeend",
-      '<a href="profile.html#cart">Cart</a><a href="profile.html">Dashboard</a>',
+      '<a href="profile.html#cart">Cart</a><a class="mobileDashboardLink" href="profile.html" hidden>Dashboard</a>',
     );
   }
+  let mobileDashboard = nav?.querySelector(".mobileDashboardLink");
+  if (!mobileDashboard)
+    mobileDashboard = nav?.querySelector('a[href="profile.html"]');
+  if (!mobileDashboard && nav) {
+    mobileDashboard = document.createElement("a");
+    mobileDashboard.href = "profile.html";
+    mobileDashboard.textContent = "Dashboard";
+    nav.append(mobileDashboard);
+  }
+  mobileDashboard?.classList.add("mobileDashboardLink");
+  mobileDashboard.hidden = true;
   let socialSlot = menu.querySelector(".mobileMenuSocial");
   let account = menu.querySelector(".mobileMenuAccount");
   if (!socialSlot && panel) {
@@ -86,14 +97,22 @@
     menu.setAttribute("aria-hidden", String(!open));
     document.body.classList.toggle("mobile-menu-open", open);
     cart?.classList.toggle("header-cart-hidden", open || isAuthPage);
+    const outsideDashboard = document.querySelector(".adminFloatingLink");
+    if (outsideDashboard) {
+      outsideDashboard.hidden =
+        open || outsideDashboard.dataset.adminVisible !== "true";
+    }
     placeSocial(open);
   };
 
-  const renderAuth = (session) => {
+  let authRenderId = 0;
+  const renderAuth = async (session) => {
+    const renderId = ++authRenderId;
     const signedIn = Boolean(session?.user);
     headerAuth.textContent = signedIn ? "logout" : "login";
     headerAuth.href = signedIn ? "#" : "login.html";
     headerAccount.hidden = !signedIn;
+    mobileDashboard.hidden = true;
     account.replaceChildren();
 
     if (!signedIn) {
@@ -118,9 +137,15 @@
       }
     });
     const mobileAccount = document.createElement("a");
+    mobileAccount.className = "mobileAccountLink";
     mobileAccount.href = "profile.html";
     mobileAccount.textContent = "account";
     account.append(logout, mobileAccount);
+
+    const admin = await window.authApi.isAdmin(session);
+    if (renderId !== authRenderId) return;
+    mobileDashboard.href = "admin-dashboard.html";
+    mobileDashboard.hidden = !admin;
   };
 
   headerAuth.addEventListener("click", async (event) => {

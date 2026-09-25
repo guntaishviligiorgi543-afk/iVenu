@@ -1,36 +1,29 @@
 (() => {
-  async function isAdmin(session) {
-    if (!session?.user || !window.supabaseClient) return false;
-    const { data, error } = await window.supabaseClient
-      .from("admin_users")
-      .select("user_id")
-      .eq("user_id", session.user.id)
-      .maybeSingle();
-    if (error) {
-      console.error(error);
-      return false;
-    }
-    return Boolean(data);
-  }
-
   const floatingAdminLink = document.createElement("a");
   floatingAdminLink.className = "adminFloatingLink";
   floatingAdminLink.href = "admin-dashboard.html";
   floatingAdminLink.textContent = "Dashboard";
   floatingAdminLink.hidden = true;
+  floatingAdminLink.dataset.adminVisible = "false";
   document.body.appendChild(floatingAdminLink);
+
+  const setFloatingAdminVisibility = (visible) => {
+    floatingAdminLink.dataset.adminVisible = String(visible);
+    floatingAdminLink.hidden =
+      !visible || document.body.classList.contains("mobile-menu-open");
+  };
 
   if (window.authApi) {
     window.authApi
       .getSession()
       .then(async (session) => {
-        floatingAdminLink.hidden = !(await isAdmin(session));
+        setFloatingAdminVisibility(await window.authApi.isAdmin(session));
       })
       .catch(() => {
-        floatingAdminLink.hidden = true;
+        setFloatingAdminVisibility(false);
       });
     window.authApi.subscribeToAuthChanges(async (_event, session) => {
-      floatingAdminLink.hidden = !(await isAdmin(session));
+      setFloatingAdminVisibility(await window.authApi.isAdmin(session));
     });
   }
   const nav = document.querySelector("header nav");

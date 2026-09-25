@@ -4,7 +4,7 @@
     <link rel="icon" type="image/png" href="images/facicon.png" />
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title> iVenue</title>
+    <title>iVenue</title>
     <link rel="stylesheet" href="main.css" />
     <script src="loading-state.js"></script>
     <script defer src="public-header.js"></script>
@@ -305,7 +305,9 @@
       }
     }
     @keyframes event-card-cart-pending {
-      to { transform: rotate(360deg); }
+      to {
+        transform: rotate(360deg);
+      }
     }
     @media (hover: none), (pointer: coarse) {
       .eventCardShareButton,
@@ -462,6 +464,31 @@
         <a href="venue.html"> <span>venue</span></a
         ><a href="contact.html"> <span>contact</span></a>
       </nav>
+      <button
+        class="mobileMenuToggle"
+        type="button"
+        aria-label="Open menu"
+        aria-controls="mobileMenu"
+        aria-expanded="false"
+      >
+        <span></span><span></span><span></span>
+      </button>
+      <div class="mobileMenu" id="mobileMenu" aria-hidden="true">
+        <div class="mobileMenuPanel">
+          <nav class="mobileMenuNav" aria-label="Mobile navigation">
+            <a href="index.html">home</a>
+            <a href="shows.html">shows</a>
+            <a href="venue.html">venue</a>
+            <a href="contact.html">contact</a>
+            <a href="profile.html#cart">Cart</a>
+            <a class="mobileDashboardLink" href="profile.html" hidden
+              >Dashboard</a
+            >
+          </nav>
+          <div class="mobileMenuSocial"></div>
+          <div class="mobileMenuAccount" id="mobileMenuAccount"></div>
+        </div>
+      </div>
       <a class="contact" href="contact.html">
         <span>500 TERRY FRANCOIS ST. SAN FRANCISCO, CA 94158 </span></a
       >
@@ -562,7 +589,13 @@
           </div>
           <div class="eventCards"></div>
           <div class="pagination" aria-label="Event pages"></div>
-          <p class="showsCartMessage" id="showsCartMessage" role="status" aria-live="polite" hidden></p>
+          <p
+            class="showsCartMessage"
+            id="showsCartMessage"
+            role="status"
+            aria-live="polite"
+            hidden
+          ></p>
         </div>
       </section>
       <section class="sec4" aria-labelledby="newsletter-title">
@@ -612,7 +645,9 @@
       const eventSearch = document.querySelector("#eventSearch");
       const eventCategory = document.querySelector("#eventCategory");
       const showsCartMessage = document.querySelector("#showsCartMessage");
-      const releaseShowsInitialLoad = window.pageLoading?.lock("shows-first-section");
+      const releaseShowsInitialLoad = window.pageLoading?.lock(
+        "shows-first-section",
+      );
       const EVENTS_PER_PAGE = window.iVenueEventListing.pageSize;
       let loadedEvents = [];
       let filteredEvents = [];
@@ -643,7 +678,9 @@
         feedback.setAttribute("aria-live", "polite");
         imageWrapper.append(feedback);
 
-        window.requestAnimationFrame(() => feedback.classList.add("is-visible"));
+        window.requestAnimationFrame(() =>
+          feedback.classList.add("is-visible"),
+        );
         window.setTimeout(() => {
           feedback.classList.remove("is-visible");
           window.setTimeout(() => feedback.remove(), 220);
@@ -894,7 +931,10 @@
               await refreshCartState();
             } catch (error) {
               console.error("Shows cart toggle failed:", error);
-              showCartMessage(error.message || "Cart could not be updated.", true);
+              showCartMessage(
+                error.message || "Cart could not be updated.",
+                true,
+              );
             } finally {
               pendingCartEventIds.delete(eventId);
               syncVisibleCartButtons();
