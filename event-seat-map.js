@@ -16,6 +16,7 @@
     activeLoadPromise: null,
     eventId: null,
     runtimeDiagnostics: null,
+    mapLoadingCount: 0,
   };
   const escapeHtml = (value) =>
     String(value ?? "")
@@ -26,6 +27,21 @@
       .replaceAll("'", "&#039;");
   const validColor = (value) => /^#[0-9a-f]{6}$/i.test(value || "");
   const EVENT_SEAT_RPC_PAGE_SIZE = 1000;
+
+  function beginHallMapLoading() {
+    const stageMap = document.querySelector(".stageMap");
+    if (!stageMap) return () => {};
+    seatState.mapLoadingCount += 1;
+    stageMap.dataset.mapLoading = "true";
+    let finished = false;
+    return () => {
+      if (finished) return;
+      finished = true;
+      seatState.mapLoadingCount = Math.max(0, seatState.mapLoadingCount - 1);
+      if (seatState.mapLoadingCount === 0)
+        delete stageMap.dataset.mapLoading;
+    };
+  }
 
   function canonicalTicketTypes() {
     return seatState.legendTypes.filter((ticket) => ticket.is_active);
@@ -425,6 +441,8 @@
   async function loadEventSeatMapForEvent(eventId) {
     const loadStartedAt = performance.now();
     const requestId = ++seatState.loadRequestId;
+    const finishMapLoading = beginHallMapLoading();
+    try {
     const [seatResult, legendResult] = await Promise.all([
       loadAllEventSeatMapRows(eventId),
       client.rpc("get_event_ticket_legend", { p_event_id: eventId }),
@@ -483,6 +501,9 @@
       "Canonical seat-map performance (ms)",
       seatState.runtimeDiagnostics.performanceMs,
     );
+    } finally {
+      finishMapLoading();
+    }
   }
 
   window.renderTicketLegend = function renderDatabaseTicketLegend() {
@@ -527,6 +548,9 @@
   window.renderHallMap = async function renderCanonicalSeatMap() {
     const stageMap = document.querySelector(".stageMap");
     if (!stageMap) return;
+    const finishMapLoading = beginHallMapLoading();
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+    try {
     if (isExpoGeorgiaPavilion11Event() && window.expoGeorgiaPavilion11SeatMap) {
       try {
         const mapResult = window.expoGeorgiaPavilion11SeatMap.render({
@@ -590,8 +614,6 @@
     }
     if (isBlackSeaArenaEvent() && window.blackSeaArenaSeatMap) {
       try {
-        stageMap.dataset.mapLoading = "true";
-        await new Promise((resolve) => requestAnimationFrame(resolve));
         const mapResult = await window.blackSeaArenaSeatMap.render({
           stageMap,
           rows: seatState.rows,
@@ -622,8 +644,6 @@
           "The Black Sea Arena seat map could not be loaded without risking an incomplete seat binding.";
         stageMap.appendChild(message);
         return;
-      } finally {
-        delete stageMap.dataset.mapLoading;
       }
     }
     if (isDinamoArenaEvent() && window.dinamoArenaSeatMap) {
@@ -806,6 +826,9 @@
     window.HallMapViewportController.attachHtml({ viewport, content: canvas });
     applyMapFilters();
     window.attachSeatClickHandlers();
+    } finally {
+      finishMapLoading();
+    }
   };
 
   window.attachSeatClickHandlers = function attachCanonicalSeatClickHandlers() {

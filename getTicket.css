@@ -1508,7 +1508,7 @@ body.ticket-open .socIcons {
 }
 
 .stageMap[data-map-loading="true"]::after {
-  content: "Loading seat map…";
+  content: "Loading...";
   position: absolute;
   inset: 0;
   z-index: 40;
