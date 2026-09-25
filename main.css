@@ -1,7 +1,6 @@
 @import url("https://fonts.googleapis.com/css2?family=Fjalla+One&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Cabin:ital,wght@0,400..700;1,400..700&display=swap");
 
-
 * {
   margin: 0;
   padding: 0;
@@ -46,7 +45,12 @@ body.initial-load-scroll-locked {
 }
 
 .initialPageLoaderLogo {
-  background: linear-gradient(100deg, rgba(255, 255, 255, 0.09) 20%, rgba(255, 148, 117, 0.2) 42%, rgba(255, 255, 255, 0.09) 64%);
+  background: linear-gradient(
+    100deg,
+    rgba(255, 255, 255, 0.09) 20%,
+    rgba(255, 148, 117, 0.2) 42%,
+    rgba(255, 255, 255, 0.09) 64%
+  );
   background-size: 220% 100%;
   -webkit-mask: url("assets/ivenue-logo.png") center / contain no-repeat;
   mask: url("assets/ivenue-logo.png") center / contain no-repeat;
@@ -72,7 +76,6 @@ img {
   display: block;
   width: 100%;
 }
-
 
 header {
   position: fixed;
@@ -287,14 +290,13 @@ body[class*="auth"] #eventCartToggle {
 }
 .mobileMenu.is-open .mobileMenuSocial {
   display: flex;
- }
+}
 .mobileMenuSocial .socIcons {
   position: static;
   display: flex;
   width: auto;
   margin: 0;
-    gap: 30px;
-
+  gap: 30px;
 }
 .mobileMenuAccount {
   margin-top: auto;
@@ -973,19 +975,6 @@ body.ticket-open #eventCartToggle {
   .venueHeroSkeletonCopy {
     grid-row: 3;
     width: 100%;
-  }
-}
-
-.heroSlider.is-ready .heroSlide.active {
-  animation: heroReveal 0.35s ease-out both;
-}
-
-@keyframes heroReveal {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
   }
 }
 
