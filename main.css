@@ -308,6 +308,10 @@ body.ticket-open #eventCartToggle {
   display: none !important;
 }
 
+body.ticket-open .event-cart-anchor {
+  display: none !important;
+}
+
 .skeletonBlock {
   display: block;
   border-radius: 4px;

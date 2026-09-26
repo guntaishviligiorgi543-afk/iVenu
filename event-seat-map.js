@@ -8,7 +8,6 @@
     pendingIds: new Set(),
     interactionAbortController: null,
     interactionRoot: null,
-    countdownId: null,
     isCheckingOut: false,
     isExpiring: false,
     loadRequestId: 0,
@@ -27,6 +26,12 @@
       .replaceAll("'", "&#039;");
   const validColor = (value) => /^#[0-9a-f]{6}$/i.test(value || "");
   const EVENT_SEAT_RPC_PAGE_SIZE = 1000;
+  const ACTIVE_RESERVATION_CONFLICT = "ACTIVE_RESERVATION_FOR_ANOTHER_EVENT";
+  const ACTIVE_RESERVATION_CONFLICT_MESSAGE =
+    "You already have an active reservation for another event. Complete your purchase or wait until your reservation expires.";
+  let reservationConflictDialog = null;
+  let reservationConflictTrigger = null;
+  let reservationConflictEventId = null;
 
   function beginHallMapLoading() {
     const stageMap = document.querySelector(".stageMap");
@@ -320,38 +325,29 @@
       .filter(Boolean);
   }
 
-  function stopCanonicalCountdown() {
-    if (seatState.countdownId) clearInterval(seatState.countdownId);
-    seatState.countdownId = null;
-  }
   function syncCanonicalCountdown() {
-    stopCanonicalCountdown();
-    const timer = document.querySelector(".selectionCountdown");
-    const value = document.querySelector(".selectionCountdownValue");
-    if (!timer || !value) return;
     const expirations = basketTickets
       .map((item) => new Date(item.reservedUntil || 0).getTime())
       .filter((time) => Number.isFinite(time) && time > Date.now());
     if (!expirations.length) {
-      timer.style.display = "none";
+      window.reservationCountdown?.clear();
       return;
     }
-    const earliest = Math.min(...expirations);
-    const update = () => {
-      const seconds = Math.max(0, Math.ceil((earliest - Date.now()) / 1000));
-      value.textContent = `expires in ${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`;
-      timer.style.display = "flex";
-      timer.classList.toggle("warning", seconds <= 60);
-      if (seconds === 0) {
-        stopCanonicalCountdown();
+    const currentEventId = new URLSearchParams(window.location.search).get("id");
+    window.reservationCountdown?.start(Math.min(...expirations), {
+      eventId: currentEventId,
+      expire: () =>
         expireCurrentTicketSelection().catch((error) =>
           console.error("Unable to reconcile expired reservations", error),
-        );
-      }
-    };
-    update();
-    seatState.countdownId = setInterval(update, 1000);
+        ),
+    });
   }
+
+  window.syncReservationCountdownVisibility = () =>
+    window.reservationCountdown?.render();
+  window.addEventListener("ticketPurchaseVisibilityChanged", () =>
+    window.reservationCountdown?.render(),
+  );
 
   function replaceBasketWithReservations(rows) {
     basketTickets.length = 0;
@@ -491,6 +487,12 @@
     await window.renderHallMap();
     const mapRenderFinishedAt = performance.now();
     refreshTicketLists();
+    const url = new URL(window.location.href);
+    if (url.searchParams.get("resumeReservation") === "1") {
+      url.searchParams.delete("resumeReservation");
+      window.history.replaceState({}, "", url);
+      await window.openTicketPurchase?.();
+    }
     seatState.runtimeDiagnostics.performanceMs = {
       ...seatState.runtimeDiagnostics.performanceMs,
       reservations: Math.round(reservationsFinishedAt - normalizedAt),
@@ -914,6 +916,74 @@
     applyMapFilters();
   }
 
+  function closeReservationConflictDialog() {
+    if (!reservationConflictDialog || reservationConflictDialog.hidden) return;
+    reservationConflictDialog.hidden = true;
+    reservationConflictTrigger?.focus();
+    reservationConflictTrigger = null;
+    reservationConflictEventId = null;
+  }
+
+  function showReservationConflictDialog(eventId) {
+    if (!reservationConflictDialog) {
+      reservationConflictDialog = document.createElement("div");
+      reservationConflictDialog.className = "reservationConflictDialog";
+      reservationConflictDialog.hidden = true;
+      reservationConflictDialog.innerHTML = `<section class="reservationConflictDialogPanel" role="alertdialog" aria-modal="true" aria-labelledby="reservationConflictTitle" aria-describedby="reservationConflictMessage"><h2 id="reservationConflictTitle">Active reservation</h2><p id="reservationConflictMessage"></p><div class="reservationConflictDialogActions"><button type="button" class="reservationConflictDialogClose">Okay</button><button type="button" class="reservationConflictDialogFinish">Finish reservation</button></div></section>`;
+      reservationConflictDialog
+        .querySelector(".reservationConflictDialogClose")
+        .addEventListener("click", closeReservationConflictDialog);
+      reservationConflictDialog
+        .querySelector(".reservationConflictDialogFinish")
+        .addEventListener("click", () => {
+          if (!reservationConflictEventId) return;
+          const url = new URL("getTickets.html", window.location.href);
+          url.searchParams.set("id", reservationConflictEventId);
+          url.searchParams.set("resumeReservation", "1");
+          window.location.assign(url.href);
+        });
+      reservationConflictDialog.addEventListener("click", (event) => {
+        if (event.target === reservationConflictDialog)
+          closeReservationConflictDialog();
+      });
+      document.body.append(reservationConflictDialog);
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") closeReservationConflictDialog();
+      });
+    }
+    reservationConflictTrigger = document.activeElement;
+    reservationConflictEventId = eventId ? String(eventId) : null;
+    reservationConflictDialog.querySelector("#reservationConflictMessage").textContent =
+      ACTIVE_RESERVATION_CONFLICT_MESSAGE;
+    reservationConflictDialog.querySelector(
+      ".reservationConflictDialogFinish",
+    ).hidden = !reservationConflictEventId;
+    reservationConflictDialog.hidden = false;
+    reservationConflictDialog
+      .querySelector(".reservationConflictDialogClose")
+      .focus();
+  }
+
+  async function getActiveReservationForAnotherEvent() {
+    const session = await window.authApi?.getSession();
+    if (!session?.user || !seatState.eventId) return null;
+    const { data, error } = await client
+      .from("cart_items")
+      .select(
+        "event_seat_id, event_seats!inner(event_id, status, reserved_by, reserved_until)",
+      )
+      .eq("user_id", session.user.id)
+      .eq("event_seats.reserved_by", session.user.id)
+      .eq("event_seats.status", "reserved")
+      .gt("event_seats.reserved_until", new Date().toISOString())
+      .not("event_seat_id", "is", null);
+    if (error) throw error;
+    const activeReservation = (data || []).find(
+      (item) => String(item.event_seats?.event_id) !== String(seatState.eventId),
+    );
+    return activeReservation?.event_seats?.event_id || null;
+  }
+
   window.addTicketToBasket = async function reserveSeat(ticket) {
     const row = seatState.byId.get(ticket.eventSeatId);
     if (
@@ -926,12 +996,32 @@
       window.showTicketLimitDialog?.();
       return;
     }
+    try {
+      const activeReservationEventId =
+        await getActiveReservationForAnotherEvent();
+      if (activeReservationEventId) {
+        showReservationConflictDialog(activeReservationEventId);
+        return;
+      }
+    } catch (error) {
+      // The RPC below remains authoritative if this optional UX query fails.
+      console.error("Unable to check existing reservations", error);
+    }
     seatState.pendingIds.add(row.event_seat_id);
     const { data, error } = await client.rpc("reserve_event_seat", {
       p_event_seat_id: row.event_seat_id,
     });
     seatState.pendingIds.delete(row.event_seat_id);
     if (error) {
+      if (String(error.message || "").includes(ACTIVE_RESERVATION_CONFLICT)) {
+        const activeReservationEventId =
+          await getActiveReservationForAnotherEvent().catch((lookupError) => {
+            console.error("Unable to find the active reservation", lookupError);
+            return null;
+          });
+        showReservationConflictDialog(activeReservationEventId);
+        return;
+      }
       await loadEventSeatMap().catch((refreshError) =>
         console.error("Unable to reconcile seat state", refreshError),
       );

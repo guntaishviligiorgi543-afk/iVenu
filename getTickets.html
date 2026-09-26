@@ -877,6 +877,7 @@
 
       function exitTicketPurchase({ expired = false } = {}) {
         document.body.classList.remove("ticket-open");
+        window.dispatchEvent(new Event("ticketPurchaseVisibilityChanged"));
         setMobileTicketPanel(false);
         setMobileFilterPanel(false);
         setMapLegendOpen(false);
@@ -956,9 +957,8 @@
       clearStoredSelectionState();
       renderBasket();
 
-      selectTktBtns.forEach((btn) => {
-        btn.addEventListener("click", async (event) => {
-          event.preventDefault();
+      async function openTicketPurchase(event) {
+          event?.preventDefault();
           if (
             window.requireAuthForTickets &&
             !(await window.requireAuthForTickets())
@@ -966,6 +966,7 @@
             return;
           }
           document.body.classList.add("ticket-open");
+          window.dispatchEvent(new Event("ticketPurchaseVisibilityChanged"));
           setMobileTicketPanel(false);
 
           setTimeout(() => {
@@ -976,7 +977,11 @@
               renderHallMap();
             attachSeatClickHandlers();
           }, 50);
-        });
+      }
+
+      window.openTicketPurchase = openTicketPurchase;
+      selectTktBtns.forEach((btn) => {
+        btn.addEventListener("click", openTicketPurchase);
       });
 
       closeSelectTkt?.addEventListener("click", () => {
@@ -1070,10 +1075,6 @@
 
             const totalSeats = section.seatsPerRow;
 
-            /*
-              ფართო ნახევარწრე.
-              მარცხნიდან მარჯვნივ.
-            */
 
             const startAngle = -170;
             const endAngle = -10;

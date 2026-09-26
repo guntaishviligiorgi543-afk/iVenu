@@ -303,32 +303,84 @@ section {
   top: 20px;
   left: 20px;
   z-index: 60;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 18px;
-  border: 1px solid rgba(0, 0, 0, 0.15);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.92);
-  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.08);
-  color: #111;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  font-size: 11px;
-  font-weight: 700;
-  pointer-events: none;
-}
-
-.selectionCountdown.warning {
-  border-color: rgba(190, 38, 38, 0.5);
-  background: rgba(255, 244, 244, 0.96);
-  color: #9c1717;
-  box-shadow: 0 8px 22px rgba(156, 23, 23, 0.12);
 }
 
 .selectionCountdownValue {
   font-size: 15px;
   letter-spacing: 0.12em;
+}
+
+.reservationConflictDialog {
+  position: fixed;
+  z-index: 1000003;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.62);
+  font-family: "Cabin", sans-serif;
+}
+
+.reservationConflictDialog[hidden] {
+  display: none;
+}
+
+.reservationConflictDialogPanel {
+  width: fit-content;
+  max-width: min(100%, 430px);
+  padding: 26px;
+  border: 1px solid rgba(255, 148, 117, 0.62);
+  border-radius: 14px;
+  color: #fff;
+  background: #121212;
+  box-shadow: 0 20px 54px rgba(0, 0, 0, 0.42);
+  text-align: center;
+  min-height: fit-content;
+ }
+
+.reservationConflictDialogPanel h2 {
+  margin: 0 0 10px;
+  color: #ff9475;
+  font-family: "Fjalla One", Impact, sans-serif;
+  font-size: 1.55rem;
+  font-weight: 400;
+  text-transform: uppercase;
+}
+
+.reservationConflictDialogPanel p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.reservationConflictDialogActions {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  margin-top: 22px;
+  gap: 12px;
+}
+
+.reservationConflictDialogClose,
+.reservationConflictDialogFinish {
+  padding: 10px 20px;
+  border: 1px solid #ff9475;
+  color: #121212;
+  background: #ff9475;
+  font-family: "Cabin", sans-serif;
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.reservationConflictDialogClose:hover,
+.reservationConflictDialogClose:focus-visible,
+.reservationConflictDialogFinish:hover,
+.reservationConflictDialogFinish:focus-visible {
+  color: #ff9475;
+  background: transparent;
 }
 
 body.ticket-open .selectionCountdown {

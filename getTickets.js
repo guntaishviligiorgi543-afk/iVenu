@@ -314,7 +314,6 @@ function addTicketToBasket(ticket) {
 
   if (exists) return;
 
-  const isFirstTicket = basketTickets.length === 0;
   basketTickets.push(ticket);
 
   if (window.cartSync) {
@@ -328,10 +327,6 @@ function addTicketToBasket(ticket) {
 
   if (typeof persistBasketState === "function") {
     persistBasketState();
-  }
-
-  if (isFirstTicket && typeof startSelectionCountdown === "function") {
-    startSelectionCountdown();
   }
 
   renderBasket();
