@@ -749,6 +749,11 @@ header nav .authNavLink[hidden] {
   transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
 }
 
+/* Keep unreleased providers in the markup so they can be enabled by removing this modifier. */
+.social-auth-btn--not-released {
+  display: none;
+}
+
 .social-auth-btn__icon {
   position: absolute;
   top: 50%;
