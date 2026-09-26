@@ -307,7 +307,7 @@ body.auth-login-page > header,
 body.auth-register-page > header,
 body.auth-recovery-page > header,
 body.auth-verification-page > header {
-  position: fixed;
+  position: static;
   inset: 0 0 auto 0;
   z-index: 99999;
   display: flex;
@@ -315,10 +315,61 @@ body.auth-verification-page > header {
   justify-content: space-between;
 }
 
-body.auth-login-page > header > nav,
-body.auth-register-page > header > nav,
-body.auth-recovery-page > header > nav,
-body.auth-verification-page > header > nav {
+/* Authentication headers belong to the document flow, unlike site headers. */
+body header.auth-page-header {
+  position: static;
+  inset: auto;
+  display: block;
+  height: 0;
+  padding: 0;
+  pointer-events: auto;
+}
+
+body header.auth-page-header > .authHeaderContent {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 30px;
+  pointer-events: none;
+}
+
+body header.auth-page-header > .authHeaderContent > * {
+  pointer-events: auto;
+}
+
+body header.auth-page-header > .authHeaderContent > nav {
+  display: flex;
+  align-items: center;
+  width: fit-content;
+  gap: 30px;
+  padding: 7px 15px;
+  background: #000;
+}
+
+body header.auth-page-header > .authHeaderContent > nav a {
+  display: block;
+}
+
+body header.auth-page-header > .authHeaderContent > nav span {
+  color: #fff;
+  font-family: Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
+  font-size: 16px;
+  font-weight: 100;
+  text-transform: uppercase;
+  transition: color 0.2s ease;
+}
+
+body header.auth-page-header > .authHeaderContent > nav a:hover span {
+  color: #ff9475;
+}
+
+body.auth-login-page > header > .authHeaderContent > nav,
+body.auth-register-page > header > .authHeaderContent > nav,
+body.auth-recovery-page > header > .authHeaderContent > nav,
+body.auth-verification-page > header > .authHeaderContent > nav {
   order: 0;
   margin-right: auto;
 }
@@ -347,19 +398,19 @@ body.auth-verification-page > header .auth-page-logo img {
 }
 
 @media (max-width: 1290px) {
-  body.auth-login-page > header,
-  body.auth-register-page > header,
-  body.auth-recovery-page > header,
-  body.auth-verification-page > header {
+  body.auth-login-page > header > .authHeaderContent,
+  body.auth-register-page > header > .authHeaderContent,
+  body.auth-recovery-page > header > .authHeaderContent,
+  body.auth-verification-page > header > .authHeaderContent {
     justify-content: flex-start;
     height: 110px;
     padding: 0 24px;
   }
 
-  body.auth-login-page > header > nav,
-  body.auth-register-page > header > nav,
-  body.auth-recovery-page > header > nav,
-  body.auth-verification-page > header > nav {
+  body.auth-login-page > header > .authHeaderContent > nav,
+  body.auth-register-page > header > .authHeaderContent > nav,
+  body.auth-recovery-page > header > .authHeaderContent > nav,
+  body.auth-verification-page > header > .authHeaderContent > nav {
     display: none;
   }
 
@@ -405,30 +456,30 @@ body.auth-verification-page > header .auth-page-logo img {
 }
 
 /* Keep the authentication-page navigation sized to its links. */
-body.auth-login-page > header > nav,
-body.auth-register-page > header > nav,
-body.auth-recovery-page > header > nav {
+body.auth-login-page > header > .authHeaderContent > nav,
+body.auth-register-page > header > .authHeaderContent > nav,
+body.auth-recovery-page > header > .authHeaderContent > nav {
   width: fit-content;
 }
 
 @media (max-width: 400px) {
-  body.auth-login-page > header,
-  body.auth-register-page > header,
-  body.auth-recovery-page > header {
+  body.auth-login-page > header > .authHeaderContent,
+  body.auth-register-page > header > .authHeaderContent,
+  body.auth-recovery-page > header > .authHeaderContent {
     gap: 8px;
     padding: 14px;
   }
 
-  body.auth-login-page > header > nav,
-  body.auth-register-page > header > nav,
-  body.auth-recovery-page > header > nav {
+  body.auth-login-page > header > .authHeaderContent > nav,
+  body.auth-register-page > header > .authHeaderContent > nav,
+  body.auth-recovery-page > header > .authHeaderContent > nav {
     gap: 8px;
     padding: 8px;
   }
 
-  body.auth-login-page > header > nav span,
-  body.auth-register-page > header > nav span,
-  body.auth-recovery-page > header > nav span {
+  body.auth-login-page > header > .authHeaderContent > nav span,
+  body.auth-register-page > header > .authHeaderContent > nav span,
+  body.auth-recovery-page > header > .authHeaderContent > nav span {
     font-size: 14px;
   }
 }

@@ -15,6 +15,18 @@
   const isAuthPage =
     document.body.className.includes("auth") ||
     /login|register|verify|reset|forgot/.test(location.pathname);
+  header.classList.toggle("auth-page-header", isAuthPage);
+  let authHeaderContent = null;
+  if (isAuthPage) {
+    authHeaderContent = header.querySelector(".authHeaderContent");
+    if (!authHeaderContent) {
+      authHeaderContent = document.createElement("div");
+      authHeaderContent.className = "authHeaderContent";
+      [...header.children].forEach((child) => authHeaderContent.append(child));
+      header.append(authHeaderContent);
+    }
+  }
+  const headerContent = authHeaderContent || header;
   const isAuthMenuLayerPage =
     /(?:^|\/)(?:login|register|reset-password)\.html$/.test(location.pathname);
   let toggle = header.querySelector(".mobileMenuToggle");
@@ -25,7 +37,7 @@
     toggle.setAttribute("aria-label", "Open menu");
     toggle.setAttribute("aria-expanded", "false");
     toggle.innerHTML = "<span></span><span></span><span></span>";
-    header.append(toggle);
+    headerContent.append(toggle);
   }
 
   let menu = document.querySelector("#mobileMenu");
@@ -100,7 +112,7 @@
   const placeSocial = (isMenuOpen = false) => {
     if (!social) return;
     if (isMenuOpen && socialSlot) socialSlot.append(social);
-    else if (burgerBreakpoint.matches) header.append(social);
+    else if (burgerBreakpoint.matches) headerContent.append(social);
     else if (socialParent) socialParent.insertBefore(social, socialNext);
   };
   const setOpen = (open) => {
@@ -122,7 +134,9 @@
   let authRenderId = 0;
   const renderAuth = async (session) => {
     const renderId = ++authRenderId;
-    const signedIn = Boolean(session?.user);
+    // Authentication flows always keep the header in its logged-out state.
+    // A recovery or verification session must not expose account/logout links.
+    const signedIn = Boolean(session?.user) && !isAuthPage;
     headerAuth.textContent = signedIn ? "logout" : "login";
     headerAuth.href = signedIn ? "#" : "login.html";
     headerAccount.hidden = !signedIn;
