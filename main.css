@@ -1755,6 +1755,32 @@ body.ticket-open .event-cart-anchor {
   text-align: center;
 }
 
+.footerLegalLinks {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px 18px;
+  margin: 14px 20px 0;
+  color: rgba(255, 255, 255, 0.66);
+  font: 12px "Cabin", sans-serif;
+  letter-spacing: 0.08em;
+}
+
+.footerLegalLinks a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.footerLegalLinks a:hover,
+.footerLegalLinks a:focus-visible {
+  color: #ff9475;
+}
+
+.footerLegalLinks a:focus-visible {
+  outline: 1px solid #ff9475;
+  outline-offset: 3px;
+}
+
 /* =========================================================
    TABLET / BURGER BREAKPOINT
    Starts at 1290px because desktop nav starts colliding.

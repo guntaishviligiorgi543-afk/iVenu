@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>User Data Deletion | iVenue</title>
+    <meta name="description" content="How to delete an iVenue account and associated personal information." />
+    <link rel="canonical" href="https://ivenue.site/data-deletion.html" />
+    <link rel="stylesheet" href="main.css" />
+    <link rel="stylesheet" href="legal-pages.css" />
+    <script defer src="public-header.js"></script>
+  </head>
+  <body class="legal-page">
+    <header>
+      <nav>
+        <a href="index.html"><span>home</span></a>
+        <a href="shows.html"><span>shows</span></a>
+        <a href="venue.html"><span>venue</span></a>
+        <a href="contact.html"><span>contact</span></a>
+      </nav>
+      <a class="legal-header-logo" href="index.html" aria-label="iVenue home">
+        <img src="assets/ivenue-logo.png" alt="iVenue" />
+      </a>
+    </header>
+
+    <main class="legal-main">
+      <article class="legal-card">
+        <p class="legal-eyebrow">iVenue information</p>
+        <h1>User Data Deletion</h1>
+        <p class="legal-meta">Last updated: September 27, 2026</p>
+
+        <h2>Request deletion from your account</h2>
+        <p>iVenue currently provides a self-service account deletion request in the signed-in account dashboard. After signing in, open your profile, choose <strong>Delete account</strong>, then continue to the confirmation step. The request requires the current iVenue password before it can be completed.</p>
+        <p>This is the deletion method currently supported by the site. It is designed to confirm that the person making the request controls the account. Users who signed in only with an OAuth provider and do not have a current iVenue password cannot complete this password-confirmation flow at this time.</p>
+
+        <h2>What is deleted or retained</h2>
+        <p>When the request succeeds, iVenue deletes the authenticated account and removes cart information associated with it. If the account has orders, iVenue keeps the order records for operational or legal reasons while anonymizing the linked profile: the profile name is replaced, the email is replaced with a non-deliverable deletion address, and phone and avatar information are removed. Information may otherwise be retained where it is necessary for legal or operational reasons.</p>
+
+        <h2>Information to use for a request</h2>
+        <p>The self-service flow identifies the account from the active signed-in session. If iVenue asks you to follow up through an officially provided support channel, provide the email address on the account and the account name so the account can be located.</p>
+        <p><strong>Never send your password, OTP, access token, session token, or any other authentication credential.</strong> The deletion flow asks for a current password only inside the secured account dashboard; it should never be sent in a message.</p>
+
+        <h2>Need to review the policy?</h2>
+        <p>For more detail about the account, ticket and profile information iVenue handles, read the <a href="privacy-policy.html">Privacy Policy</a>.</p>
+
+        <nav class="legal-actions" aria-label="Legal page navigation">
+          <a href="profile.html">Open account dashboard</a>
+          <a href="privacy-policy.html">Privacy Policy</a>
+          <a href="index.html">Back to iVenue</a>
+        </nav>
+      </article>
+    </main>
+    <footer class="legal-footer">
+      <nav aria-label="Legal information">
+        <a href="/privacy-policy.html">Privacy Policy</a>
+        <a href="/data-deletion.html">Data Deletion</a>
+      </nav>
+      &copy; iVenue
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <script src="auth.js"></script>
+  </body>
+</html>

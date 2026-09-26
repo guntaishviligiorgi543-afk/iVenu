@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Privacy Policy | iVenue</title>
+    <meta name="description" content="Learn how iVenue handles account, ticket, reservation and profile information." />
+    <link rel="canonical" href="https://ivenue.site/privacy-policy.html" />
+    <link rel="stylesheet" href="main.css" />
+    <link rel="stylesheet" href="legal-pages.css" />
+    <script defer src="public-header.js"></script>
+  </head>
+  <body class="legal-page">
+    <header>
+      <nav>
+        <a href="index.html"><span>home</span></a>
+        <a href="shows.html"><span>shows</span></a>
+        <a href="venue.html"><span>venue</span></a>
+        <a href="contact.html"><span>contact</span></a>
+      </nav>
+      <a class="legal-header-logo" href="index.html" aria-label="iVenue home">
+        <img src="assets/ivenue-logo.png" alt="iVenue" />
+      </a>
+    </header>
+
+    <main class="legal-main">
+      <article class="legal-card">
+        <p class="legal-eyebrow">iVenue information</p>
+        <h1>Privacy Policy</h1>
+        <p class="legal-meta">Last updated: September 27, 2026</p>
+
+        <h2>What iVenue does</h2>
+        <p>iVenue is an event and ticket platform. This policy explains how iVenue handles information used to create and manage an account, reserve tickets, keep a cart, and view orders.</p>
+
+        <h2>Information we handle</h2>
+        <p>When you register with email and password, iVenue stores the account details entered in the registration and profile areas, including your name, email address and phone number. Profile information can also include an avatar URL or an image you choose to upload.</p>
+        <p>When you use Google sign-in, Supabase Auth may receive information made available by Google, such as your email address and, where supplied in compatible fields, your name or profile image. iVenue uses that information only to create and maintain the same account and profile experience. The site currently displays a Facebook sign-in button, but Facebook sign-in is not enabled, so iVenue does not currently receive account information through Facebook Login.</p>
+        <p>When you reserve or purchase tickets, iVenue handles the related event, seat, ticket, cart, reservation and order information needed to provide those features. A cart can contain ticket selections, and reservations temporarily hold selected seats while the reservation is active.</p>
+
+        <h2>Why we process information</h2>
+        <p>iVenue processes account and authentication information to let you sign in, maintain your session, manage your profile, protect account actions, and provide ticket, cart, reservation and order functionality. We use the related ticket information to show your selections and process the actions you take on the site.</p>
+
+        <h2>How iVenue uses Supabase</h2>
+        <p>iVenue uses Supabase for authentication and database services, and for profile image storage when an image is uploaded. Supabase manages authentication sessions; iVenue stores the application information needed for profiles, carts, reservations and orders in its Supabase-backed services.</p>
+
+        <h2>Protection and retention</h2>
+        <p>Access to account-related features is tied to the signed-in account, and sensitive account deletion requires confirmation of the current password. We keep information for as long as it is needed to operate the account and ticket features, or where it must be kept for operational or legal reasons.</p>
+
+        <h2>Your choices and data deletion</h2>
+        <p>You can update profile information from your account dashboard. You can request deletion through the existing account deletion flow described on the <a href="data-deletion.html">User Data Deletion page</a>. That page also explains what happens to account, cart and order-related information when deletion is completed.</p>
+
+        <h2>Contact</h2>
+        <p>For general iVenue enquiries, visit the <a href="contact.html">Contact page</a>. Do not send passwords, one-time passcodes, access tokens or other authentication credentials in a message.</p>
+
+        <nav class="legal-actions" aria-label="Legal page navigation">
+          <a href="data-deletion.html">User Data Deletion</a>
+          <a href="index.html">Back to iVenue</a>
+        </nav>
+      </article>
+    </main>
+    <footer class="legal-footer">
+      <nav aria-label="Legal information">
+        <a href="/privacy-policy.html">Privacy Policy</a>
+        <a href="/data-deletion.html">Data Deletion</a>
+      </nav>
+      &copy; iVenue
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <script src="auth.js"></script>
+  </body>
+</html>

@@ -330,6 +330,24 @@
       letter-spacing: 0.4px;
     }
 
+    .footerLegalLinks {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px 16px;
+      margin-top: 10px;
+      font-size: 12px;
+    }
+
+    .footerLegalLinks a {
+      color: inherit;
+    }
+
+    .footerLegalLinks a:hover,
+    .footerLegalLinks a:focus-visible {
+      color: var(--peach);
+    }
+
     /* =========================
    RESPONSIVE
 ========================= */
@@ -467,6 +485,10 @@
     </main>
     <footer>
       <p>&copy; 2023 i venue. All rights reserved.</p>
+      <nav class="footerLegalLinks" aria-label="Legal information">
+        <a href="/privacy-policy.html">Privacy Policy</a>
+        <a href="/data-deletion.html">Data Deletion</a>
+      </nav>
     </footer>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-config.js"></script>
