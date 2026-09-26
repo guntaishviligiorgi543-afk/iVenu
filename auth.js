@@ -40,6 +40,17 @@
     return data;
   }
 
+  async function signInWithGoogle() {
+    const { data, error } = await client.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: "https://ivenue.site/",
+      },
+    });
+    if (error) throw error;
+    return data;
+  }
+
   async function verifyCurrentPassword(email, password) {
     const isolatedClient = window.supabase.createClient(
       window.supabaseConfig.url,
@@ -354,6 +365,7 @@
     getUser,
     isAdmin,
     signIn,
+    signInWithGoogle,
     verifyCurrentPassword,
     signUp,
     requestSignOut,
