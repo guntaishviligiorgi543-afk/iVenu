@@ -5,8 +5,6 @@ Disallow: /admin-login.html
 Disallow: /profile.html
 Disallow: /checkout.html
 Disallow: /getTickets.html
-Disallow: /login.html
-Disallow: /register.html
 Disallow: /forgot-password.html
 Disallow: /reset-password.html
 Disallow: /verify-email.html
