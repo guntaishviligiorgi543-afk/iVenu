@@ -612,7 +612,8 @@ body.ticket-open .event-cart-anchor {
   flex: 0 0 auto;
   color: #000;
   background: #fff;
-   transform: rotateY(180deg) scaleX(2) scaleY(1.02) translateX(-2px) translateY(-0.4px);
+  transform: rotateY(180deg) scaleX(2) scaleY(1.02) translateX(-2px)
+    translateY(-0.4px);
 }
 
 .heroEventCta button {
@@ -644,7 +645,7 @@ body.ticket-open .event-cart-anchor {
   background: #fff;
 
   white-space: nowrap;
-
+  font-family: "Courier New", Courier, monospace;
   transition:
     color 0.3s ease,
     background 0.3s ease;
@@ -1486,7 +1487,9 @@ body.ticket-open .event-cart-anchor {
   border: 0;
   color: rgba(255, 255, 255, 0.75);
   background: transparent;
-  font: 2rem/1 "Cabin", sans-serif;
+  font:
+    2rem/1 "Cabin",
+    sans-serif;
   cursor: pointer;
 }
 
@@ -1534,7 +1537,10 @@ body.ticket-open .event-cart-anchor {
   font-weight: 700;
   text-transform: uppercase;
   cursor: pointer;
-  transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+  transition:
+    color 0.2s ease,
+    border-color 0.2s ease,
+    background 0.2s ease;
 }
 
 .reservation-logout-dialog__actions button:first-child {
@@ -1764,7 +1770,9 @@ body.ticket-open .event-cart-anchor {
   gap: 8px 18px;
   margin: 14px 20px 0;
   color: rgba(255, 255, 255, 0.66);
-  font: 12px "Cabin", sans-serif;
+  font:
+    12px "Cabin",
+    sans-serif;
   letter-spacing: 0.08em;
 }
 
