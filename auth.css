@@ -2170,6 +2170,91 @@ body.auth-gate-open {
   .overview-reservations-grid .overview-reservation-detail { grid-template-columns: 1fr; }
 }
 
+/* Each Overview tab is a composed six-track dashboard, not a stacked card list. */
+@media (min-width: 761px) {
+  .overview-panel .overview-grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .overview-summary-grid .overview-welcome {
+    grid-column: span 3;
+    grid-row: span 2;
+  }
+
+  .overview-summary-grid .overview-summary-reservation {
+    grid-column: span 3;
+    grid-row: span 2;
+  }
+
+  .overview-summary-grid .overview-cart-summary,
+  .overview-summary-grid .overview-cart-value { grid-column: span 1; }
+  .overview-summary-grid .overview-upcoming-summary { grid-column: span 2; }
+  .overview-summary-grid .overview-quick-info { grid-column: span 2; }
+
+  .overview-reservations-grid .reservation-event { grid-column: span 4; }
+  .overview-reservations-grid .reservation-timer { grid-column: span 2; }
+  .overview-reservations-grid .reservation-venue,
+  .overview-reservations-grid .reservation-seats { grid-column: span 2; }
+  .overview-reservations-grid .reservation-details { grid-column: span 2; }
+
+  .overview-activity-grid .activity-visual { grid-column: span 4; min-height: 210px; }
+  .overview-activity-grid .activity-ranking { grid-column: span 2; }
+  .overview-activity-grid .activity-periods { grid-column: 1 / -1; }
+
+  .overview-purchases-grid .overview-stat { grid-column: span 2; }
+  .overview-purchases-grid .overview-spending { grid-column: span 2; }
+  .overview-purchases-grid .overview-recent-orders { grid-column: span 4; }
+  .overview-purchases-grid .purchase-next-event { grid-column: span 2; }
+  .overview-purchases-grid .purchase-tickets,
+  .overview-purchases-grid .purchase-orders,
+  .overview-purchases-grid .purchase-spending { grid-column: span 2; }
+  .overview-purchases-grid .purchase-history { grid-column: span 4; }
+  .overview-purchases-grid .purchase-next-event { grid-column: span 2; }
+}
+
+@media (max-width: 760px) {
+  .overview-panel .overview-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .overview-summary-grid .overview-welcome,
+  .overview-summary-grid .overview-summary-reservation,
+  .overview-summary-grid .overview-upcoming-summary,
+  .overview-summary-grid .overview-quick-info,
+  .overview-reservations-grid .reservation-event,
+  .overview-reservations-grid .reservation-timer,
+  .overview-reservations-grid .reservation-details,
+  .overview-activity-grid .activity-visual,
+  .overview-activity-grid .activity-ranking,
+  .overview-activity-grid .activity-periods,
+  .overview-purchases-grid .overview-recent-orders,
+  .overview-purchases-grid .purchase-history { grid-column: span 2; }
+  .overview-summary-grid .overview-cart-summary,
+  .overview-summary-grid .overview-cart-value,
+  .overview-reservations-grid .reservation-venue,
+  .overview-reservations-grid .reservation-seats,
+  .overview-purchases-grid .overview-stat,
+  .overview-purchases-grid .overview-spending,
+  .overview-purchases-grid .purchase-tickets,
+  .overview-purchases-grid .purchase-orders,
+  .overview-purchases-grid .purchase-spending,
+  .overview-purchases-grid .purchase-next-event { grid-column: span 1; }
+}
+
+@media (max-width: 430px) {
+  .overview-panel .overview-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .overview-summary-grid .overview-welcome,
+  .overview-summary-grid .overview-summary-reservation,
+  .overview-summary-grid .overview-upcoming-summary,
+  .overview-summary-grid .overview-quick-info,
+  .overview-reservations-grid .reservation-event,
+  .overview-reservations-grid .reservation-timer,
+  .overview-reservations-grid .reservation-details,
+  .overview-activity-grid .activity-visual,
+  .overview-activity-grid .activity-ranking,
+  .overview-activity-grid .activity-periods,
+  .overview-purchases-grid .overview-recent-orders,
+  .overview-purchases-grid .purchase-history { grid-column: span 2; }
+}
+
 .email-change-modal {
   position: fixed;
   inset: 0;
