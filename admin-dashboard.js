@@ -180,6 +180,11 @@
   const confirmNewsletterStatus = document.querySelector(
     "#confirmNewsletterStatus",
   );
+  const newsletterCampaignForm = document.querySelector("#newsletterCampaignForm");
+  const newsletterEditor = document.querySelector("#newsletterEditor");
+  const newsletterPreview = document.querySelector("#newsletterPreview");
+  const newsletterCampaignHistory = document.querySelector("#newsletterCampaignHistory");
+  let newsletterCampaignId = null;
   const heroForm = document.querySelector("#heroForm");
   heroForm.innerHTML = `<fieldset class="admin-hero-mode"><legend>Hero Display Mode</legend><label class="admin-check"><input type="radio" name="hero_mode" value="latest_added" checked /> Latest Added</label><label class="admin-check"><input type="radio" name="hero_mode" value="most_added_to_cart" /> Most Added to Cart</label><label class="admin-check"><input type="radio" name="hero_mode" value="best_selling" /> Best Selling</label><label class="admin-check"><input type="radio" name="hero_mode" value="custom_selection" /> Custom Selection</label></fieldset><label class="admin-hero-limit">Hero event count<input id="heroLimit" type="number" min="1" step="1" inputmode="numeric" /></label><p class="admin-hero-help" id="heroHelp"></p><div id="heroAutomatic"></div><div id="heroSlots" hidden><label>Find eligible events<input id="heroSearch" type="search" placeholder="Search title, date, venue or category" autocomplete="off" /></label><div class="upcoming-shows-results" id="heroResults"></div><p class="admin-hero-help" id="heroCount"></p><div class="upcoming-shows-selected" id="heroSelected"></div></div><div class="admin-form-actions"><button class="auth-submit" type="submit">Save Hero</button></div>`;
   const heroSlots = document.querySelector("#heroSlots");
@@ -744,6 +749,13 @@
     confirmNewsletterStatus.textContent = action;
     newsletterStatusDialog.showModal();
     cancelNewsletterStatus.focus();
+  }
+
+  const sanitizeNewsletterHtml = (html) => html.replace(/<\/?(script|style|iframe|object|embed)[^>]*>/gi, "").replace(/\son\w+\s*=\s*(['"]).*?\1/gi, "").replace(/javascript:/gi, "");
+  async function loadNewsletterCampaigns() {
+    const { data, error } = await client.rpc("get_admin_newsletter_campaigns", { p_page: 1, p_page_size: 20 });
+    if (error) throw error;
+    newsletterCampaignHistory.innerHTML = (data?.campaigns || []).map((campaign) => `<article class="newsletter-campaign-row"><strong>${escapeHtml(campaign.subject)}</strong><span>${escapeHtml(campaign.status)}</span><span>${escapeHtml(formatSubscriberDate(campaign.created_at))}</span><span>Sent: ${Number(campaign.successful_count || 0)} · Failed: ${Number(campaign.failed_count || 0)}</span></article>`).join("") || "<p>No campaigns yet.</p>";
   }
 
   function renderOverview() {
@@ -2431,6 +2443,15 @@
     confirmNewsletterStatus.disabled = true;
     confirmNewsletterStatus.classList.add("is-loading");
     try {
+      if (pending.campaign) {
+        const { data, error } = await client.functions.invoke("newsletter-campaign", { body: { action: "send", campaignId: newsletterCampaignId } });
+        if (error || data?.error) throw error || new Error(data.error);
+        newsletterStatusDialog.close();
+        state.newsletter.pendingStatusChange = null;
+        setMessage(`Newsletter complete. Sent: ${Number(data.successful || 0)}. Failed: ${Number(data.failed || 0)}.`, "success");
+        await loadNewsletterCampaigns();
+        return;
+      }
       const { error } = await client.rpc(
         "admin_set_newsletter_subscriber_status",
         {
@@ -2458,6 +2479,34 @@
       confirmNewsletterStatus.disabled = false;
       confirmNewsletterStatus.classList.remove("is-loading");
     }
+  });
+  document.querySelectorAll("[data-newsletter-view]").forEach((button) => button.addEventListener("click", () => {
+    const view = button.dataset.newsletterView;
+    document.querySelectorAll("[data-newsletter-view]").forEach((item) => item.classList.toggle("is-active", item === button));
+    document.querySelectorAll("[data-newsletter-view-panel]").forEach((panel) => { const active = panel.dataset.newsletterViewPanel === view; panel.hidden = !active; panel.classList.toggle("is-active", active); });
+    if (view === "campaigns") loadNewsletterCampaigns().catch(() => setMessage("Campaign history could not be loaded.", "error"));
+  }));
+  newsletterCampaignForm.addEventListener("click", (event) => { const format = event.target.dataset.format; if (format) document.execCommand(format, false); });
+  document.querySelector("#previewNewsletter").addEventListener("click", () => { newsletterPreview.hidden = false; newsletterPreview.innerHTML = `<article><h1>iVenue</h1>${sanitizeNewsletterHtml(newsletterEditor.innerHTML)}</article>`; });
+  newsletterCampaignForm.addEventListener("submit", async (event) => {
+    event.preventDefault(); const subject = newsletterCampaignForm.elements.subject.value.trim(); const content = sanitizeNewsletterHtml(newsletterEditor.innerHTML);
+    if (!subject || !content.replace(/<[^>]*>/g, "").trim()) { setMessage("Subject and newsletter content are required.", "error"); return; }
+    const { data, error } = await client.rpc("admin_create_newsletter_campaign", { p_subject: subject, p_content: content });
+    if (error) { setMessage("Newsletter draft could not be created.", "error"); return; }
+    newsletterCampaignId = data; setMessage("Newsletter draft created.", "success"); await loadNewsletterCampaigns();
+  });
+  document.querySelector("#testNewsletter").addEventListener("click", async () => {
+    if (!newsletterCampaignId) { setMessage("Create the newsletter draft before sending a test.", "error"); return; }
+    const { data, error } = await client.functions.invoke("newsletter-campaign", { body: { action: "test", campaignId: newsletterCampaignId } });
+    setMessage(error || data?.error ? "Test email could not be sent. Check newsletter provider configuration." : "Test email sent to your signed-in admin address.", error || data?.error ? "error" : "success");
+  });
+  document.querySelector("#sendNewsletter").addEventListener("click", async () => {
+    if (!newsletterCampaignId) { setMessage("Create the newsletter draft before sending it.", "error"); return; }
+    newsletterStatusDialogTitle.textContent = "Send newsletter?";
+    newsletterStatusDialogDescription.textContent = "Only active subscribers will receive this campaign. This cannot be undone.";
+    confirmNewsletterStatus.textContent = "Send Newsletter";
+    state.newsletter.pendingStatusChange = { campaign: true };
+    newsletterStatusDialog.showModal();
   });
   analyticsPeriod.addEventListener("change", () =>
     loadAnalytics().catch((error) => setMessage(error.message, "error")),

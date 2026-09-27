@@ -378,7 +378,8 @@
           </div>
         </div>
         <div class="admin-metrics newsletter-metrics" id="newsletterMetrics" aria-live="polite"></div>
-        <section class="admin-content-block" aria-labelledby="subscribersTitle">
+        <nav class="newsletter-tabs" aria-label="Newsletter sections"><button class="is-active" type="button" data-newsletter-view="subscribers">Subscribers</button><button type="button" data-newsletter-view="campaigns">Campaigns</button></nav>
+        <section class="admin-content-block newsletter-view is-active" data-newsletter-view-panel="subscribers" aria-labelledby="subscribersTitle">
           <div class="admin-content-block__heading">
             <h3 id="subscribersTitle">Subscribers</h3>
           </div>
@@ -411,6 +412,16 @@
             </table>
           </div>
           <div class="admin-pagination newsletter-pagination" id="newsletterPagination" aria-label="Subscribers pagination"></div>
+        </section>
+        <section class="admin-content-block newsletter-view" data-newsletter-view-panel="campaigns" aria-labelledby="campaignsTitle" hidden>
+          <div class="admin-content-block__heading"><h3 id="campaignsTitle">Campaigns</h3></div>
+          <form class="admin-form newsletter-composer" id="newsletterCampaignForm">
+            <label>Subject<input name="subject" maxlength="200" required /></label>
+            <label>Newsletter content<div class="newsletter-editor-toolbar"><button type="button" data-format="bold">Bold</button><button type="button" data-format="italic">Italic</button><button type="button" data-format="insertUnorderedList">List</button></div><div class="newsletter-editor" id="newsletterEditor" contenteditable="true" role="textbox" aria-multiline="true"></div></label>
+            <div class="admin-form-actions"><button class="admin-outline" id="previewNewsletter" type="button">Preview</button><button class="admin-outline" id="testNewsletter" type="button">Send Test Email</button><button class="auth-submit" type="submit">Create Newsletter</button><button class="admin-danger-button" id="sendNewsletter" type="button">Send Newsletter</button></div>
+          </form>
+          <div class="newsletter-preview" id="newsletterPreview" hidden></div>
+          <div class="newsletter-campaign-history" id="newsletterCampaignHistory"></div>
         </section>
       </section>
 
