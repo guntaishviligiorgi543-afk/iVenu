@@ -185,6 +185,7 @@
   const newsletterPreview = document.querySelector("#newsletterPreview");
   const newsletterCampaignHistory = document.querySelector("#newsletterCampaignHistory");
   let newsletterCampaignId = null;
+  let newsletterCampaignSignature = null;
   const heroForm = document.querySelector("#heroForm");
   heroForm.innerHTML = `<fieldset class="admin-hero-mode"><legend>Hero Display Mode</legend><label class="admin-check"><input type="radio" name="hero_mode" value="latest_added" checked /> Latest Added</label><label class="admin-check"><input type="radio" name="hero_mode" value="most_added_to_cart" /> Most Added to Cart</label><label class="admin-check"><input type="radio" name="hero_mode" value="best_selling" /> Best Selling</label><label class="admin-check"><input type="radio" name="hero_mode" value="custom_selection" /> Custom Selection</label></fieldset><label class="admin-hero-limit">Hero event count<input id="heroLimit" type="number" min="1" step="1" inputmode="numeric" /></label><p class="admin-hero-help" id="heroHelp"></p><div id="heroAutomatic"></div><div id="heroSlots" hidden><label>Find eligible events<input id="heroSearch" type="search" placeholder="Search title, date, venue or category" autocomplete="off" /></label><div class="upcoming-shows-results" id="heroResults"></div><p class="admin-hero-help" id="heroCount"></p><div class="upcoming-shows-selected" id="heroSelected"></div></div><div class="admin-form-actions"><button class="auth-submit" type="submit">Save Hero</button></div>`;
   const heroSlots = document.querySelector("#heroSlots");
@@ -756,6 +757,30 @@
     const { data, error } = await client.rpc("get_admin_newsletter_campaigns", { p_page: 1, p_page_size: 20 });
     if (error) throw error;
     newsletterCampaignHistory.innerHTML = (data?.campaigns || []).map((campaign) => `<article class="newsletter-campaign-row"><strong>${escapeHtml(campaign.subject)}</strong><span>${escapeHtml(campaign.status)}</span><span>${escapeHtml(formatSubscriberDate(campaign.created_at))}</span><span>Sent: ${Number(campaign.successful_count || 0)} · Failed: ${Number(campaign.failed_count || 0)}</span></article>`).join("") || "<p>No campaigns yet.</p>";
+  }
+
+  function newsletterDraftValues() {
+    const subject = newsletterCampaignForm.elements.subject.value.trim();
+    const content = escapeHtml(newsletterEditor.value).replaceAll("\n", "<br>");
+    if (!subject || !content.replace(/<[^>]*>/g, "").trim()) {
+      setMessage("Subject and newsletter content are required.", "error");
+      return null;
+    }
+    return { subject, content, signature: `${subject}\n${content}` };
+  }
+
+  async function ensureNewsletterDraft(values) {
+    if (newsletterCampaignId && newsletterCampaignSignature === values.signature)
+      return newsletterCampaignId;
+    const { data, error } = await client.rpc("admin_create_newsletter_campaign", {
+      p_subject: values.subject,
+      p_content: values.content,
+    });
+    if (error) throw error;
+    newsletterCampaignId = data;
+    newsletterCampaignSignature = values.signature;
+    await loadNewsletterCampaigns();
+    return data;
   }
 
   function renderOverview() {
@@ -2488,16 +2513,24 @@
   }));
   document.querySelector("#previewNewsletter").addEventListener("click", () => { newsletterPreview.hidden = false; newsletterPreview.innerHTML = `<article><h1>iVenue</h1><p>${escapeHtml(newsletterEditor.value).replaceAll("\n", "<br>")}</p></article>`; });
   newsletterCampaignForm.addEventListener("submit", async (event) => {
-    event.preventDefault(); const subject = newsletterCampaignForm.elements.subject.value.trim(); const content = escapeHtml(newsletterEditor.value).replaceAll("\n", "<br>");
-    if (!subject || !content.replace(/<[^>]*>/g, "").trim()) { setMessage("Subject and newsletter content are required.", "error"); return; }
-    const { data, error } = await client.rpc("admin_create_newsletter_campaign", { p_subject: subject, p_content: content });
-    if (error) { setMessage("Newsletter draft could not be created.", "error"); return; }
-    newsletterCampaignId = data; setMessage("Newsletter draft created.", "success"); await loadNewsletterCampaigns();
+    event.preventDefault(); const values = newsletterDraftValues(); if (!values) return;
+    try { await ensureNewsletterDraft(values); setMessage("Newsletter draft created.", "success"); }
+    catch (error) { console.error("Newsletter draft could not be created", error); setMessage("Newsletter draft could not be created. Please try again.", "error"); }
   });
   document.querySelector("#testNewsletter").addEventListener("click", async () => {
-    if (!newsletterCampaignId) { setMessage("Create the newsletter draft before sending a test.", "error"); return; }
-    const { data, error } = await client.functions.invoke("newsletter-campaign", { body: { action: "test", campaignId: newsletterCampaignId } });
-    setMessage(error || data?.error ? "Test email could not be sent. Check newsletter provider configuration." : "Test email sent to your signed-in admin address.", error || data?.error ? "error" : "success");
+    const testButton = document.querySelector("#testNewsletter");
+    const values = newsletterDraftValues(); if (!values) return;
+    const originalText = testButton.textContent;
+    testButton.disabled = true; testButton.textContent = "Sending test...";
+    try {
+      const campaignId = await ensureNewsletterDraft(values);
+      const { data, error } = await client.functions.invoke("newsletter-campaign", { body: { action: "test", campaignId } });
+      if (error || data?.error) throw error || new Error(data.error);
+      setMessage("Test email sent to your signed-in admin address.", "success");
+    } catch (error) {
+      console.error("Newsletter test email could not be sent", error);
+      setMessage("Test email could not be sent. Check provider configuration and try again.", "error");
+    } finally { testButton.disabled = false; testButton.textContent = originalText; }
   });
   document.querySelector("#sendNewsletter").addEventListener("click", async () => {
     if (!newsletterCampaignId) { setMessage("Create the newsletter draft before sending it.", "error"); return; }
