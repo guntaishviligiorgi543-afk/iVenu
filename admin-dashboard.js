@@ -2486,10 +2486,9 @@
     document.querySelectorAll("[data-newsletter-view-panel]").forEach((panel) => { const active = panel.dataset.newsletterViewPanel === view; panel.hidden = !active; panel.classList.toggle("is-active", active); });
     if (view === "campaigns") loadNewsletterCampaigns().catch(() => setMessage("Campaign history could not be loaded.", "error"));
   }));
-  newsletterCampaignForm.addEventListener("click", (event) => { const format = event.target.dataset.format; if (format) document.execCommand(format, false); });
-  document.querySelector("#previewNewsletter").addEventListener("click", () => { newsletterPreview.hidden = false; newsletterPreview.innerHTML = `<article><h1>iVenue</h1>${sanitizeNewsletterHtml(newsletterEditor.innerHTML)}</article>`; });
+  document.querySelector("#previewNewsletter").addEventListener("click", () => { newsletterPreview.hidden = false; newsletterPreview.innerHTML = `<article><h1>iVenue</h1><p>${escapeHtml(newsletterEditor.value).replaceAll("\n", "<br>")}</p></article>`; });
   newsletterCampaignForm.addEventListener("submit", async (event) => {
-    event.preventDefault(); const subject = newsletterCampaignForm.elements.subject.value.trim(); const content = sanitizeNewsletterHtml(newsletterEditor.innerHTML);
+    event.preventDefault(); const subject = newsletterCampaignForm.elements.subject.value.trim(); const content = escapeHtml(newsletterEditor.value).replaceAll("\n", "<br>");
     if (!subject || !content.replace(/<[^>]*>/g, "").trim()) { setMessage("Subject and newsletter content are required.", "error"); return; }
     const { data, error } = await client.rpc("admin_create_newsletter_campaign", { p_subject: subject, p_content: content });
     if (error) { setMessage("Newsletter draft could not be created.", "error"); return; }

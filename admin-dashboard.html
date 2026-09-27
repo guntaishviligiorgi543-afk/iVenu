@@ -417,7 +417,7 @@
           <div class="admin-content-block__heading"><h3 id="campaignsTitle">Campaigns</h3></div>
           <form class="admin-form newsletter-composer" id="newsletterCampaignForm">
             <label>Subject<input name="subject" maxlength="200" required /></label>
-            <label>Newsletter content<div class="newsletter-editor-toolbar"><button type="button" data-format="bold">Bold</button><button type="button" data-format="italic">Italic</button><button type="button" data-format="insertUnorderedList">List</button></div><div class="newsletter-editor" id="newsletterEditor" contenteditable="true" role="textbox" aria-multiline="true"></div></label>
+            <label>Newsletter content<textarea class="newsletter-editor" id="newsletterEditor" rows="10" required></textarea></label>
             <div class="admin-form-actions"><button class="admin-outline" id="previewNewsletter" type="button">Preview</button><button class="admin-outline" id="testNewsletter" type="button">Send Test Email</button><button class="auth-submit" type="submit">Create Newsletter</button><button class="admin-danger-button" id="sendNewsletter" type="button">Send Newsletter</button></div>
           </form>
           <div class="newsletter-preview" id="newsletterPreview" hidden></div>

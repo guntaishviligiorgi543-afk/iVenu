@@ -481,7 +481,7 @@
 .newsletter-tabs button, .newsletter-editor-toolbar button { border: 1px solid rgba(255,148,117,.55); border-radius: 6px; padding: 8px 12px; color: #ff9475; background: transparent; font: inherit; cursor: pointer; }
 .newsletter-tabs button.is-active { color: #000; background: #ff9475; }
 .newsletter-editor-toolbar { display: flex; gap: 8px; margin: 8px 0; }
-.newsletter-editor { min-height: 220px; border: 1px solid rgba(255,255,255,.2); border-radius: 6px; padding: 12px; color: #fff; background: #151515; }
+.newsletter-editor { box-sizing: border-box; width: 100%; min-height: 220px; border: 1px solid rgba(255,255,255,.2); border-radius: 6px; padding: 12px; color: #fff; background: #151515; font: inherit; resize: vertical; }
 .newsletter-preview { margin-top: 18px; padding: 20px; color: #171717; background: #fff; }
 .newsletter-campaign-row { display: grid; grid-template-columns: 2fr repeat(3, 1fr); gap: 10px; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,.12); color: rgba(255,255,255,.8); }
 
