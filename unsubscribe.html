@@ -1,1 +1,101 @@
-<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Unsubscribe | iVenue</title><link rel="stylesheet" href="main.css"></head><body><main class="legal-page"><h1>Newsletter preferences</h1><p id="unsubscribeStatus">Updating your subscription…</p></main><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="supabase-config.js"></script><script>const token=new URLSearchParams(location.search).get('token');const status=document.querySelector('#unsubscribeStatus');if(!token){status.textContent='This unsubscribe link is invalid.'}else{window.supabaseClient.functions.invoke('newsletter-unsubscribe',{body:{token}}).then(({data,error})=>status.textContent=error||data?.error?'This unsubscribe link is invalid or has expired.':'You have been unsubscribed.').catch(()=>status.textContent='Something went wrong. Please try again.');}</script></body></html>
+<!doctype html>
+<html lang="en">
+  <head>
+    <link rel="icon" type="image/png" href="images/facicon.png" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex" />
+    <title>Unsubscribe | iVenue</title>
+    <link rel="canonical" href="https://ivenue.site/unsubscribe.html" />
+    <link rel="stylesheet" href="main.css" />
+    <link rel="stylesheet" href="legal-pages.css" />
+    <style>
+      /* Critical fallback styles keep this page usable if an external stylesheet fails. */
+      body.unsubscribe-page { min-width: 0; min-height: 100vh; background: linear-gradient(135deg, rgba(255, 148, 117, .12), transparent 42%), #000; color: #fff; font-family: Arial, sans-serif; }
+      .unsubscribe-page .unsubscribe-main { width: min(880px, calc(100% - 48px)); min-height: 100vh; margin: 0 auto; padding: 132px 0 72px; }
+      .unsubscribe-page .unsubscribe-card { padding: clamp(26px, 5vw, 54px); border: 1px solid rgba(255, 255, 255, .25); background: rgba(16, 16, 16, .94); box-shadow: 12px 12px 0 rgba(255, 148, 117, .48); }
+      .unsubscribe-page .unsubscribe-card h1 { margin: 0; color: #ff9475; font-family: Impact, "Arial Narrow Bold", sans-serif; font-size: clamp(2.8rem, 8vw, 5rem); font-weight: 400; line-height: .95; text-transform: uppercase; }
+      .unsubscribe-page .unsubscribe-card p { color: rgba(255, 255, 255, .86); font-size: 1rem; line-height: 1.7; }
+      .unsubscribe-page .unsubscribe-eyebrow { margin: 0 0 12px; color: #ff9475; font-size: .8rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+      .unsubscribe-page .unsubscribe-actions { margin-top: 34px; padding-top: 24px; border-top: 1px solid rgba(255, 255, 255, .2); }
+      .unsubscribe-page .unsubscribe-actions a { display: inline-block; min-height: 42px; padding: 11px 16px; border: 1px solid #ff9475; color: #ff9475; font-weight: 700; text-decoration: none; }
+      .unsubscribe-page .unsubscribe-actions a:hover, .unsubscribe-page .unsubscribe-actions a:focus-visible { background: #ff9475; color: #000; }
+      @media (max-width: 650px) { .unsubscribe-page .unsubscribe-main { width: min(100% - 32px, 880px); padding-top: 88px; padding-bottom: 46px; } .unsubscribe-page .unsubscribe-card { box-shadow: 7px 7px 0 rgba(255, 148, 117, .44); } }
+    </style>
+  </head>
+  <body class="legal-page unsubscribe-page">
+    <main class="legal-main unsubscribe-main">
+      <article class="legal-card unsubscribe-card" aria-live="polite" aria-busy="true">
+        <p class="legal-eyebrow unsubscribe-eyebrow">Newsletter preferences</p>
+        <h1 id="unsubscribeTitle">Unsubscribing&hellip;</h1>
+        <p id="unsubscribeDescription">Please wait while we update your newsletter preferences.</p>
+        <nav id="unsubscribeActions" class="legal-actions unsubscribe-actions" aria-label="Unsubscribe page navigation" hidden>
+          <a href="https://ivenue.site/">Back to iVenue</a>
+        </nav>
+      </article>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <script>
+      (() => {
+        const title = document.querySelector("#unsubscribeTitle");
+        const description = document.querySelector("#unsubscribeDescription");
+        const actions = document.querySelector("#unsubscribeActions");
+        const card = document.querySelector(".unsubscribe-card");
+
+        const show = (heading, message) => {
+          title.textContent = heading;
+          description.textContent = message;
+          actions.hidden = false;
+          card.setAttribute("aria-busy", "false");
+        };
+
+        const invalid = () => show(
+          "This unsubscribe link is invalid or has expired.",
+          "Please use the most recent unsubscribe link from an iVenue newsletter email.",
+        );
+
+        const failed = () => show(
+          "We couldn't unsubscribe you. Please try again.",
+          "If the problem continues, please contact iVenue support.",
+        );
+
+        const errorCode = async (error) => {
+          try {
+            return (await error?.context?.clone?.().json())?.code || null;
+          } catch {
+            return null;
+          }
+        };
+
+        const token = new URLSearchParams(window.location.search).get("token");
+        if (!token || !/^[a-f0-9]{64}$/i.test(token)) {
+          invalid();
+          return;
+        }
+        if (!window.supabaseClient) {
+          failed();
+          return;
+        }
+
+        window.supabaseClient.functions.invoke("newsletter-unsubscribe", { body: { token } })
+          .then(async ({ data, error }) => {
+            if (data?.unsubscribed) {
+              show(
+                "You have been unsubscribed.",
+                "You will no longer receive iVenue newsletter emails.",
+              );
+              return;
+            }
+            if (data?.code === "INVALID_TOKEN" || await errorCode(error) === "INVALID_TOKEN") {
+              invalid();
+              return;
+            }
+            failed();
+          })
+          .catch(failed);
+      })();
+    </script>
+  </body>
+</html>
