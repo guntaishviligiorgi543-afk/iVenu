@@ -153,6 +153,11 @@
       cursor: not-allowed;
       opacity: 0.35;
     }
+
+    .pagination-ellipsis {
+      color: #ff9475;
+      line-height: 38px;
+    }
     .vntCrd {
       position: relative;
       height: 55vh;
@@ -463,6 +468,26 @@
         grid-template-columns: 1fr;
         padding-top: 30px;
       }
+
+      .pagination {
+        gap: 5px;
+      }
+
+      .pagination-control {
+        font-size: 0;
+      }
+
+      .pagination-control::after {
+        font-size: 1rem;
+      }
+
+      .pagination-control--previous::after {
+        content: "←";
+      }
+
+      .pagination-control--next::after {
+        content: "→";
+      }
     }
   </style>
 
@@ -669,6 +694,7 @@
       let currentPage = 1;
       let cartEventIds = new Set();
       const pendingCartEventIds = new Set();
+      const compactPaginationBreakpoint = window.matchMedia("(max-width: 768px)");
       let cartMessageTimeout;
 
       function showCartMessage(message, isError = false) {
@@ -836,7 +862,9 @@
 
         const previous = document.createElement("button");
         previous.type = "button";
+        previous.className = "pagination-control pagination-control--previous";
         previous.textContent = "prev";
+        previous.setAttribute("aria-label", "Previous page");
         previous.disabled = currentPage === 1;
         previous.addEventListener("click", () => {
           currentPage -= 1;
@@ -844,7 +872,18 @@
         });
         pagination.appendChild(previous);
 
-        for (let page = 1; page <= pageCount; page += 1) {
+        const pages = compactPaginationBreakpoint.matches
+          ? compactPaginationPages(currentPage, pageCount)
+          : Array.from({ length: pageCount }, (_, index) => index + 1);
+        pages.forEach((page) => {
+          if (page === "ellipsis") {
+            const ellipsis = document.createElement("span");
+            ellipsis.className = "pagination-ellipsis";
+            ellipsis.setAttribute("aria-hidden", "true");
+            ellipsis.textContent = "…";
+            pagination.appendChild(ellipsis);
+            return;
+          }
           const button = document.createElement("button");
           button.type = "button";
           button.textContent = page;
@@ -855,11 +894,13 @@
             renderPage();
           });
           pagination.appendChild(button);
-        }
+        });
 
         const next = document.createElement("button");
         next.type = "button";
+        next.className = "pagination-control pagination-control--next";
         next.textContent = "next";
+        next.setAttribute("aria-label", "Next page");
         next.disabled = currentPage === pageCount;
         next.addEventListener("click", () => {
           currentPage += 1;
@@ -867,6 +908,16 @@
         });
         pagination.appendChild(next);
       }
+
+      function compactPaginationPages(current, total) {
+        if (total <= 5) return Array.from({ length: total }, (_, index) => index + 1);
+        if (current <= 3) return [1, 2, 3, "ellipsis", total];
+        if (current >= total - 2)
+          return [1, "ellipsis", total - 2, total - 1, total];
+        return [1, "ellipsis", current - 1, current, current + 1, "ellipsis", total];
+      }
+
+      compactPaginationBreakpoint.addEventListener("change", renderPagination);
 
       function renderPage() {
         const pageCount = Math.max(
