@@ -779,7 +779,11 @@
     if (error) throw error;
     newsletterCampaignId = data;
     newsletterCampaignSignature = values.signature;
-    await loadNewsletterCampaigns();
+    loadNewsletterCampaigns().catch((historyError) =>
+      console.warn("Newsletter draft was created but history could not refresh", {
+        message: historyError?.message || "Unknown error",
+      }),
+    );
     return data;
   }
 
@@ -2523,13 +2527,26 @@
     const originalText = testButton.textContent;
     testButton.disabled = true; testButton.textContent = "Sending test...";
     try {
+      console.info("Newsletter test email handler started");
       const campaignId = await ensureNewsletterDraft(values);
-      const { data, error } = await client.functions.invoke("newsletter-campaign", { body: { action: "test", campaignId } });
+      console.info("Newsletter draft ready", { campaignId });
+      const { data: sessionData, error: sessionError } = await client.auth.getSession();
+      if (sessionError || !sessionData.session?.access_token)
+        throw new Error("Your session has expired. Please sign in again.");
+      console.info("Invoking newsletter-campaign test action", { campaignId });
+      const { data, error } = await client.functions.invoke("newsletter-campaign", {
+        body: { action: "test", campaignId },
+        headers: { Authorization: `Bearer ${sessionData.session.access_token}` },
+      });
       if (error || data?.error) throw error || new Error(data.error);
       setMessage("Test email sent to your signed-in admin address.", "success");
     } catch (error) {
-      console.error("Newsletter test email could not be sent", error);
-      setMessage("Test email could not be sent. Check provider configuration and try again.", "error");
+      const response = error?.context;
+      console.error("Newsletter test email could not be sent", {
+        message: error?.message || "Unknown error",
+        status: response?.status || null,
+      });
+      setMessage(error?.message || "Test email could not be sent. Please try again.", "error");
     } finally { testButton.disabled = false; testButton.textContent = originalText; }
   });
   document.querySelector("#sendNewsletter").addEventListener("click", async () => {
