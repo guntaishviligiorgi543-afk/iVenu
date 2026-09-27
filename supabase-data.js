@@ -108,22 +108,6 @@
     if (error) throw new Error(getErrorMessage(error));
   }
 
-  async function toggleFavorite(eventId) {
-    const { data, error } = await client.rpc("toggle_favorite", {
-      p_event_id: eventId,
-    });
-    if (error) throw new Error(getErrorMessage(error));
-    return Boolean(data);
-  }
-
-  async function isEventFavorited(eventId) {
-    const { data, error } = await client.rpc("is_event_favorited", {
-      p_event_id: eventId,
-    });
-    if (error) throw new Error(getErrorMessage(error));
-    return Boolean(data);
-  }
-
   window.supabaseData = {
     getBands,
     getEvents,
@@ -134,7 +118,5 @@
     getTicketTypes,
     recordEventView,
     recordEventShare,
-    toggleFavorite,
-    isEventFavorited,
   };
 })();
