@@ -2096,6 +2096,80 @@ body.auth-gate-open {
   .overview-activity { grid-template-columns: 1fr; }
 }
 
+/* Overview sub-navigation and compact panel layouts. */
+.account-page .overview-tabs {
+  display: flex;
+  gap: 6px;
+  margin: -5px 0 20px;
+  padding-bottom: 2px;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.overview-tabs button {
+  flex: 0 0 auto;
+  min-height: 36px;
+  padding: 8px 12px;
+  border: 1px solid rgba(255,255,255,.13);
+  border-radius: 999px;
+  color: rgba(255,255,255,.63);
+  background: transparent;
+  font: inherit;
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .06em;
+  cursor: pointer;
+}
+
+.overview-tabs button[aria-selected="true"] {
+  border-color: rgba(255,148,117,.65);
+  color: #ff9475;
+  background: rgba(255,148,117,.1);
+}
+
+.overview-tabs button:focus-visible,
+.overview-action:focus-visible { outline: 2px solid #ff9475; outline-offset: 2px; }
+.overview-panel[hidden] { display: none; }
+.overview-dashboard > .overview-skeleton { display: inline-block; width: calc(50% - 9px); margin: 0 10px 10px 0; }
+.overview-dashboard > .overview-skeleton:not(.overview-skeleton--wide) { width: calc(25% - 10px); }
+.overview-panel .overview-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.overview-summary-grid .overview-welcome { grid-column: span 2; grid-row: span 2; }
+.overview-summary-reservation { grid-column: span 2; min-height: 190px; }
+.overview-cart-summary, .overview-upcoming-summary { grid-column: span 1; min-height: 150px; }
+.overview-reservations-grid .overview-reservation-detail { grid-column: 1 / -1; min-height: 240px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.overview-reservation-detail p, .overview-reservation-detail h3 { grid-column: 1 / -1; }
+.overview-reservation-detail .overview-action { width: max-content; }
+.overview-activity-grid .overview-activity { grid-column: span 2; }
+.overview-activity-grid .overview-ranking { grid-column: span 2; }
+.overview-purchases-empty { grid-column: 1 / -1; min-height: 260px; }
+.overview-purchases-grid .overview-stat { grid-column: span 1; }
+.overview-purchases-grid .overview-spending { grid-column: span 2; }
+.overview-purchases-grid .overview-recent-orders { grid-column: 1 / -1; }
+.overview-empty-card { grid-column: span 2; min-height: 220px; }
+.overview-action { display: inline-flex; width: max-content; margin-top: auto; color: #ff9475; font-size: .75rem; font-weight: 700; letter-spacing: .04em; text-decoration: none; }
+.overview-card > .overview-empty { min-height: 0; }
+.overview-card > .overview-empty span { max-width: 32rem; }
+.activity-bars { grid-template-columns: repeat(3, minmax(0, 1fr)); height: auto; margin-top: auto; }
+.activity-metric { display: grid; gap: 3px; padding: 10px; border-radius: 6px; background: rgba(255,255,255,.04); text-align: center; }
+.activity-metric b { color: #ff9475; font-family: "Fjalla One", Impact, sans-serif; font-size: 1.35rem; font-weight: 400; }
+.activity-metric span { font-size: .68rem; }
+
+@media (max-width: 760px) {
+  .overview-panel .overview-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .overview-summary-grid .overview-welcome, .overview-summary-reservation, .overview-reservations-grid .overview-reservation-detail, .overview-activity-grid .overview-activity, .overview-activity-grid .overview-ranking, .overview-purchases-grid .overview-spending, .overview-purchases-grid .overview-recent-orders, .overview-purchases-empty, .overview-empty-card { grid-column: span 2; }
+  .overview-cart-summary, .overview-upcoming-summary, .overview-purchases-grid .overview-stat { grid-column: span 1; }
+}
+
+@media (max-width: 430px) {
+  .account-page .overview-tabs { margin-bottom: 16px; }
+  .overview-dashboard > .overview-skeleton, .overview-dashboard > .overview-skeleton:not(.overview-skeleton--wide) { width: 100%; margin-right: 0; }
+  .overview-panel .overview-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .overview-summary-grid .overview-welcome, .overview-summary-reservation, .overview-reservations-grid .overview-reservation-detail, .overview-activity-grid .overview-activity, .overview-activity-grid .overview-ranking, .overview-purchases-grid .overview-spending, .overview-purchases-grid .overview-recent-orders, .overview-purchases-empty, .overview-empty-card { grid-column: span 2; }
+  .overview-cart-summary, .overview-upcoming-summary, .overview-purchases-grid .overview-stat { grid-column: span 1; }
+  .overview-cart-summary, .overview-upcoming-summary { min-height: 138px; }
+  .overview-reservations-grid .overview-reservation-detail { grid-template-columns: 1fr; }
+}
+
 .email-change-modal {
   position: fixed;
   inset: 0;

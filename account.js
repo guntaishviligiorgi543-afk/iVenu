@@ -222,36 +222,58 @@
     });
   }
 
-  function renderOverview(data, profile, user) {
+  function renderOverview(data, profile, user, cartItems = [], ticketTypes = [], events = []) {
     const name = profile?.first_name || user?.user_metadata?.first_name || "there";
-    const avatar = profile?.avatar_url
-      ? `<img src="${escapeHtml(profile.avatar_url)}" alt="" />`
-      : `<span>${escapeHtml(String(name).charAt(0).toUpperCase())}</span>`;
+    const avatar = profile?.avatar_url ? `<img src="${escapeHtml(profile.avatar_url)}" alt="" />` : `<span>${escapeHtml(String(name).charAt(0).toUpperCase())}</span>`;
     const next = data.next_event;
     const reservation = data.reservation;
     const activity = data.activity || {};
-    const activityMax = Math.max(1, activity.last_7_days || 0, activity.last_30_days || 0, activity.this_year || 0);
+    const ticketsById = new Map(ticketTypes.map((ticket) => [String(ticket.id), ticket]));
+    const eventsById = new Map(events.map((event) => [String(event.id), event]));
+    const cartCount = cartItems.reduce((sum, item) => sum + Number(item.quantity || 0), 0);
+    const cartTotal = cartItems.reduce((sum, item) => sum + Number(item.quantity || 0) * Number(ticketsById.get(String(item.ticket_type_id))?.price || 0), 0);
+    const firstCartEvent = eventsById.get(String(ticketsById.get(String(cartItems[0]?.ticket_type_id))?.event_id));
     const stat = (title, value, description) => `<article class="overview-card overview-stat"><p>${title}</p><strong>${value}</strong><span>${description}</span></article>`;
-    const bars = [["7 days", activity.last_7_days || 0], ["30 days", activity.last_30_days || 0], ["This year", activity.this_year || 0]].map(([label, value]) => `<div class="activity-bar"><span style="--activity-size:${Math.max(8, Math.round(value / activityMax * 100))}%"></span><small>${label}</small><b>${value}</b></div>`).join("");
+    const reservationCard = reservation ? `<h3>${escapeHtml(reservation.title || reservation.performer || "Event")}</h3><strong>${reservation.seat_count} ${reservation.seat_count === 1 ? "seat" : "seats"} reserved</strong><span>${escapeHtml(reservation.venue || "Venue to be announced")}</span><em data-reservation-until="${escapeHtml(reservation.reserved_until)}">Calculating time remaining…</em>` : overviewEmpty("No active reservation", "Seats held for you will appear here.");
+    const purchases = Number(data.total_orders || 0);
+    const activityBars = [["7 days", activity.last_7_days || 0], ["30 days", activity.last_30_days || 0], ["This year", activity.this_year || 0]].map(([label, value]) => `<div class="activity-metric"><b>${value}</b><span>${label}</span></div>`).join("");
+    const recent = data.recent_orders?.map((order) => `<div><span><strong>${escapeHtml(order.event_name)}</strong><small>${escapeHtml(new Date(order.created_at).toLocaleDateString())} · ${order.ticket_count} tickets</small></span><b>${formatMoney(order.total_price)}</b></div>`).join("");
     overviewDashboard.innerHTML = `
-      <article class="overview-card overview-welcome"><div class="overview-avatar">${avatar}</div><div><p>Welcome back, ${escapeHtml(name)}</p><h3>${escapeHtml(profile?.email || user?.email || "Your iVenue account")}</h3><span>${user?.created_at ? `Member since ${escapeHtml(new Date(user.created_at).toLocaleDateString(undefined, { month: "long", year: "numeric" }))}` : ""}</span></div><small>Here is an overview of your iVenue activity.</small></article>
-      <article class="overview-card overview-next-event"><p>Next Event</p>${next ? `<h3>${escapeHtml(next.name)}</h3><strong>${escapeHtml(new Date(`${next.date}T00:00:00`).toLocaleDateString())}${next.time ? ` · ${escapeHtml(String(next.time).slice(0, 5))}` : ""}</strong><span>${escapeHtml(next.venue || "Venue to be announced")} · ${next.tickets} ${next.tickets === 1 ? "ticket" : "tickets"}</span><small>${escapeHtml(next.seats || "Your nearest upcoming event.")}</small>` : overviewEmpty("No upcoming events", "When you purchase a future event ticket, it will appear here.")}</article>
-      <article class="overview-card overview-reservation"><p>Active Reservation</p>${reservation ? `<h3>${escapeHtml(reservation.title || reservation.performer || "Event")}</h3><strong>${reservation.seat_count} ${reservation.seat_count === 1 ? "seat" : "seats"} held</strong><span>Expires ${escapeHtml(new Date(reservation.reserved_until).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }))}</span><small>${escapeHtml(reservation.seats || "Seat details available at checkout")}</small><em data-reservation-until="${escapeHtml(reservation.reserved_until)}">Calculating time remaining…</em>` : overviewEmpty("No active reservation", "Seats temporarily held for you will appear here.")}</article>
-      ${stat("My Tickets", data.tickets || 0, "Tickets currently available in your account.")}
-      ${stat("Upcoming Events", data.upcoming_events || 0, "Upcoming events you currently have tickets for.")}
-      ${stat("Past Events", data.past_events || 0, "Events from your ticket history that have already taken place.")}
-      ${stat("Total Orders", data.total_orders || 0, "Completed purchases made through your iVenue account.")}
-      <article class="overview-card overview-spending"><p>Total Spent</p><strong>${formatMoney(data.total_spent)}</strong><span>Total value of your completed iVenue purchases.</span><small>This year: ${formatMoney(data.this_year_spent)}</small></article>
-      <article class="overview-card overview-activity"><div><p>Your Activity</p><h3>Completed purchase activity</h3><span>Activity is based on recorded completed purchases.</span></div><div class="activity-bars">${bars}</div></article>
-      <article class="overview-card overview-ranking"><p>Activity Ranking — Last 30 Days</p>${data.ranking?.available ? `<strong>Top ${data.ranking.top_percent}%</strong><span>Your activity level compared with other active iVenue users.</span><small>${data.ranking.percentile}th percentile, based on completed purchases.</small>` : overviewEmpty("Not enough activity data yet", "Ranking needs at least five active users.")}</article>
-      <article class="overview-card overview-recent-orders"><p>Recent Orders</p><h3>Completed purchases</h3>${data.recent_orders?.length ? `<div class="overview-order-list">${data.recent_orders.map((order) => `<div><span><strong>${escapeHtml(order.event_name)}</strong><small>${escapeHtml(new Date(order.created_at).toLocaleDateString())} · ${order.ticket_count} tickets</small></span><b>${formatMoney(order.total_price)}</b></div>`).join("")}</div>` : overviewEmpty("No completed orders", "Your completed ticket purchases will appear here.")}</article>`;
+      <section class="overview-panel is-active" id="overview-panel-summary" role="tabpanel" aria-labelledby="overview-tab-summary" data-overview-panel="summary"><div class="overview-grid overview-summary-grid">
+        <article class="overview-card overview-welcome"><div class="overview-avatar">${avatar}</div><div><p>Welcome back, ${escapeHtml(name)}</p><h3>${escapeHtml(profile?.email || user?.email || "Your iVenue account")}</h3><span>${user?.created_at ? `Member since ${escapeHtml(new Date(user.created_at).toLocaleDateString(undefined, { month: "long", year: "numeric" }))}` : ""}</span></div><small>Your iVenue overview, all in one place.</small></article>
+        <article class="overview-card overview-summary-reservation"><p>Reservation summary</p>${reservationCard}</article>
+        <article class="overview-card overview-cart-summary"><p>Cart summary</p>${cartCount ? `<strong>${cartCount} ${cartCount === 1 ? "ticket" : "tickets"}</strong><span>${escapeHtml(firstCartEvent?.title || firstCartEvent?.performer || "Tickets ready when you are")}</span><small>${formatMoney(cartTotal)} currently in your cart.</small><a class="overview-action" href="#cart">View cart</a>` : overviewEmpty("Your cart is empty", "Add tickets to prepare your next night out.")}</article>
+        <article class="overview-card overview-upcoming-summary"><p>Upcoming information</p>${next ? `<h3>${escapeHtml(next.name)}</h3><strong>${escapeHtml(new Date(`${next.date}T00:00:00`).toLocaleDateString())}</strong><span>${escapeHtml(next.venue || "Venue to be announced")}</span><small>${escapeHtml(next.seats || "Your nearest purchased event.")}</small>` : overviewEmpty("Nothing scheduled yet", "Your next purchased event will appear here.")}</article>
+      </div></section>
+      <section class="overview-panel" id="overview-panel-reservations" role="tabpanel" aria-labelledby="overview-tab-reservations" data-overview-panel="reservations" hidden><div class="overview-grid overview-reservations-grid"><article class="overview-card overview-reservation-detail"><p>Active Reservation</p>${reservation ? `<h3>${escapeHtml(reservation.title || reservation.performer || "Event")}</h3><strong>${reservation.seat_count} reserved ${reservation.seat_count === 1 ? "seat" : "seats"}</strong><span>${escapeHtml(reservation.venue || "Venue to be announced")}</span><small>${escapeHtml(reservation.seats || "Seat details available at checkout")}</small><em data-reservation-until="${escapeHtml(reservation.reserved_until)}">Calculating time remaining…</em>` : overviewEmpty("No active reservation", "When you reserve seats, the live reservation details will appear here.")}</article></div></section>
+      <section class="overview-panel" id="overview-panel-activity" role="tabpanel" aria-labelledby="overview-tab-activity" data-overview-panel="activity" hidden><div class="overview-grid overview-activity-grid">${purchases ? `<article class="overview-card overview-activity"><p>Your Activity</p><h3>Completed purchase activity</h3><span>Activity is based on recorded completed purchases.</span><div class="activity-bars">${activityBars}</div></article>` : `<article class="overview-card overview-empty-card">${overviewEmpty("Activity insights will appear as you use iVenue.", "Purchase-based activity is not available until completed purchases are recorded.")}</article>`}<article class="overview-card overview-ranking"><p>Activity Ranking — Last 30 Days</p>${data.ranking?.available ? `<strong>Top ${data.ranking.top_percent}%</strong><span>Your activity level compared with other active iVenue users.</span><small>${data.ranking.percentile}th percentile, based on completed purchases.</small>` : overviewEmpty("Not enough activity data yet", "Ranking needs at least five users with completed purchase activity.")}</article></div></section>
+      <section class="overview-panel" id="overview-panel-purchases" role="tabpanel" aria-labelledby="overview-tab-purchases" data-overview-panel="purchases" hidden><div class="overview-grid overview-purchases-grid">${purchases ? `${stat("Purchased Tickets", data.tickets || 0, "Tickets currently available in your account.")}${stat("Total Orders", purchases, "Completed purchases made through your iVenue account.")}<article class="overview-card overview-spending"><p>Total Spent</p><strong>${formatMoney(data.total_spent)}</strong><span>Total value of your completed iVenue purchases.</span><small>This year: ${formatMoney(data.this_year_spent)}</small></article><article class="overview-card overview-recent-orders"><p>Recent Orders</p><h3>Completed purchases</h3><div class="overview-order-list">${recent}</div></article>` : `<article class="overview-card overview-purchases-empty">${overviewEmpty("No purchases yet", "Your completed ticket purchases and spending history will appear here.")}</article>`}</div></section>`;
     overviewDashboard.setAttribute("aria-busy", "false");
     updateReservationCountdown();
+    activateOverviewTab(sessionStorage.getItem("iVenueOverviewTab") || "summary");
   }
 
   function showOverviewError() {
     overviewDashboard.innerHTML = overviewEmpty("Overview unavailable", "Your dashboard data could not be loaded. Please try again.");
     overviewDashboard.setAttribute("aria-busy", "false");
+  }
+
+  function activateOverviewTab(name) {
+    const tab = document.querySelector(`[data-overview-tab="${name}"]`)
+      || document.querySelector('[data-overview-tab="summary"]');
+    if (!tab) return;
+    const activeName = tab.dataset.overviewTab;
+    document.querySelectorAll("[data-overview-tab]").forEach((item) => {
+      const active = item === tab;
+      item.setAttribute("aria-selected", String(active));
+      item.tabIndex = active ? 0 : -1;
+    });
+    document.querySelectorAll("[data-overview-panel]").forEach((panel) => {
+      const active = panel.dataset.overviewPanel === activeName;
+      panel.classList.toggle("is-active", active);
+      panel.hidden = !active;
+    });
+    sessionStorage.setItem("iVenueOverviewTab", activeName);
   }
 
   async function loadAccount() {
@@ -338,9 +360,6 @@
     }
 
     renderOrders(ordersResult.data || []);
-    if (!overviewResult.error) {
-      renderOverview(overviewResult.data || {}, profile, session.user);
-    }
     const cartItems = cartResult || [];
     const ticketIds = cartItems.map((item) => item.ticket_type_id);
     const ticketResult = ticketIds.length
@@ -369,7 +388,38 @@
       console.error("Unable to load cart event details", eventResult.error);
     }
     renderCart(cartItems, ticketResult.data || [], eventResult.data || []);
+    if (!overviewResult.error) {
+      renderOverview(
+        overviewResult.data || {},
+        profile,
+        session.user,
+        cartItems,
+        ticketResult.data || [],
+        eventResult.data || [],
+      );
+    }
   }
+
+  document.querySelector(".overview-tabs")?.addEventListener("click", (event) => {
+    const tab = event.target.closest("[data-overview-tab]");
+    if (tab) activateOverviewTab(tab.dataset.overviewTab);
+  });
+
+  document.querySelector(".overview-tabs")?.addEventListener("keydown", (event) => {
+    if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+    const tabs = [...document.querySelectorAll("[data-overview-tab]")];
+    const current = tabs.indexOf(document.activeElement);
+    if (current < 0) return;
+    event.preventDefault();
+    const next = event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1 : (current + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
+    tabs[next].focus();
+    activateOverviewTab(tabs[next].dataset.overviewTab);
+  });
+
+  overviewDashboard?.addEventListener("click", (event) => {
+    if (!event.target.closest('a[href="#cart"]')) return;
+    document.querySelector('.account-sidebar-item[data-section="cart"]')?.click();
+  });
 
   window.addEventListener("eventCartChanged", () => {
     loadAccount().catch((error) => console.error(error));

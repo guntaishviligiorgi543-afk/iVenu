@@ -133,7 +133,13 @@
                   <h2 id="overview-title">Overview</h2>
                 </div>
               </div>
-              <div id="overviewDashboard" class="overview-grid" aria-busy="true">
+              <div class="overview-tabs" role="tablist" aria-label="Overview sections">
+                <button type="button" role="tab" id="overview-tab-summary" aria-controls="overview-panel-summary" aria-selected="true" data-overview-tab="summary">Summary</button>
+                <button type="button" role="tab" id="overview-tab-reservations" aria-controls="overview-panel-reservations" aria-selected="false" data-overview-tab="reservations">Reservations</button>
+                <button type="button" role="tab" id="overview-tab-activity" aria-controls="overview-panel-activity" aria-selected="false" data-overview-tab="activity">Activity</button>
+                <button type="button" role="tab" id="overview-tab-purchases" aria-controls="overview-panel-purchases" aria-selected="false" data-overview-tab="purchases">Purchases</button>
+              </div>
+              <div id="overviewDashboard" class="overview-dashboard" aria-busy="true">
                 <div class="overview-skeleton overview-skeleton--wide"></div>
                 <div class="overview-skeleton"></div>
                 <div class="overview-skeleton"></div>
