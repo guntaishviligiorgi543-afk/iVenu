@@ -1131,6 +1131,10 @@ body.ticket-open .event-cart-anchor {
     background 0.2s ease;
 }
 
+.sec3 .getTicketBtn {
+  font-family: "Fjalla One", sans-serif;
+}
+
 .getTicketBtn:hover {
   color: #000;
   background: #ff9475;
