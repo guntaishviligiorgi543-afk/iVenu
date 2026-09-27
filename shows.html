@@ -472,22 +472,6 @@
       .pagination {
         gap: 5px;
       }
-
-      .pagination-control {
-        font-size: 0;
-      }
-
-      .pagination-control::after {
-        font-size: 1rem;
-      }
-
-      .pagination-control--previous::after {
-        content: "←";
-      }
-
-      .pagination-control--next::after {
-        content: "→";
-      }
     }
   </style>
 
@@ -862,8 +846,7 @@
 
         const previous = document.createElement("button");
         previous.type = "button";
-        previous.className = "pagination-control pagination-control--previous";
-        previous.textContent = "prev";
+        previous.textContent = "←";
         previous.setAttribute("aria-label", "Previous page");
         previous.disabled = currentPage === 1;
         previous.addEventListener("click", () => {
@@ -898,8 +881,7 @@
 
         const next = document.createElement("button");
         next.type = "button";
-        next.className = "pagination-control pagination-control--next";
-        next.textContent = "next";
+        next.textContent = "→";
         next.setAttribute("aria-label", "Next page");
         next.disabled = currentPage === pageCount;
         next.addEventListener("click", () => {
