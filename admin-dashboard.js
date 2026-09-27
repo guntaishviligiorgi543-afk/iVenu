@@ -1546,6 +1546,8 @@
       return window.silkFactoryStudioBlueprint;
     if (venue.id === window.lisiLemansBlueprint?.venueId)
       return window.lisiLemansBlueprint;
+    if (venue.id === window.tbilisiSportsPalaceBlueprint?.venueId)
+      return window.tbilisiSportsPalaceBlueprint;
     const expoBlueprint = await expoGeorgiaPavilion11Blueprint();
     if (venue.id === expoBlueprint.venueId) return expoBlueprint;
     return null;
@@ -1742,14 +1744,15 @@
     }
     const eventId = form.elements.id.value;
     let eventRows = [];
-    if (
-      [
+    const usesCanonicalEventRows =
+      Boolean(eventId) &&
+      ([
         "expo-georgia-pavilion-11",
         "silk-factory-studio",
         "lisi-lemans",
-      ].includes(blueprint.slug) &&
-      eventId
-    ) {
+      ].includes(blueprint.slug) ||
+        blueprint.venueId === window.tbilisiSportsPalaceBlueprint?.venueId);
+    if (usesCanonicalEventRows) {
       try {
         eventRows = await expoPreviewRowsForEvent();
       } catch (error) {
@@ -1761,11 +1764,7 @@
       }
     }
     eventMapPreviewDescription.textContent =
-      [
-        "expo-georgia-pavilion-11",
-        "silk-factory-studio",
-        "lisi-lemans",
-      ].includes(blueprint.slug) && eventId
+      usesCanonicalEventRows
         ? `${venue.name} geometry with ${formatSeatNumber(eventRows.length)} canonical event seats. This preview does not modify seat state.`
         : `${venue.name} geometry with draft ticket-tier colors. This preview does not create, reserve, or sell seats.`;
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
@@ -1833,6 +1832,43 @@
         return;
       }
       eventMapPreviewCanvas.appendChild(svg);
+      return;
+    }
+    if (blueprint.venueId === window.tbilisiSportsPalaceBlueprint?.venueId) {
+      try {
+        const tickets = eventId
+          ? eventTickets(eventId)
+          : TICKET_TIERS.map(({ id }) => ({
+              id,
+              canonical_tier: id,
+              display_color:
+                state.wizardTickets?.[id]?.color || ticketColorForTier(id),
+            }));
+        const ticketTypes = tickets.map((ticket) => ({
+          ticket_type_id: String(ticket.id),
+          canonical_tier: ticket.canonical_tier,
+          display_color: ticket.display_color,
+        }));
+        const colors = new Map(
+          ticketTypes.map((ticket) => [
+            ticket.ticket_type_id,
+            ticket.display_color,
+          ]),
+        );
+        window.tbilisiSportsPalaceSeatMap.render({
+          stageMap: eventMapPreviewCanvas,
+          rows: eventRows,
+          ticketTypes,
+          colors,
+          selectedIds: new Set(),
+        });
+      } catch (error) {
+        eventMapPreviewDescription.textContent =
+          error.message ||
+          "The Tbilisi Sports Palace preview could not be rendered.";
+        eventMapPreviewCanvas.innerHTML =
+          '<p class="admin-map-preview__empty">The Tbilisi Sports Palace geometry is available, but canonical seats could not be rendered.</p>';
+      }
       return;
     }
     const tierByLabel = {
