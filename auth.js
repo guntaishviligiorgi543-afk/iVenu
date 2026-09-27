@@ -51,6 +51,17 @@
     return data;
   }
 
+  async function signInWithFacebook() {
+    const { data, error } = await client.auth.signInWithOAuth({
+      provider: "facebook",
+      options: {
+        redirectTo: "https://ivenue.site/",
+      },
+    });
+    if (error) throw error;
+    return data;
+  }
+
   async function verifyCurrentPassword(email, password) {
     const isolatedClient = window.supabase.createClient(
       window.supabaseConfig.url,
@@ -366,6 +377,7 @@
     isAdmin,
     signIn,
     signInWithGoogle,
+    signInWithFacebook,
     verifyCurrentPassword,
     signUp,
     requestSignOut,
