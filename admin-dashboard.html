@@ -55,6 +55,7 @@
         <button data-panel="homepage-content" type="button">
           Homepage Content
         </button>
+        <button data-panel="newsletter" type="button">Newsletter</button>
         <button data-panel="add-event" type="button">Add Event</button>
         <button data-panel="stats" type="button">Ticket statistics</button>
       </nav>
@@ -92,6 +93,27 @@
               type="button"
             >
               Delete Event
+            </button>
+          </div>
+        </form>
+      </dialog>
+
+      <dialog
+        class="admin-delete-dialog"
+        id="newsletterStatusDialog"
+        aria-labelledby="newsletterStatusDialogTitle"
+        aria-describedby="newsletterStatusDialogDescription"
+      >
+        <form class="admin-delete-dialog__panel" method="dialog">
+          <p class="admin-eyebrow">Newsletter subscriber</p>
+          <h2 id="newsletterStatusDialogTitle">Update subscriber status?</h2>
+          <p id="newsletterStatusDialogDescription"></p>
+          <div class="admin-delete-dialog__actions">
+            <button class="admin-outline" id="cancelNewsletterStatus" type="button">
+              Cancel
+            </button>
+            <button class="auth-submit" id="confirmNewsletterStatus" type="button">
+              Update status
             </button>
           </div>
         </form>
@@ -345,6 +367,51 @@
             </div>
           </form>
         </dialog>
+      </section>
+
+      <section class="admin-panel" data-panel="newsletter">
+        <div class="admin-panel-heading">
+          <div>
+            <p class="admin-eyebrow">Audience</p>
+            <h2>Newsletter</h2>
+            <p>Manage newsletter subscriber status.</p>
+          </div>
+        </div>
+        <div class="admin-metrics newsletter-metrics" id="newsletterMetrics" aria-live="polite"></div>
+        <section class="admin-content-block" aria-labelledby="subscribersTitle">
+          <div class="admin-content-block__heading">
+            <h3 id="subscribersTitle">Subscribers</h3>
+          </div>
+          <div class="newsletter-controls">
+            <label>
+              Search subscribers
+              <input id="newsletterSearch" type="search" placeholder="Search subscribers..." autocomplete="off" />
+            </label>
+            <label>
+              Status
+              <select id="newsletterStatusFilter">
+                <option value="">All</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
+            </label>
+          </div>
+          <p class="newsletter-table-status" id="newsletterTableStatus" role="status" aria-live="polite"></p>
+          <div class="newsletter-table-wrap">
+            <table class="newsletter-table">
+              <thead>
+                <tr>
+                  <th>Email</th>
+                  <th>Status</th>
+                  <th>Subscription Date</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="newsletterSubscriberList"></tbody>
+            </table>
+          </div>
+          <div class="admin-pagination newsletter-pagination" id="newsletterPagination" aria-label="Subscribers pagination"></div>
+        </section>
       </section>
 
       <section class="admin-panel event-editor-panel" data-panel="add-event">

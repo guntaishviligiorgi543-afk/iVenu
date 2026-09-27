@@ -40,6 +40,17 @@
     refreshing: false,
     deletingEvent: false,
     eventPendingDeletion: null,
+    newsletter: {
+      overview: null,
+      subscribers: [],
+      total: 0,
+      page: 1,
+      pageSize: 20,
+      loaded: false,
+      loading: false,
+      requestId: 0,
+      pendingStatusChange: null,
+    },
   };
   let expoGeorgiaPavilion11BlueprintPromise = null;
   const status = document.querySelector("#adminStatus");
@@ -142,6 +153,33 @@
   const eventDeleteMessage = document.querySelector("#eventDeleteMessage");
   const cancelEventDelete = document.querySelector("#cancelEventDelete");
   const confirmEventDelete = document.querySelector("#confirmEventDelete");
+  const newsletterMetrics = document.querySelector("#newsletterMetrics");
+  const newsletterSearch = document.querySelector("#newsletterSearch");
+  const newsletterStatusFilter = document.querySelector(
+    "#newsletterStatusFilter",
+  );
+  const newsletterTableStatus = document.querySelector(
+    "#newsletterTableStatus",
+  );
+  const newsletterSubscriberList = document.querySelector(
+    "#newsletterSubscriberList",
+  );
+  const newsletterPagination = document.querySelector("#newsletterPagination");
+  const newsletterStatusDialog = document.querySelector(
+    "#newsletterStatusDialog",
+  );
+  const newsletterStatusDialogTitle = document.querySelector(
+    "#newsletterStatusDialogTitle",
+  );
+  const newsletterStatusDialogDescription = document.querySelector(
+    "#newsletterStatusDialogDescription",
+  );
+  const cancelNewsletterStatus = document.querySelector(
+    "#cancelNewsletterStatus",
+  );
+  const confirmNewsletterStatus = document.querySelector(
+    "#confirmNewsletterStatus",
+  );
   const heroForm = document.querySelector("#heroForm");
   heroForm.innerHTML = `<fieldset class="admin-hero-mode"><legend>Hero Display Mode</legend><label class="admin-check"><input type="radio" name="hero_mode" value="latest_added" checked /> Latest Added</label><label class="admin-check"><input type="radio" name="hero_mode" value="most_added_to_cart" /> Most Added to Cart</label><label class="admin-check"><input type="radio" name="hero_mode" value="best_selling" /> Best Selling</label><label class="admin-check"><input type="radio" name="hero_mode" value="custom_selection" /> Custom Selection</label></fieldset><label class="admin-hero-limit">Hero event count<input id="heroLimit" type="number" min="1" step="1" inputmode="numeric" /></label><p class="admin-hero-help" id="heroHelp"></p><div id="heroAutomatic"></div><div id="heroSlots" hidden><label>Find eligible events<input id="heroSearch" type="search" placeholder="Search title, date, venue or category" autocomplete="off" /></label><div class="upcoming-shows-results" id="heroResults"></div><p class="admin-hero-help" id="heroCount"></p><div class="upcoming-shows-selected" id="heroSelected"></div></div><div class="admin-form-actions"><button class="auth-submit" type="submit">Save Hero</button></div>`;
   const heroSlots = document.querySelector("#heroSlots");
@@ -571,6 +609,141 @@
         onPageChange(Number(button.dataset.page)),
       );
     });
+  }
+
+  function newsletterStatusFilterValue() {
+    if (newsletterStatusFilter.value === "active") return true;
+    if (newsletterStatusFilter.value === "inactive") return false;
+    return null;
+  }
+
+  function renderNewsletterMetrics() {
+    const overview = state.newsletter.overview;
+    if (!newsletterMetrics) return;
+    newsletterMetrics.innerHTML = overview
+      ? [
+          ["Total Subscribers", overview.total_subscribers],
+          ["Active Subscribers", overview.active_subscribers],
+          ["Inactive Subscribers", overview.inactive_subscribers],
+          ["New Subscribers — Last 30 Days", overview.new_subscribers_last_30_days],
+        ]
+          .map(
+            ([label, value]) =>
+              `<article class="admin-metric"><strong>${Number(value || 0)}</strong><span>${label}</span></article>`,
+          )
+          .join("")
+      : "";
+  }
+
+  function formatSubscriberDate(value) {
+    if (!value) return "—";
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? "—" : date.toLocaleString();
+  }
+
+  function renderNewsletterPagination() {
+    const { page, pageSize, total } = state.newsletter;
+    const totalPages = Math.max(1, Math.ceil(total / pageSize));
+    if (totalPages <= 1) {
+      newsletterPagination.innerHTML = "";
+      return;
+    }
+    const pages = [...new Set([1, page - 1, page, page + 1, totalPages])]
+      .filter((value) => value >= 1 && value <= totalPages)
+      .sort((left, right) => left - right);
+    const pageButtons = pages
+      .map((value, index) => {
+        const gap = index && value - pages[index - 1] > 1
+          ? '<span class="newsletter-pagination__ellipsis" aria-hidden="true">…</span>'
+          : "";
+        return `${gap}<button class="admin-pagination-button${value === page ? " is-active" : ""}" data-newsletter-page="${value}" type="button"${value === page ? ' aria-current="page"' : ""}>${value}</button>`;
+      })
+      .join("");
+    newsletterPagination.innerHTML = `<button class="admin-pagination-button" data-newsletter-page="${page - 1}" type="button"${page === 1 ? " disabled" : ""}>Previous</button>${pageButtons}<button class="admin-pagination-button" data-newsletter-page="${page + 1}" type="button"${page === totalPages ? " disabled" : ""}>Next</button>`;
+  }
+
+  function renderNewsletter() {
+    const { subscribers, total, loaded, loading } = state.newsletter;
+    renderNewsletterMetrics();
+    if (!loaded && loading) {
+      newsletterTableStatus.textContent = "Loading subscribers...";
+      newsletterSubscriberList.innerHTML = "";
+      newsletterPagination.innerHTML = "";
+      return;
+    }
+    if (!total) {
+      const hasFilters = Boolean(
+        newsletterSearch.value.trim() || newsletterStatusFilter.value,
+      );
+      newsletterTableStatus.textContent = hasFilters
+        ? "No subscribers match your search."
+        : "No subscribers found.";
+      newsletterSubscriberList.innerHTML = "";
+      newsletterPagination.innerHTML = "";
+      return;
+    }
+    newsletterTableStatus.textContent = `${total} subscriber${total === 1 ? "" : "s"}.`;
+    newsletterSubscriberList.innerHTML = subscribers
+      .map((subscriber) => {
+        const isActive = Boolean(subscriber.is_active);
+        const action = isActive ? "Deactivate" : "Reactivate";
+        return `<tr><td data-label="Email">${escapeHtml(subscriber.email)}</td><td data-label="Status"><span class="newsletter-status ${isActive ? "is-active" : "is-inactive"}">${isActive ? "Active" : "Inactive"}</span></td><td data-label="Subscription Date">${escapeHtml(formatSubscriberDate(subscriber.subscribed_at))}</td><td data-label="Actions"><button class="admin-outline newsletter-action" type="button" data-newsletter-email="${escapeHtml(subscriber.email)}" data-newsletter-active="${String(!isActive)}">${action}</button></td></tr>`;
+      })
+      .join("");
+    renderNewsletterPagination();
+  }
+
+  async function loadNewsletterData() {
+    const newsletter = state.newsletter;
+    const requestId = ++newsletter.requestId;
+    newsletter.loading = true;
+    if (!newsletter.loaded) renderNewsletter();
+    try {
+      const [overviewResult, subscribersResult] = await Promise.all([
+        client.rpc("get_admin_newsletter_overview"),
+        client.rpc("get_admin_newsletter_subscribers", {
+          p_search: newsletterSearch.value,
+          p_is_active: newsletterStatusFilterValue(),
+          p_page: newsletter.page,
+          p_page_size: newsletter.pageSize,
+        }),
+      ]);
+      if (overviewResult.error) throw overviewResult.error;
+      if (subscribersResult.error) throw subscribersResult.error;
+      if (requestId !== newsletter.requestId) return;
+      const total = Number(subscribersResult.data?.total || 0);
+      const totalPages = Math.max(1, Math.ceil(total / newsletter.pageSize));
+      if (total > 0 && newsletter.page > totalPages) {
+        newsletter.page = totalPages;
+        return loadNewsletterData();
+      }
+      newsletter.overview = overviewResult.data || {};
+      newsletter.subscribers = subscribersResult.data?.subscribers || [];
+      newsletter.total = total;
+      newsletter.loaded = true;
+      renderNewsletter();
+    } catch (error) {
+      if (requestId !== newsletter.requestId) return;
+      console.error("Newsletter data could not be loaded", error);
+      newsletterSubscriberList.innerHTML = "";
+      newsletterPagination.innerHTML = "";
+      newsletterTableStatus.textContent =
+        "Subscribers could not be loaded. Please try again.";
+    } finally {
+      if (requestId === newsletter.requestId) newsletter.loading = false;
+    }
+  }
+
+  function openNewsletterStatusDialog(email, isActive) {
+    state.newsletter.pendingStatusChange = { email, isActive };
+    const action = isActive ? "Reactivate" : "Deactivate";
+    newsletterStatusDialogTitle.textContent = `${action} subscriber?`;
+    newsletterStatusDialogDescription.textContent = `${email} will be ${
+      isActive ? "reactivated" : "deactivated"
+    } for future newsletter management.`;
+    confirmNewsletterStatus.textContent = action;
+    newsletterStatusDialog.showModal();
+    cancelNewsletterStatus.focus();
   }
 
   function renderOverview() {
@@ -2018,6 +2191,7 @@
         return;
       }
       setActiveDashboardPanel(button.dataset.panel);
+      if (button.dataset.panel === "newsletter") loadNewsletterData();
     }),
   );
   adminMenuToggle?.addEventListener("click", () => {
@@ -2219,6 +2393,70 @@
       );
     } finally {
       setRefreshLoading(false);
+    }
+  });
+  let newsletterSearchTimeout = null;
+  newsletterSearch.addEventListener("input", () => {
+    window.clearTimeout(newsletterSearchTimeout);
+    newsletterSearchTimeout = window.setTimeout(() => {
+      state.newsletter.page = 1;
+      loadNewsletterData();
+    }, 300);
+  });
+  newsletterStatusFilter.addEventListener("change", () => {
+    state.newsletter.page = 1;
+    loadNewsletterData();
+  });
+  newsletterPagination.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-newsletter-page]");
+    if (!button || button.disabled) return;
+    state.newsletter.page = Number(button.dataset.newsletterPage);
+    loadNewsletterData();
+  });
+  newsletterSubscriberList.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-newsletter-email]");
+    if (!button) return;
+    openNewsletterStatusDialog(
+      button.dataset.newsletterEmail,
+      button.dataset.newsletterActive === "true",
+    );
+  });
+  cancelNewsletterStatus.addEventListener("click", () => {
+    state.newsletter.pendingStatusChange = null;
+    newsletterStatusDialog.close();
+  });
+  confirmNewsletterStatus.addEventListener("click", async () => {
+    const pending = state.newsletter.pendingStatusChange;
+    if (!pending) return;
+    confirmNewsletterStatus.disabled = true;
+    confirmNewsletterStatus.classList.add("is-loading");
+    try {
+      const { error } = await client.rpc(
+        "admin_set_newsletter_subscriber_status",
+        {
+          p_email: pending.email,
+          p_is_active: pending.isActive,
+        },
+      );
+      if (error) throw error;
+      newsletterStatusDialog.close();
+      state.newsletter.pendingStatusChange = null;
+      setMessage(
+        pending.isActive
+          ? "Subscriber reactivated."
+          : "Subscriber deactivated.",
+        "success",
+      );
+      await loadNewsletterData();
+    } catch (error) {
+      console.error("Newsletter status could not be updated", error);
+      setMessage(
+        "Subscriber status could not be updated. Please try again.",
+        "error",
+      );
+    } finally {
+      confirmNewsletterStatus.disabled = false;
+      confirmNewsletterStatus.classList.remove("is-loading");
     }
   });
   analyticsPeriod.addEventListener("change", () =>
