@@ -643,9 +643,8 @@ body.ticket-open .event-cart-anchor {
 
   color: #000;
   background: #fff;
-
+  font-family: "Fjalla One", sans-serif;
   white-space: nowrap;
-  font-family: "Courier New", Courier, monospace;
   transition:
     color 0.3s ease,
     background 0.3s ease;
