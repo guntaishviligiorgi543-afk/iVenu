@@ -2254,6 +2254,17 @@ body.auth-gate-open {
 }
 
 @media (max-width: 820px) {
+  .account-page .account-header {
+    display: block;
+  }
+
+  .account-page .account-status {
+    max-width: none;
+    margin-top: 14px;
+    text-align: left;
+    overflow-wrap: anywhere;
+  }
+
   .account-page .account-layout {
     grid-template-columns: 1fr;
   }

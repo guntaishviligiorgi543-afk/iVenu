@@ -146,6 +146,11 @@ header > nav a:hover span {
   color: #ff9475;
 }
 
+header > nav a.is-active span,
+.authHeaderContent > nav a.is-active span {
+  color: #ff9475;
+}
+
 .contact {
   color: #fff;
 
@@ -2074,6 +2079,10 @@ body.ticket-open .event-cart-anchor {
   .mobileMenuAccount button:hover {
     padding-left: 12px;
 
+    color: #ff9475;
+  }
+
+  .mobileMenuNav a.is-active {
     color: #ff9475;
   }
 

@@ -104,6 +104,34 @@
   headerNav?.querySelectorAll(".authNavLink").forEach((link) => link.remove());
   headerNav?.append(headerAuth, headerAccount);
 
+  const normalizedPagePath = (pathname) => {
+    const normalized = pathname.replace(/\/+$/, "") || "/";
+    return normalized === "/index.html" ? "/" : normalized;
+  };
+  const currentPagePath = normalizedPagePath(window.location.pathname);
+  const syncActiveNavigation = () => {
+    const links = new Set([
+      ...header.querySelectorAll("nav a[href]"),
+      ...menu.querySelectorAll(".mobileMenuNav a[href]"),
+    ]);
+    links.forEach((link) => {
+      const href = link.getAttribute("href");
+      if (!href || href.startsWith("#")) {
+        link.classList.remove("is-active");
+        link.removeAttribute("aria-current");
+        return;
+      }
+      const url = new URL(href, window.location.href);
+      const isActive =
+        url.origin === window.location.origin &&
+        normalizedPagePath(url.pathname) === currentPagePath;
+      link.classList.toggle("is-active", isActive);
+      if (isActive) link.setAttribute("aria-current", "page");
+      else link.removeAttribute("aria-current");
+    });
+  };
+  syncActiveNavigation();
+
   const social = document.querySelector(".socIcons");
   const socialParent = social?.parentNode;
   const socialNext = social?.nextSibling;
@@ -140,6 +168,7 @@
     headerAuth.textContent = signedIn ? "logout" : "login";
     headerAuth.href = signedIn ? "#" : "login.html";
     headerAccount.hidden = !signedIn;
+    syncActiveNavigation();
     if (mobileCart) mobileCart.hidden = !signedIn;
     mobileDashboard.hidden = true;
     account.replaceChildren();
