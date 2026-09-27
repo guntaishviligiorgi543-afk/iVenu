@@ -37,6 +37,7 @@
   const ordersCount = document.querySelector("#ordersCount");
   const cartCount = document.querySelector("#cartCount");
   const logoutButton = document.querySelector("#dashboardLogout");
+  const overviewDashboard = document.querySelector("#overviewDashboard");
   let avatarPreviewUrl = "";
 
   function setMessage(text, type = "", target = message) {
@@ -206,6 +207,53 @@
     }
   }
 
+  function formatMoney(value) {
+    return `${Number(value || 0).toFixed(2)}₾`;
+  }
+
+  function overviewEmpty(title, description) {
+    return `<div class="overview-empty"><strong>${escapeHtml(title)}</strong><span>${escapeHtml(description)}</span></div>`;
+  }
+
+  function updateReservationCountdown() {
+    document.querySelectorAll("[data-reservation-until]").forEach((element) => {
+      const seconds = Math.max(0, Math.ceil((new Date(element.dataset.reservationUntil) - Date.now()) / 1000));
+      element.textContent = seconds ? `${Math.floor(seconds / 60)}m ${seconds % 60}s remaining` : "Reservation has expired";
+    });
+  }
+
+  function renderOverview(data, profile, user) {
+    const name = profile?.first_name || user?.user_metadata?.first_name || "there";
+    const avatar = profile?.avatar_url
+      ? `<img src="${escapeHtml(profile.avatar_url)}" alt="" />`
+      : `<span>${escapeHtml(String(name).charAt(0).toUpperCase())}</span>`;
+    const next = data.next_event;
+    const reservation = data.reservation;
+    const activity = data.activity || {};
+    const activityMax = Math.max(1, activity.last_7_days || 0, activity.last_30_days || 0, activity.this_year || 0);
+    const stat = (title, value, description) => `<article class="overview-card overview-stat"><p>${title}</p><strong>${value}</strong><span>${description}</span></article>`;
+    const bars = [["7 days", activity.last_7_days || 0], ["30 days", activity.last_30_days || 0], ["This year", activity.this_year || 0]].map(([label, value]) => `<div class="activity-bar"><span style="--activity-size:${Math.max(8, Math.round(value / activityMax * 100))}%"></span><small>${label}</small><b>${value}</b></div>`).join("");
+    overviewDashboard.innerHTML = `
+      <article class="overview-card overview-welcome"><div class="overview-avatar">${avatar}</div><div><p>Welcome back, ${escapeHtml(name)}</p><h3>${escapeHtml(profile?.email || user?.email || "Your iVenue account")}</h3><span>${user?.created_at ? `Member since ${escapeHtml(new Date(user.created_at).toLocaleDateString(undefined, { month: "long", year: "numeric" }))}` : ""}</span></div><small>Here is an overview of your iVenue activity.</small></article>
+      <article class="overview-card overview-next-event"><p>Next Event</p>${next ? `<h3>${escapeHtml(next.name)}</h3><strong>${escapeHtml(new Date(`${next.date}T00:00:00`).toLocaleDateString())}${next.time ? ` · ${escapeHtml(String(next.time).slice(0, 5))}` : ""}</strong><span>${escapeHtml(next.venue || "Venue to be announced")} · ${next.tickets} ${next.tickets === 1 ? "ticket" : "tickets"}</span><small>${escapeHtml(next.seats || "Your nearest upcoming event.")}</small>` : overviewEmpty("No upcoming events", "When you purchase a future event ticket, it will appear here.")}</article>
+      <article class="overview-card overview-reservation"><p>Active Reservation</p>${reservation ? `<h3>${escapeHtml(reservation.title || reservation.performer || "Event")}</h3><strong>${reservation.seat_count} ${reservation.seat_count === 1 ? "seat" : "seats"} held</strong><span>Expires ${escapeHtml(new Date(reservation.reserved_until).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }))}</span><small>${escapeHtml(reservation.seats || "Seat details available at checkout")}</small><em data-reservation-until="${escapeHtml(reservation.reserved_until)}">Calculating time remaining…</em>` : overviewEmpty("No active reservation", "Seats temporarily held for you will appear here.")}</article>
+      ${stat("My Tickets", data.tickets || 0, "Tickets currently available in your account.")}
+      ${stat("Upcoming Events", data.upcoming_events || 0, "Upcoming events you currently have tickets for.")}
+      ${stat("Past Events", data.past_events || 0, "Events from your ticket history that have already taken place.")}
+      ${stat("Total Orders", data.total_orders || 0, "Completed purchases made through your iVenue account.")}
+      <article class="overview-card overview-spending"><p>Total Spent</p><strong>${formatMoney(data.total_spent)}</strong><span>Total value of your completed iVenue purchases.</span><small>This year: ${formatMoney(data.this_year_spent)}</small></article>
+      <article class="overview-card overview-activity"><div><p>Your Activity</p><h3>Completed purchase activity</h3><span>Activity is based on recorded completed purchases.</span></div><div class="activity-bars">${bars}</div></article>
+      <article class="overview-card overview-ranking"><p>Activity Ranking — Last 30 Days</p>${data.ranking?.available ? `<strong>Top ${data.ranking.top_percent}%</strong><span>Your activity level compared with other active iVenue users.</span><small>${data.ranking.percentile}th percentile, based on completed purchases.</small>` : overviewEmpty("Not enough activity data yet", "Ranking needs at least five active users.")}</article>
+      <article class="overview-card overview-recent-orders"><p>Recent Orders</p><h3>Completed purchases</h3>${data.recent_orders?.length ? `<div class="overview-order-list">${data.recent_orders.map((order) => `<div><span><strong>${escapeHtml(order.event_name)}</strong><small>${escapeHtml(new Date(order.created_at).toLocaleDateString())} · ${order.ticket_count} tickets</small></span><b>${formatMoney(order.total_price)}</b></div>`).join("")}</div>` : overviewEmpty("No completed orders", "Your completed ticket purchases will appear here.")}</article>`;
+    overviewDashboard.setAttribute("aria-busy", "false");
+    updateReservationCountdown();
+  }
+
+  function showOverviewError() {
+    overviewDashboard.innerHTML = overviewEmpty("Overview unavailable", "Your dashboard data could not be loaded. Please try again.");
+    overviewDashboard.setAttribute("aria-busy", "false");
+  }
+
   async function loadAccount() {
     let session;
     try {
@@ -237,7 +285,7 @@
       return;
     }
 
-    const [profileResult, ordersResult, cartResult] = await Promise.all([
+    const [profileResult, ordersResult, cartResult, overviewResult] = await Promise.all([
       client
         .from("profiles")
         .select("id, first_name, last_name, email, phone, avatar_url")
@@ -251,10 +299,15 @@
         .eq("user_id", session.user.id)
         .order("created_at", { ascending: false }),
       window.cartSync.getOwnCart(),
+      client.rpc("get_user_dashboard_overview"),
     ]);
 
     if (profileResult.error) throw profileResult.error;
     if (ordersResult.error) throw ordersResult.error;
+    if (overviewResult.error) {
+      console.error("Unable to load dashboard overview", overviewResult.error);
+      showOverviewError();
+    }
 
     const profile = profileResult.data;
     if (profile) {
@@ -285,6 +338,9 @@
     }
 
     renderOrders(ordersResult.data || []);
+    if (!overviewResult.error) {
+      renderOverview(overviewResult.data || {}, profile, session.user);
+    }
     const cartItems = cartResult || [];
     const ticketIds = cartItems.map((item) => item.ticket_type_id);
     const ticketResult = ticketIds.length

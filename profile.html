@@ -31,7 +31,7 @@
             <nav class="account-sidebar-nav">
               <button
                 class="account-sidebar-item is-active"
-                data-section="profile"
+                data-section="overview"
                 type="button"
                 aria-current="page"
               >
@@ -39,6 +39,16 @@
                   <path
                     d="M12 12a4 4 0 1 0-4-4a4 4 0 0 0 4 4zm0 2c-4.42 0-8 2.24-8 5v1h16v-1c0-2.76-3.58-5-8-5z"
                   />
+                </svg>
+                <span>Overview</span>
+              </button>
+              <button
+                class="account-sidebar-item"
+                data-section="profile"
+                type="button"
+              >
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M12 12a4 4 0 1 0-4-4a4 4 0 0 0 4 4zm0 2c-4.42 0-8 2.24-8 5v1h16v-1c0-2.76-3.58-5-8-5z" />
                 </svg>
                 <span>Profile</span>
               </button>
@@ -113,7 +123,26 @@
 
           <div class="account-main" aria-live="polite">
             <section
-              class="account-section is-visible"
+              class="account-section is-visible overview-section"
+              data-section="overview"
+              aria-labelledby="overview-title"
+            >
+              <div class="account-section-header">
+                <div>
+                  <p class="account-eyebrow">Your iVenue at a glance</p>
+                  <h2 id="overview-title">Overview</h2>
+                </div>
+              </div>
+              <div id="overviewDashboard" class="overview-grid" aria-busy="true">
+                <div class="overview-skeleton overview-skeleton--wide"></div>
+                <div class="overview-skeleton"></div>
+                <div class="overview-skeleton"></div>
+                <div class="overview-skeleton"></div>
+                <div class="overview-skeleton overview-skeleton--wide"></div>
+              </div>
+            </section>
+            <section
+              class="account-section"
               data-section="profile"
               aria-labelledby="profile-title"
             >
