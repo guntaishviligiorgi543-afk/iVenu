@@ -19,7 +19,7 @@ begin
   end if;
 
   with completed_orders as (
-    select o.id, o.created_at, o.total_price
+    select o.id, o.created_at, o.total_price, o.status
     from public.orders o
     where o.user_id = v_user_id
       and lower(coalesce(o.status, '')) in ('paid', 'completed', 'confirmed', 'success')
