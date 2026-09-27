@@ -1749,6 +1749,20 @@ body.ticket-open .event-cart-anchor {
   background: #000;
 }
 
+.newsletter-message {
+  margin: 0;
+  color: #000;
+  font: 18px/1.5 "Cabin", sans-serif;
+}
+
+.newsletter-message.error {
+  color: #7a1f0b;
+}
+
+.newsletter-message.success {
+  color: #124d2d;
+}
+
 .copyright {
   margin-top: 72px;
 

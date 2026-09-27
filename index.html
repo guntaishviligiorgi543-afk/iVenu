@@ -5,15 +5,29 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>iVenue | Events &amp; Tickets in Georgia</title>
-    <meta name="description" content="Discover events, concerts, sports, theatre and more with iVenue. Explore upcoming events and find tickets in Georgia." />
+    <meta
+      name="description"
+      content="Discover events, concerts, sports, theatre and more with iVenue. Explore upcoming events and find tickets in Georgia."
+    />
     <link rel="canonical" href="https://ivenue.site/" />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="iVenue" />
-    <meta property="og:title" content="iVenue | Events &amp; Tickets in Georgia" />
-    <meta property="og:description" content="Discover events, concerts, sports, theatre and more with iVenue. Explore upcoming events and find tickets in Georgia." />
+    <meta
+      property="og:title"
+      content="iVenue | Events &amp; Tickets in Georgia"
+    />
+    <meta
+      property="og:description"
+      content="Discover events, concerts, sports, theatre and more with iVenue. Explore upcoming events and find tickets in Georgia."
+    />
     <meta property="og:url" content="https://ivenue.site/" />
     <script type="application/ld+json">
-      {"@context":"https://schema.org","@type":"WebSite","name":"iVenue","url":"https://ivenue.site/"}
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "iVenue",
+        "url": "https://ivenue.site/"
+      }
     </script>
 
     <link rel="stylesheet" href="main.css" />
@@ -62,7 +76,9 @@
             <a href="venue.html">venue</a>
             <a href="contact.html">contact</a>
             <a href="profile.html#cart">Cart</a>
-            <a class="mobileDashboardLink" href="profile.html" hidden>Dashboard</a>
+            <a class="mobileDashboardLink" href="profile.html" hidden
+              >Dashboard</a
+            >
           </nav>
           <div class="mobileMenuSocial"></div>
           <div class="mobileMenuAccount" id="mobileMenuAccount"></div>
@@ -213,6 +229,7 @@
 
                 <button type="submit">Subscribe</button>
               </div>
+              <p class="newsletter-message" role="status" aria-live="polite"></p>
             </form>
           </div>
         </div>
@@ -318,6 +335,7 @@
     </div>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-config.js"></script>
+    <script src="newsletter.js"></script>
     <script src="supabase-data.js"></script>
     <script src="event-share.js"></script>
     <script src="auth.js"></script>
