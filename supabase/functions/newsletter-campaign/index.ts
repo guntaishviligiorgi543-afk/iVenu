@@ -1,6 +1,15 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "https://ivenue.site",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+};
+
+const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), {
+  status,
+  headers: { ...corsHeaders, "Content-Type": "application/json" },
+});
 const escapeHtml = (value: string) => value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
 const textFromHtml = (html: string) => html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
 const sanitize = (html: string) => html.replace(/<\/?([a-z0-9]+)(?:\s[^>]*)?>/gi, (_tag, name) => {
@@ -11,6 +20,9 @@ const hash = async (value: string) => Array.from(new Uint8Array(await crypto.sub
 const token = () => crypto.getRandomValues(new Uint8Array(32)).reduce((text, byte) => text + byte.toString(16).padStart(2, "0"), "");
 
 Deno.serve(async (request) => {
+  if (request.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+
+  try {
   const url = Deno.env.get("SUPABASE_URL")!; const anon = Deno.env.get("SUPABASE_ANON_KEY")!; const service = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
   const resendKey = Deno.env.get("RESEND_API_KEY"); const from = Deno.env.get("NEWSLETTER_FROM") || Deno.env.get("EMAIL_FROM"); const siteUrl = Deno.env.get("SITE_URL");
   const authorization = request.headers.get("Authorization");
@@ -38,4 +50,8 @@ Deno.serve(async (request) => {
   }
   if (body.action === "send") await admin.from("newsletter_campaigns").update({ status: failed ? (successful ? "partially_failed" : "failed") : "sent", sent_at: new Date().toISOString(), successful_count: successful, failed_count: failed }).eq("id", campaign.id);
   return json({ successful, failed });
+  } catch (error) {
+    console.error("Newsletter campaign request failed", error);
+    return json({ error: "Unable to process newsletter campaign." }, 500);
+  }
 });
