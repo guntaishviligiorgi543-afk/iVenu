@@ -1118,6 +1118,8 @@ body.ticket-open .event-cart-anchor {
 .getTicketBtn {
   flex: 0 0 auto;
 
+  font-family: "Fjalla One", sans-serif;
+
   padding: 10px 30px;
 
   border: 2px solid #ff9475;
@@ -1129,10 +1131,6 @@ body.ticket-open .event-cart-anchor {
   transition:
     color 0.2s ease,
     background 0.2s ease;
-}
-
-.sec3 .getTicketBtn {
-  font-family: "Fjalla One", sans-serif;
 }
 
 .getTicketBtn:hover {
