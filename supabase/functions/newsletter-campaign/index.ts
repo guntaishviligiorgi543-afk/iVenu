@@ -3,7 +3,10 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
 const escapeHtml = (value: string) => value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
 const textFromHtml = (html: string) => html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
-const sanitize = (html: string) => html.replace(/<\/?(script|style|iframe|object|embed)[^>]*>/gi, "").replace(/\son\w+\s*=\s*(['"]).*?\1/gi, "").replace(/javascript:/gi, "");
+const sanitize = (html: string) => html.replace(/<\/?([a-z0-9]+)(?:\s[^>]*)?>/gi, (_tag, name) => {
+  const safe = ["p", "br", "h1", "h2", "h3", "strong", "b", "em", "i", "ul", "ol", "li"];
+  return safe.includes(String(name).toLowerCase()) ? `<${_tag.includes("</") ? "/" : ""}${String(name).toLowerCase()}>` : "";
+});
 const hash = async (value: string) => Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value)))).map((byte) => byte.toString(16).padStart(2, "0")).join("");
 const token = () => crypto.getRandomValues(new Uint8Array(32)).reduce((text, byte) => text + byte.toString(16).padStart(2, "0"), "");
 
