@@ -1,6 +1,7 @@
 const params = new URLSearchParams(window.location.search);
 const bandId = params.get("id");
 let selectedBand = null;
+const validTicketColor = (value) => /^#[0-9a-f]{6}$/i.test(value || "");
 
 const ticketHero = document.querySelector(".ticketHero");
 
@@ -261,7 +262,7 @@ function renderBasket() {
     basketList.innerHTML = basketTickets
       .map(
         (ticket) => `
-          <div class="tktCard section-${ticket.section.toLowerCase()}">
+          <div class="tktCard section-${ticket.section.toLowerCase()}" data-ticket-type-id="${ticket.ticketTypeId || ""}">
             <div class="tktInfo">
               <div class="sectionCont">
                 <h5>section <p class="section">${ticket.sectionName || ticket.section}</p></h5>
@@ -286,6 +287,16 @@ function renderBasket() {
         `,
       )
       .join("");
+
+    basketList.querySelectorAll(".tktCard").forEach((card, index) => {
+      const storedColor = basketTickets[index]?.ticketColor;
+      card.style.setProperty(
+        "--ticket-type-color",
+        window.canonicalTicketSeatMap?.getTicketTypeColor?.(
+          card.dataset.ticketTypeId,
+        ) || (validTicketColor(storedColor) ? storedColor : "#6b7280"),
+      );
+    });
 
     basketList.querySelectorAll(".removeTkt").forEach((button) => {
       button.addEventListener("click", () => {

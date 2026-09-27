@@ -1240,9 +1240,10 @@ body.ticket-open .socIcons {
   position: absolute;
   width: 5px;
   height: 100%;
-  top: 0.2%;
-  left: -2px;
-  bottom: 4px;
+  top: 0;
+  left: 0;
+  background: var(--ticket-type-color, #6b7280);
+  pointer-events: none;
 }
 /* =========================================================
    TICKET CONTENT

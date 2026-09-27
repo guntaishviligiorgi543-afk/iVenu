@@ -365,6 +365,7 @@
         currency: "₾",
         serviceFee: Math.round(Number(row.price) * 0.05),
         ticketTypeId: row.ticket_type_id,
+        ticketColor: colorsByTicketType().get(row.ticket_type_id),
         reservedUntil: row.reserved_until,
       });
     });
@@ -1048,6 +1049,7 @@
       currency: "₾",
       serviceFee: Math.round(Number(row.price) * 0.05),
       ticketTypeId: row.ticket_type_id,
+      ticketColor: colorsByTicketType().get(row.ticket_type_id),
       reservedUntil: row.reserved_until,
     });
     if (typeof persistBasketState === "function") persistBasketState();
@@ -1136,6 +1138,12 @@
           `<div class="tktCard" data-type="${escapeHtml(row.type)}" data-ticket-type-id="${row.ticketTypeId}" data-section="${escapeHtml(row.section)}"><div class="tktInfo"><div class="sectionCont"><h5>section <p class="section">${escapeHtml(row.sectionName)}</p></h5><h5>row <p class="row">${row.row}</p></h5><h5>seat <p class="seat">${row.seat}</p></h5></div><div class="tktPriceCont"><p class="tktType">${escapeHtml(row.displayType)}</p><p class="tktprice">₾${row.price}</p></div></div><button class="addToBskt" data-event-seat-id="${row.eventSeatId}"><span>add to basket</span></button></div>`,
       )
       .join("");
+    list.querySelectorAll(".tktCard").forEach((card) => {
+      card.style.setProperty(
+        "--ticket-type-color",
+        colorsByTicketType().get(card.dataset.ticketTypeId) || "#6b7280",
+      );
+    });
     if (seatState.runtimeDiagnostics) {
       seatState.runtimeDiagnostics.ticketListRendered = countRowsByTicketType(
         rows.map((row) => ({
@@ -1177,6 +1185,8 @@
   window.canonicalTicketSeatMap = {
     renderTicketListForContainer: window.renderTicketListForContainer,
     refreshTicketLists,
+    getTicketTypeColor: (ticketTypeId) =>
+      colorsByTicketType().get(ticketTypeId) || "#6b7280",
     getRuntimeDiagnostics: () => seatState.runtimeDiagnostics,
     hasReachedTicketLimit: () => seatState.selectedIds.size >= 4,
   };
