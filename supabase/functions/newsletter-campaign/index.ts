@@ -183,8 +183,13 @@ Deno.serve(async (request) => {
           text: `iVenue Newsletter${body.action === "test" ? " (TEST EMAIL)" : ""}\n\n${textFromHtml(sanitize(campaign.content))}\n\nExplore Events: ${eventsUrl}\niVenue: ${websiteUrl}\nUnsubscribe: ${unsubscribe}`,
         }),
       });
-      if (response.ok) successful += 1;
-      else failed += 1;
+      if (response.ok) {
+        successful += 1;
+        console.info("Resend newsletter request accepted", { action: body.action, status: response.status });
+      } else {
+        failed += 1;
+        console.error("Resend newsletter request rejected", { action: body.action, status: response.status });
+      }
 
       if (body.action === "send") {
         const { error: deliveryError } = await admin
@@ -204,6 +209,9 @@ Deno.serve(async (request) => {
         .update({ status, sent_at: new Date().toISOString(), successful_count: successful, failed_count: failed })
         .eq("id", campaign.id);
       if (campaignError) throw campaignError;
+    }
+    if (body.action === "test" && failed) {
+      return json({ error: "Email provider rejected the test email.", code: "EMAIL_PROVIDER_REJECTED" }, 502);
     }
     return json({ successful, failed, skipped });
   } catch (error) {

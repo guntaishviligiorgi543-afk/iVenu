@@ -2773,6 +2773,8 @@
         headers: { Authorization: `Bearer ${sessionData.session.access_token}` },
       });
       if (error || data?.error) throw error || new Error(data.error);
+      if (Number(data?.successful) !== 1 || Number(data?.failed) > 0)
+        throw new Error("The test email was not accepted by the email provider.");
       setMessage("Test email sent to your signed-in admin address.", "success");
     } catch (error) {
       const response = error?.context;
