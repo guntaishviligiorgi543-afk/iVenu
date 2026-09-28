@@ -184,8 +184,12 @@
   const newsletterEditor = document.querySelector("#newsletterEditor");
   const newsletterPreview = document.querySelector("#newsletterPreview");
   const newsletterCampaignHistory = document.querySelector("#newsletterCampaignHistory");
+  const newsletterCampaignStatus = document.querySelector("#newsletterCampaignStatus");
+  const newsletterOverviewSummary = document.querySelector("#newsletterOverviewSummary");
+  const newsletterPreviewEmpty = document.querySelector("#newsletterPreviewEmpty");
   let newsletterCampaignId = null;
   let newsletterCampaignSignature = null;
+  let newsletterCampaigns = [];
   const heroForm = document.querySelector("#heroForm");
   heroForm.innerHTML = `<fieldset class="admin-hero-mode"><legend>Hero Display Mode</legend><label class="admin-check"><input type="radio" name="hero_mode" value="latest_added" checked /> Latest Added</label><label class="admin-check"><input type="radio" name="hero_mode" value="most_added_to_cart" /> Most Added to Cart</label><label class="admin-check"><input type="radio" name="hero_mode" value="best_selling" /> Best Selling</label><label class="admin-check"><input type="radio" name="hero_mode" value="custom_selection" /> Custom Selection</label></fieldset><label class="admin-hero-limit">Hero event count<input id="heroLimit" type="number" min="1" step="1" inputmode="numeric" /></label><p class="admin-hero-help" id="heroHelp"></p><div id="heroAutomatic"></div><div id="heroSlots" hidden><label>Find eligible events<input id="heroSearch" type="search" placeholder="Search title, date, venue or category" autocomplete="off" /></label><div class="upcoming-shows-results" id="heroResults"></div><p class="admin-hero-help" id="heroCount"></p><div class="upcoming-shows-selected" id="heroSelected"></div></div><div class="admin-form-actions"><button class="auth-submit" type="submit">Save Hero</button></div>`;
   const heroSlots = document.querySelector("#heroSlots");
@@ -641,6 +645,19 @@
       : "";
   }
 
+  function renderNewsletterOverviewSummary() {
+    if (!newsletterOverviewSummary) return;
+    const latestSubscriber = state.newsletter.subscribers[0];
+    const latestCampaign = newsletterCampaigns[0];
+    const subscriberText = latestSubscriber
+      ? formatSubscriberDate(latestSubscriber.subscribed_at)
+      : "Subscriber activity will appear here.";
+    const campaignText = latestCampaign
+      ? `${Number(latestCampaign.successful_count || 0)} sent · ${Number(latestCampaign.failed_count || 0)} failed`
+      : "No campaign history yet.";
+    newsletterOverviewSummary.innerHTML = `<article class="newsletter-overview-card"><p>Latest campaign</p><strong>${latestCampaign ? escapeHtml(latestCampaign.subject) : "No campaigns yet"}</strong><span>${campaignText}</span></article><article class="newsletter-overview-card"><p>Latest subscriber activity</p><strong>${latestSubscriber ? escapeHtml(latestSubscriber.email) : "No subscriber activity"}</strong><span>${subscriberText}</span></article>`;
+  }
+
   function formatSubscriberDate(value) {
     if (!value) return "—";
     const date = new Date(value);
@@ -671,6 +688,7 @@
   function renderNewsletter() {
     const { subscribers, total, loaded, loading } = state.newsletter;
     renderNewsletterMetrics();
+    renderNewsletterOverviewSummary();
     if (!loaded && loading) {
       newsletterTableStatus.textContent = "Loading subscribers...";
       newsletterSubscriberList.innerHTML = "";
@@ -753,10 +771,21 @@
   }
 
   const sanitizeNewsletterHtml = (html) => html.replace(/<\/?(script|style|iframe|object|embed)[^>]*>/gi, "").replace(/\son\w+\s*=\s*(['"]).*?\1/gi, "").replace(/javascript:/gi, "");
+  const newsletterCampaignStatusClass = (status) =>
+    `newsletter-status--${String(status || "draft").toLowerCase().replaceAll(/[^a-z]+/g, "-").replace(/^-|-$/g, "")}`;
+
   async function loadNewsletterCampaigns() {
     const { data, error } = await client.rpc("get_admin_newsletter_campaigns", { p_page: 1, p_page_size: 20 });
     if (error) throw error;
-    newsletterCampaignHistory.innerHTML = (data?.campaigns || []).map((campaign) => `<article class="newsletter-campaign-row"><strong>${escapeHtml(campaign.subject)}</strong><span>${escapeHtml(campaign.status)}</span><span>${escapeHtml(formatSubscriberDate(campaign.created_at))}</span><span>Sent: ${Number(campaign.successful_count || 0)} · Failed: ${Number(campaign.failed_count || 0)}</span></article>`).join("") || "<p>No campaigns yet.</p>";
+    newsletterCampaigns = data?.campaigns || [];
+    newsletterCampaignStatus.textContent = newsletterCampaigns.length
+      ? `${newsletterCampaigns.length} recent campaign${newsletterCampaigns.length === 1 ? "" : "s"}.`
+      : "No campaigns yet.";
+    newsletterCampaignHistory.innerHTML = newsletterCampaigns.map((campaign) => {
+      const status = String(campaign.status || "draft");
+      return `<tr><td data-label="Subject"><strong>${escapeHtml(campaign.subject)}</strong></td><td data-label="Status"><span class="newsletter-status ${newsletterCampaignStatusClass(status)}">${escapeHtml(status.replaceAll("_", " "))}</span></td><td data-label="Created">${escapeHtml(formatSubscriberDate(campaign.created_at))}</td><td data-label="Sent">${escapeHtml(formatSubscriberDate(campaign.sent_at))}</td><td data-label="Recipients">${Number(campaign.recipient_count || 0)}</td><td data-label="Successful">${Number(campaign.successful_count || 0)}</td><td data-label="Failed">${Number(campaign.failed_count || 0)}</td></tr>`;
+    }).join("");
+    renderNewsletterOverviewSummary();
   }
 
   function newsletterDraftValues() {
@@ -2232,7 +2261,12 @@
         return;
       }
       setActiveDashboardPanel(button.dataset.panel);
-      if (button.dataset.panel === "newsletter") loadNewsletterData();
+      if (button.dataset.panel === "newsletter") {
+        loadNewsletterData();
+        loadNewsletterCampaigns().catch(() =>
+          setMessage("Campaign history could not be loaded.", "error"),
+        );
+      }
     }),
   );
   adminMenuToggle?.addEventListener("click", () => {
@@ -2511,11 +2545,16 @@
   });
   document.querySelectorAll("[data-newsletter-view]").forEach((button) => button.addEventListener("click", () => {
     const view = button.dataset.newsletterView;
-    document.querySelectorAll("[data-newsletter-view]").forEach((item) => item.classList.toggle("is-active", item === button));
+    document.querySelectorAll('[role="tab"][data-newsletter-view]').forEach((item) => {
+      const active = item.dataset.newsletterView === view;
+      item.classList.toggle("is-active", active);
+      item.setAttribute("aria-selected", String(active));
+      item.tabIndex = active ? 0 : -1;
+    });
     document.querySelectorAll("[data-newsletter-view-panel]").forEach((panel) => { const active = panel.dataset.newsletterViewPanel === view; panel.hidden = !active; panel.classList.toggle("is-active", active); });
-    if (view === "campaigns") loadNewsletterCampaigns().catch(() => setMessage("Campaign history could not be loaded.", "error"));
+    if (view === "campaigns" || view === "overview") loadNewsletterCampaigns().catch(() => setMessage("Campaign history could not be loaded.", "error"));
   }));
-  document.querySelector("#previewNewsletter").addEventListener("click", () => { newsletterPreview.hidden = false; newsletterPreview.innerHTML = `<article><h1>iVenue</h1><p>${escapeHtml(newsletterEditor.value).replaceAll("\n", "<br>")}</p></article>`; });
+  document.querySelector("#previewNewsletter").addEventListener("click", () => { newsletterPreview.hidden = false; newsletterPreviewEmpty.hidden = true; newsletterPreview.innerHTML = `<article><h1>iVenue</h1><p>${escapeHtml(newsletterEditor.value).replaceAll("\n", "<br>")}</p></article>`; });
   newsletterCampaignForm.addEventListener("submit", async (event) => {
     event.preventDefault(); const values = newsletterDraftValues(); if (!values) return;
     try { await ensureNewsletterDraft(values); setMessage("Newsletter draft created.", "success"); }

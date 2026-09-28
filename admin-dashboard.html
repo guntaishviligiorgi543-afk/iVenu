@@ -374,14 +374,28 @@
           <div>
             <p class="admin-eyebrow">Audience</p>
             <h2>Newsletter</h2>
-            <p>Manage newsletter subscriber status.</p>
+            <p>Manage your audience, campaigns, and newsletter drafts in one focused workspace.</p>
           </div>
         </div>
-        <div class="admin-metrics newsletter-metrics" id="newsletterMetrics" aria-live="polite"></div>
-        <nav class="newsletter-tabs" aria-label="Newsletter sections"><button class="is-active" type="button" data-newsletter-view="subscribers">Subscribers</button><button type="button" data-newsletter-view="campaigns">Campaigns</button></nav>
-        <section class="admin-content-block newsletter-view is-active" data-newsletter-view-panel="subscribers" aria-labelledby="subscribersTitle">
-          <div class="admin-content-block__heading">
-            <h3 id="subscribersTitle">Subscribers</h3>
+        <nav class="newsletter-tabs" aria-label="Newsletter sections" role="tablist">
+          <button class="is-active" id="newsletterOverviewTab" type="button" data-newsletter-view="overview" role="tab" aria-selected="true" aria-controls="newsletterOverviewPanel">Overview</button>
+          <button id="newsletterSubscribersTab" type="button" data-newsletter-view="subscribers" role="tab" aria-selected="false" aria-controls="newsletterSubscribersPanel" tabindex="-1">Subscribers</button>
+          <button id="newsletterCampaignsTab" type="button" data-newsletter-view="campaigns" role="tab" aria-selected="false" aria-controls="newsletterCampaignsPanel" tabindex="-1">Campaigns</button>
+          <button id="newsletterCreateTab" type="button" data-newsletter-view="create" role="tab" aria-selected="false" aria-controls="newsletterCreatePanel" tabindex="-1">Create Newsletter</button>
+        </nav>
+
+        <section class="admin-content-block newsletter-view is-active newsletter-overview" id="newsletterOverviewPanel" data-newsletter-view-panel="overview" role="tabpanel" aria-labelledby="newsletterOverviewTab">
+          <div class="admin-content-block__heading newsletter-view-heading">
+            <div><h3>Newsletter Overview</h3><p>Monitor audience growth and move quickly into your next campaign.</p></div>
+            <button class="auth-submit" type="button" data-newsletter-view="create">Create Newsletter</button>
+          </div>
+          <div class="admin-metrics newsletter-metrics" id="newsletterMetrics" aria-live="polite"></div>
+          <div class="newsletter-overview-grid" id="newsletterOverviewSummary" aria-live="polite"></div>
+        </section>
+
+        <section class="admin-content-block newsletter-view" id="newsletterSubscribersPanel" data-newsletter-view-panel="subscribers" role="tabpanel" aria-labelledby="newsletterSubscribersTab" hidden>
+          <div class="admin-content-block__heading newsletter-view-heading">
+            <div><h3>Subscribers</h3><p>Search, filter, and manage subscriber status.</p></div>
           </div>
           <div class="newsletter-controls">
             <label>
@@ -413,15 +427,47 @@
           </div>
           <div class="admin-pagination newsletter-pagination" id="newsletterPagination" aria-label="Subscribers pagination"></div>
         </section>
-        <section class="admin-content-block newsletter-view" data-newsletter-view-panel="campaigns" aria-labelledby="campaignsTitle" hidden>
-          <div class="admin-content-block__heading"><h3 id="campaignsTitle">Campaigns</h3></div>
+
+        <section class="admin-content-block newsletter-view" id="newsletterCampaignsPanel" data-newsletter-view-panel="campaigns" role="tabpanel" aria-labelledby="newsletterCampaignsTab" hidden>
+          <div class="admin-content-block__heading newsletter-view-heading">
+            <div><h3>Campaigns</h3><p>Review drafts and delivery outcomes for recent newsletter campaigns.</p></div>
+            <button class="auth-submit" type="button" data-newsletter-view="create">Create Newsletter</button>
+          </div>
+          <p class="newsletter-table-status" id="newsletterCampaignStatus" role="status" aria-live="polite"></p>
+          <div class="newsletter-table-wrap newsletter-campaign-table-wrap">
+            <table class="newsletter-table newsletter-campaign-table">
+              <thead><tr><th>Subject</th><th>Status</th><th>Created</th><th>Sent</th><th>Recipients</th><th>Successful</th><th>Failed</th></tr></thead>
+              <tbody id="newsletterCampaignHistory"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="admin-content-block newsletter-view newsletter-create" id="newsletterCreatePanel" data-newsletter-view-panel="create" role="tabpanel" aria-labelledby="newsletterCreateTab" hidden>
+          <div class="admin-content-block__heading newsletter-view-heading">
+            <div><h3>Create Newsletter</h3><p>Build a draft, review it, then choose how to test or send it.</p></div>
+          </div>
           <form class="admin-form newsletter-composer" id="newsletterCampaignForm">
-            <label>Subject<input name="subject" maxlength="200" required /></label>
-            <label>Newsletter content<textarea class="newsletter-editor" id="newsletterEditor" rows="10" required></textarea></label>
-            <div class="admin-form-actions"><button class="admin-outline" id="previewNewsletter" type="button">Preview</button><button class="admin-outline" id="testNewsletter" type="button">Send Test Email</button><button class="auth-submit" type="submit">Create Newsletter</button><button class="admin-danger-button" id="sendNewsletter" type="button">Send Newsletter</button></div>
+            <section class="newsletter-composer-card newsletter-composer-card--details">
+              <p class="admin-eyebrow">Newsletter details</p>
+              <label>Subject<input name="subject" maxlength="200" required /></label>
+            </section>
+            <div class="newsletter-composer-grid">
+              <section class="newsletter-composer-card">
+                <p class="admin-eyebrow">Content</p>
+                <label>Newsletter content<textarea class="newsletter-editor" id="newsletterEditor" rows="12" required></textarea></label>
+              </section>
+              <section class="newsletter-composer-card newsletter-composer-card--preview">
+                <p class="admin-eyebrow">Preview</p>
+                <div class="newsletter-preview" id="newsletterPreview" hidden></div>
+                <p class="newsletter-preview-empty" id="newsletterPreviewEmpty">Select Preview to review the email layout before saving a draft.</p>
+              </section>
+            </div>
+            <section class="newsletter-action-groups" aria-label="Newsletter actions">
+              <div class="newsletter-action-group"><p>Editing</p><div><button class="admin-outline" id="previewNewsletter" type="button">Preview</button><button class="auth-submit" type="submit">Save Draft</button></div></div>
+              <div class="newsletter-action-group"><p>Testing</p><div><button class="admin-outline" id="testNewsletter" type="button">Send Test Email</button></div></div>
+              <div class="newsletter-action-group newsletter-action-group--production"><p>Production</p><div><button class="admin-danger-button" id="sendNewsletter" type="button">Send Newsletter</button></div></div>
+            </section>
           </form>
-          <div class="newsletter-preview" id="newsletterPreview" hidden></div>
-          <div class="newsletter-campaign-history" id="newsletterCampaignHistory"></div>
         </section>
       </section>
 
