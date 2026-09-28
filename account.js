@@ -460,9 +460,9 @@
       });
     });
 
-  if (window.location.hash === "#cart") {
+  if (["#cart", "#profile"].includes(window.location.hash.toLowerCase())) {
     document
-      .querySelector('.account-sidebar-item[data-section="cart"]')
+      .querySelector(`.account-sidebar-item[data-section="${window.location.hash.slice(1).toLowerCase()}"]`)
       ?.click();
   }
 

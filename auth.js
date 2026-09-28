@@ -395,7 +395,61 @@
     validatePassword,
     subscribeToAuthChanges,
   };
-  subscribeToAuthChanges((event) => {
-    if (event === "SIGNED_OUT") clearReservationLogoutDialog();
+  let profileReminderUserId = null;
+  let profileReminderInFlight = false;
+
+  const isProfileDashboardProfileSection = () =>
+    /(?:^|\/)profile\.html$/.test(window.location.pathname) &&
+    window.location.hash.toLowerCase() === "#profile";
+
+  const hasProfileValue = (value) => String(value || "").trim().length > 0;
+
+  async function remindIncompleteProfile(session) {
+    const userId = session?.user?.id;
+    if (
+      !userId ||
+      profileReminderInFlight ||
+      profileReminderUserId === userId ||
+      isProfileDashboardProfileSection()
+    )
+      return;
+
+    profileReminderInFlight = true;
+    profileReminderUserId = userId;
+    try {
+      if (await isAdmin(session)) return;
+      const { data: profile, error } = await client
+        .from("profiles")
+        .select("first_name, last_name, email")
+        .eq("id", userId)
+        .maybeSingle();
+      if (error) {
+        console.error("Unable to check profile completeness", error);
+        return;
+      }
+      const complete = [
+        profile?.first_name,
+        profile?.last_name,
+        profile?.email,
+      ].every(hasProfileValue);
+      if (!complete && window.confirm("Your profile is incomplete. Would you like to finish setting it up?"))
+        window.location.assign("profile.html#profile");
+    } finally {
+      profileReminderInFlight = false;
+    }
+  }
+
+  getSession()
+    .then(remindIncompleteProfile)
+    .catch((error) => console.error("Unable to read the current session", error));
+  subscribeToAuthChanges((event, session) => {
+    if (event === "SIGNED_OUT") {
+      clearReservationLogoutDialog();
+      profileReminderUserId = null;
+      return;
+    }
+    remindIncompleteProfile(session).catch((error) =>
+      console.error("Unable to check profile completeness", error),
+    );
   });
 })();
