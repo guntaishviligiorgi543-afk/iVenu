@@ -397,6 +397,7 @@
   };
   let profileReminderUserId = null;
   let profileReminderInFlight = false;
+  const profileReminderDismissalWindowMs = 24 * 60 * 60 * 1000;
 
   const isProfileDashboardProfileSection = () =>
     /(?:^|\/)profile\.html$/.test(window.location.pathname) &&
@@ -404,12 +405,48 @@
 
   const hasProfileValue = (value) => String(value || "").trim().length > 0;
 
+  const profileReminderDismissalKey = (userId) =>
+    `ivenue.profileReminderDismissedAt.${userId}`;
+
+  const profileReminderWasDismissedRecently = (userId) => {
+    try {
+      const dismissedAt = Number(
+        window.localStorage.getItem(profileReminderDismissalKey(userId)),
+      );
+      const now = Date.now();
+      return dismissedAt > 0 && dismissedAt <= now &&
+        now - dismissedAt < profileReminderDismissalWindowMs;
+    } catch {
+      return false;
+    }
+  };
+
+  const dismissProfileReminder = (userId) => {
+    try {
+      window.localStorage.setItem(
+        profileReminderDismissalKey(userId),
+        String(Date.now()),
+      );
+    } catch {
+      // The reminder remains available if browser storage is unavailable.
+    }
+  };
+
+  const clearProfileReminderDismissal = (userId) => {
+    try {
+      window.localStorage.removeItem(profileReminderDismissalKey(userId));
+    } catch {
+      // No action is needed if browser storage is unavailable.
+    }
+  };
+
   async function remindIncompleteProfile(session) {
     const userId = session?.user?.id;
     if (
       !userId ||
       profileReminderInFlight ||
       profileReminderUserId === userId ||
+      profileReminderWasDismissedRecently(userId) ||
       isProfileDashboardProfileSection()
     )
       return;
@@ -432,8 +469,15 @@
         profile?.last_name,
         profile?.email,
       ].every(hasProfileValue);
-      if (!complete && window.confirm("Your profile is incomplete. Would you like to finish setting it up?"))
+      if (complete) {
+        clearProfileReminderDismissal(userId);
+        return;
+      }
+      if (window.confirm("Your profile is incomplete. Would you like to finish setting it up?")) {
         window.location.assign("profile.html#profile");
+      } else {
+        dismissProfileReminder(userId);
+      }
     } finally {
       profileReminderInFlight = false;
     }
