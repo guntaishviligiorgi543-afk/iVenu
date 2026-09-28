@@ -877,6 +877,7 @@
   }
 
   const sanitizeNewsletterHtml = (html) => html.replace(/<\/?(script|style|iframe|object|embed)[^>]*>/gi, "").replace(/\son\w+\s*=\s*(['"]).*?\1/gi, "").replace(/javascript:/gi, "");
+  const newsletterPreviewHtml = (content) => `<div class="newsletter-email-frame"><div class="newsletter-email-header"><a href="https://ivenue.site" aria-label="iVenue home"><img src="https://ivenue.site/assets/ivenue-logo.png" alt="iVenue" /></a><p>Newsletter</p></div><div class="newsletter-email-content">${content}</div><div class="newsletter-email-cta"><a href="https://ivenue.site/shows.html">Explore Events</a></div><div class="newsletter-email-footer"><strong>iVenue</strong><p>Discover events. Choose your seat. Be there.</p><a href="https://ivenue.site">ivenue.site</a><a href="https://ivenue.site/unsubscribe.html?token=preview-link">Unsubscribe</a></div></div>`;
   const newsletterCampaignStatusClass = (status) =>
     `newsletter-status--${String(status || "draft").toLowerCase().replaceAll(/[^a-z]+/g, "-").replace(/^-|-$/g, "")}`;
 
@@ -2680,7 +2681,7 @@
     document.querySelectorAll("[data-newsletter-view-panel]").forEach((panel) => { const active = panel.dataset.newsletterViewPanel === view; panel.hidden = !active; panel.classList.toggle("is-active", active); });
     if (view === "campaigns" || view === "overview") loadNewsletterCampaigns().catch(() => setMessage("Campaign history could not be loaded.", "error"));
   }));
-  document.querySelector("#previewNewsletter").addEventListener("click", () => { newsletterPreview.hidden = false; newsletterPreviewEmpty.hidden = true; newsletterPreview.innerHTML = `<article><h1>iVenue</h1><p>${escapeHtml(newsletterEditor.value).replaceAll("\n", "<br>")}</p></article>`; });
+  document.querySelector("#previewNewsletter").addEventListener("click", () => { newsletterPreview.hidden = false; newsletterPreviewEmpty.hidden = true; newsletterPreview.innerHTML = newsletterPreviewHtml(`<p>${escapeHtml(newsletterEditor.value).replaceAll("\n", "<br>")}</p>`); });
   document.querySelectorAll('input[name="recipientMode"]').forEach((input) => input.addEventListener("change", () => {
     if (!input.checked) return;
     state.newsletter.recipients.mode = input.value;
