@@ -50,6 +50,16 @@
       loading: false,
       requestId: 0,
       pendingStatusChange: null,
+      recipients: {
+        mode: "all_active",
+        subscribers: [],
+        total: 0,
+        page: 1,
+        pageSize: 20,
+        search: "",
+        selected: new Set(),
+        requestId: 0,
+      },
     },
   };
   let expoGeorgiaPavilion11BlueprintPromise = null;
@@ -187,8 +197,18 @@
   const newsletterCampaignStatus = document.querySelector("#newsletterCampaignStatus");
   const newsletterOverviewSummary = document.querySelector("#newsletterOverviewSummary");
   const newsletterPreviewEmpty = document.querySelector("#newsletterPreviewEmpty");
+  const newsletterRecipientSelector = document.querySelector("#newsletterRecipientSelector");
+  const newsletterAllActiveCount = document.querySelector("#newsletterAllActiveCount");
+  const newsletterRecipientSearch = document.querySelector("#newsletterRecipientSearch");
+  const newsletterRecipientList = document.querySelector("#newsletterRecipientList");
+  const newsletterRecipientCount = document.querySelector("#newsletterRecipientCount");
+  const newsletterRecipientPagination = document.querySelector("#newsletterRecipientPagination");
+  const selectVisibleRecipients = document.querySelector("#selectVisibleRecipients");
+  const clearSelectedRecipients = document.querySelector("#clearSelectedRecipients");
+  const sendNewsletterButton = document.querySelector("#sendNewsletter");
   let newsletterCampaignId = null;
   let newsletterCampaignSignature = null;
+  let newsletterCampaignTarget = null;
   let newsletterCampaigns = [];
   const heroForm = document.querySelector("#heroForm");
   heroForm.innerHTML = `<fieldset class="admin-hero-mode"><legend>Hero Display Mode</legend><label class="admin-check"><input type="radio" name="hero_mode" value="latest_added" checked /> Latest Added</label><label class="admin-check"><input type="radio" name="hero_mode" value="most_added_to_cart" /> Most Added to Cart</label><label class="admin-check"><input type="radio" name="hero_mode" value="best_selling" /> Best Selling</label><label class="admin-check"><input type="radio" name="hero_mode" value="custom_selection" /> Custom Selection</label></fieldset><label class="admin-hero-limit">Hero event count<input id="heroLimit" type="number" min="1" step="1" inputmode="numeric" /></label><p class="admin-hero-help" id="heroHelp"></p><div id="heroAutomatic"></div><div id="heroSlots" hidden><label>Find eligible events<input id="heroSearch" type="search" placeholder="Search title, date, venue or category" autocomplete="off" /></label><div class="upcoming-shows-results" id="heroResults"></div><p class="admin-hero-help" id="heroCount"></p><div class="upcoming-shows-selected" id="heroSelected"></div></div><div class="admin-form-actions"><button class="auth-submit" type="submit">Save Hero</button></div>`;
@@ -664,6 +684,82 @@
     return Number.isNaN(date.getTime()) ? "—" : date.toLocaleString();
   }
 
+  function selectedRecipientEmails() {
+    return [...state.newsletter.recipients.selected].sort();
+  }
+
+  function activeSubscriberCount() {
+    return Number(state.newsletter.overview?.active_subscribers || 0);
+  }
+
+  function invalidateNewsletterDraft() {
+    newsletterCampaignId = null;
+    newsletterCampaignSignature = null;
+    newsletterCampaignTarget = null;
+  }
+
+  function renderRecipientSelection() {
+    const recipients = state.newsletter.recipients;
+    const selectedCount = recipients.selected.size;
+    const isSelectedMode = recipients.mode === "selected";
+    newsletterAllActiveCount.textContent = `${activeSubscriberCount()} active subscriber${activeSubscriberCount() === 1 ? "" : "s"}`;
+    newsletterRecipientCount.textContent = `${selectedCount} recipient${selectedCount === 1 ? "" : "s"} selected`;
+    newsletterRecipientSelector.hidden = !isSelectedMode;
+    document.querySelectorAll('input[name="recipientMode"]').forEach((input) => {
+      input.closest(".newsletter-recipient-mode").classList.toggle("is-active", input.checked);
+    });
+    sendNewsletterButton.disabled = isSelectedMode && selectedCount === 0;
+  }
+
+  function renderRecipientPagination() {
+    const recipients = state.newsletter.recipients;
+    const totalPages = Math.max(1, Math.ceil(recipients.total / recipients.pageSize));
+    if (totalPages <= 1) {
+      newsletterRecipientPagination.innerHTML = "";
+      return;
+    }
+    newsletterRecipientPagination.innerHTML = `<button class="admin-pagination-button" data-recipient-page="${recipients.page - 1}" type="button"${recipients.page === 1 ? " disabled" : ""}>Previous</button><span class="newsletter-pagination__ellipsis">Page ${recipients.page} of ${totalPages}</span><button class="admin-pagination-button" data-recipient-page="${recipients.page + 1}" type="button"${recipients.page === totalPages ? " disabled" : ""}>Next</button>`;
+  }
+
+  function renderRecipientList() {
+    const recipients = state.newsletter.recipients;
+    if (!recipients.subscribers.length) {
+      newsletterRecipientList.innerHTML = '<p class="newsletter-recipient-empty">No active subscribers match your search.</p>';
+      newsletterRecipientPagination.innerHTML = "";
+      return;
+    }
+    newsletterRecipientList.innerHTML = recipients.subscribers.map((subscriber) => {
+      const email = String(subscriber.email || "").toLowerCase();
+      const checked = recipients.selected.has(email) ? " checked" : "";
+      return `<label class="newsletter-recipient-row"><input type="checkbox" data-recipient-email="${escapeHtml(email)}"${checked} /><span>${escapeHtml(email)}</span></label>`;
+    }).join("");
+    renderRecipientPagination();
+  }
+
+  async function loadRecipientSubscribers() {
+    const recipients = state.newsletter.recipients;
+    const requestId = ++recipients.requestId;
+    newsletterRecipientList.innerHTML = '<p class="newsletter-recipient-empty">Loading active subscribers…</p>';
+    try {
+      const { data, error } = await client.rpc("get_admin_newsletter_subscribers", {
+        p_search: recipients.search,
+        p_is_active: true,
+        p_page: recipients.page,
+        p_page_size: recipients.pageSize,
+      });
+      if (error) throw error;
+      if (requestId !== recipients.requestId) return;
+      recipients.subscribers = data?.subscribers || [];
+      recipients.total = Number(data?.total || 0);
+      renderRecipientList();
+    } catch (error) {
+      if (requestId !== recipients.requestId) return;
+      console.error("Recipient subscribers could not be loaded", error);
+      newsletterRecipientList.innerHTML = '<p class="newsletter-recipient-empty">Active subscribers could not be loaded. Please try again.</p>';
+      newsletterRecipientPagination.innerHTML = "";
+    }
+  }
+
   function renderNewsletterPagination() {
     const { page, pageSize, total } = state.newsletter;
     const totalPages = Math.max(1, Math.ceil(total / pageSize));
@@ -689,6 +785,7 @@
     const { subscribers, total, loaded, loading } = state.newsletter;
     renderNewsletterMetrics();
     renderNewsletterOverviewSummary();
+    renderRecipientSelection();
     if (!loaded && loading) {
       newsletterTableStatus.textContent = "Loading subscribers...";
       newsletterSubscriberList.innerHTML = "";
@@ -783,31 +880,51 @@
       : "No campaigns yet.";
     newsletterCampaignHistory.innerHTML = newsletterCampaigns.map((campaign) => {
       const status = String(campaign.status || "draft");
-      return `<tr><td data-label="Subject"><strong>${escapeHtml(campaign.subject)}</strong></td><td data-label="Status"><span class="newsletter-status ${newsletterCampaignStatusClass(status)}">${escapeHtml(status.replaceAll("_", " "))}</span></td><td data-label="Created">${escapeHtml(formatSubscriberDate(campaign.created_at))}</td><td data-label="Sent">${escapeHtml(formatSubscriberDate(campaign.sent_at))}</td><td data-label="Recipients">${Number(campaign.recipient_count || 0)}</td><td data-label="Successful">${Number(campaign.successful_count || 0)}</td><td data-label="Failed">${Number(campaign.failed_count || 0)}</td></tr>`;
+      const recipientCount = Number(campaign.recipient_count || 0);
+      const recipientMode = campaign.recipient_mode === "selected" ? "Selected" : "All Active";
+      return `<tr><td data-label="Subject"><strong>${escapeHtml(campaign.subject)}</strong></td><td data-label="Status"><span class="newsletter-status ${newsletterCampaignStatusClass(status)}">${escapeHtml(status.replaceAll("_", " "))}</span></td><td data-label="Created">${escapeHtml(formatSubscriberDate(campaign.created_at))}</td><td data-label="Sent">${escapeHtml(formatSubscriberDate(campaign.sent_at))}</td><td data-label="Recipients"><span class="newsletter-target"><strong>${recipientMode}</strong><small>${recipientCount} recipient${recipientCount === 1 ? "" : "s"}</small></span></td><td data-label="Successful">${Number(campaign.successful_count || 0)}</td><td data-label="Failed">${Number(campaign.failed_count || 0)}</td></tr>`;
     }).join("");
     renderNewsletterOverviewSummary();
   }
 
-  function newsletterDraftValues() {
+  function newsletterDraftValues({ forTest = false } = {}) {
     const subject = newsletterCampaignForm.elements.subject.value.trim();
     const content = escapeHtml(newsletterEditor.value).replaceAll("\n", "<br>");
     if (!subject || !content.replace(/<[^>]*>/g, "").trim()) {
       setMessage("Subject and newsletter content are required.", "error");
       return null;
     }
-    return { subject, content, signature: `${subject}\n${content}` };
+    const recipientMode = forTest ? "all_active" : state.newsletter.recipients.mode;
+    const selectedEmails = recipientMode === "selected" ? selectedRecipientEmails() : [];
+    const recipientCount = recipientMode === "selected"
+      ? selectedEmails.length
+      : activeSubscriberCount();
+    if (!forTest && recipientMode === "selected" && !selectedEmails.length) {
+      setMessage("Select at least one recipient.", "error");
+      return null;
+    }
+    if (!forTest && recipientMode === "all_active" && !recipientCount) {
+      setMessage("There are no active subscribers to receive this newsletter.", "error");
+      return null;
+    }
+    return { subject, content, recipientMode, selectedEmails, recipientCount, signature: `${subject}\n${content}\n${recipientMode}\n${selectedEmails.join("\n")}` };
   }
 
-  async function ensureNewsletterDraft(values) {
-    if (newsletterCampaignId && newsletterCampaignSignature === values.signature)
+  async function ensureNewsletterDraft(values, { setCurrent = true } = {}) {
+    if (setCurrent && newsletterCampaignId && newsletterCampaignSignature === values.signature)
       return newsletterCampaignId;
     const { data, error } = await client.rpc("admin_create_newsletter_campaign", {
       p_subject: values.subject,
       p_content: values.content,
+      p_recipient_mode: values.recipientMode,
+      p_selected_emails: values.selectedEmails,
     });
     if (error) throw error;
-    newsletterCampaignId = data;
-    newsletterCampaignSignature = values.signature;
+    if (setCurrent) {
+      newsletterCampaignId = data;
+      newsletterCampaignSignature = values.signature;
+      newsletterCampaignTarget = { mode: values.recipientMode, count: values.recipientCount };
+    }
     loadNewsletterCampaigns().catch((historyError) =>
       console.warn("Newsletter draft was created but history could not refresh", {
         message: historyError?.message || "Unknown error",
@@ -2555,6 +2672,51 @@
     if (view === "campaigns" || view === "overview") loadNewsletterCampaigns().catch(() => setMessage("Campaign history could not be loaded.", "error"));
   }));
   document.querySelector("#previewNewsletter").addEventListener("click", () => { newsletterPreview.hidden = false; newsletterPreviewEmpty.hidden = true; newsletterPreview.innerHTML = `<article><h1>iVenue</h1><p>${escapeHtml(newsletterEditor.value).replaceAll("\n", "<br>")}</p></article>`; });
+  document.querySelectorAll('input[name="recipientMode"]').forEach((input) => input.addEventListener("change", () => {
+    if (!input.checked) return;
+    state.newsletter.recipients.mode = input.value;
+    invalidateNewsletterDraft();
+    renderRecipientSelection();
+    if (input.value === "selected") loadRecipientSubscribers();
+  }));
+  let newsletterRecipientSearchTimeout = null;
+  newsletterRecipientSearch.addEventListener("input", () => {
+    window.clearTimeout(newsletterRecipientSearchTimeout);
+    newsletterRecipientSearchTimeout = window.setTimeout(() => {
+      state.newsletter.recipients.search = newsletterRecipientSearch.value.trim();
+      state.newsletter.recipients.page = 1;
+      loadRecipientSubscribers();
+    }, 300);
+  });
+  newsletterRecipientList.addEventListener("change", (event) => {
+    const input = event.target.closest("[data-recipient-email]");
+    if (!input) return;
+    const email = input.dataset.recipientEmail;
+    if (input.checked) state.newsletter.recipients.selected.add(email);
+    else state.newsletter.recipients.selected.delete(email);
+    invalidateNewsletterDraft();
+    renderRecipientSelection();
+  });
+  selectVisibleRecipients.addEventListener("click", () => {
+    state.newsletter.recipients.subscribers.forEach((subscriber) =>
+      state.newsletter.recipients.selected.add(String(subscriber.email).toLowerCase()),
+    );
+    invalidateNewsletterDraft();
+    renderRecipientList();
+    renderRecipientSelection();
+  });
+  clearSelectedRecipients.addEventListener("click", () => {
+    state.newsletter.recipients.selected.clear();
+    invalidateNewsletterDraft();
+    renderRecipientList();
+    renderRecipientSelection();
+  });
+  newsletterRecipientPagination.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-recipient-page]");
+    if (!button || button.disabled) return;
+    state.newsletter.recipients.page = Number(button.dataset.recipientPage);
+    loadRecipientSubscribers();
+  });
   newsletterCampaignForm.addEventListener("submit", async (event) => {
     event.preventDefault(); const values = newsletterDraftValues(); if (!values) return;
     try { await ensureNewsletterDraft(values); setMessage("Newsletter draft created.", "success"); }
@@ -2562,12 +2724,12 @@
   });
   document.querySelector("#testNewsletter").addEventListener("click", async () => {
     const testButton = document.querySelector("#testNewsletter");
-    const values = newsletterDraftValues(); if (!values) return;
+    const values = newsletterDraftValues({ forTest: true }); if (!values) return;
     const originalText = testButton.textContent;
     testButton.disabled = true; testButton.textContent = "Sending test...";
     try {
       console.info("Newsletter test email handler started");
-      const campaignId = await ensureNewsletterDraft(values);
+      const campaignId = await ensureNewsletterDraft(values, { setCurrent: false });
       console.info("Newsletter draft ready", { campaignId });
       const { data: sessionData, error: sessionError } = await client.auth.getSession();
       if (sessionError || !sessionData.session?.access_token)
@@ -2590,8 +2752,16 @@
   });
   document.querySelector("#sendNewsletter").addEventListener("click", async () => {
     if (!newsletterCampaignId) { setMessage("Create the newsletter draft before sending it.", "error"); return; }
+    if (newsletterCampaignTarget?.mode === "selected" && !newsletterCampaignTarget.count) {
+      setMessage("Select at least one recipient.", "error");
+      return;
+    }
+    const target = newsletterCampaignTarget || { mode: "all_active", count: activeSubscriberCount() };
+    const recipientDescription = target.mode === "selected"
+      ? `${target.count} selected subscriber${target.count === 1 ? "" : "s"}`
+      : `all ${target.count} active subscriber${target.count === 1 ? "" : "s"}`;
     newsletterStatusDialogTitle.textContent = "Send newsletter?";
-    newsletterStatusDialogDescription.textContent = "Only active subscribers will receive this campaign. This cannot be undone.";
+    newsletterStatusDialogDescription.textContent = `Send this newsletter to ${recipientDescription}? Subscribers who unsubscribe before delivery will be skipped.`;
     confirmNewsletterStatus.textContent = "Send Newsletter";
     state.newsletter.pendingStatusChange = { campaign: true };
     newsletterStatusDialog.showModal();

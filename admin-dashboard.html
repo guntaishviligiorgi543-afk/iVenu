@@ -451,6 +451,23 @@
               <p class="admin-eyebrow">Newsletter details</p>
               <label>Subject<input name="subject" maxlength="200" required /></label>
             </section>
+            <section class="newsletter-composer-card newsletter-recipients" aria-labelledby="newsletterRecipientsTitle">
+              <p class="admin-eyebrow">Recipients</p>
+              <h4 id="newsletterRecipientsTitle">Choose who receives this newsletter</h4>
+              <div class="newsletter-recipient-modes" role="radiogroup" aria-label="Recipient mode">
+                <label class="newsletter-recipient-mode is-active"><input type="radio" name="recipientMode" value="all_active" checked /><span><strong>All Active Subscribers</strong><small id="newsletterAllActiveCount">Loading active subscribers…</small></span></label>
+                <label class="newsletter-recipient-mode"><input type="radio" name="recipientMode" value="selected" /><span><strong>Selected Subscribers</strong><small>Choose specific active newsletter subscribers.</small></span></label>
+              </div>
+              <div class="newsletter-recipient-selector" id="newsletterRecipientSelector" hidden>
+                <div class="newsletter-recipient-toolbar">
+                  <label>Search subscribers<input id="newsletterRecipientSearch" type="search" placeholder="Search active subscribers..." autocomplete="off" /></label>
+                  <div class="newsletter-recipient-toolbar__actions"><button class="admin-outline" id="selectVisibleRecipients" type="button">Select All Visible</button><button class="admin-outline" id="clearSelectedRecipients" type="button">Clear Selection</button></div>
+                </div>
+                <p class="newsletter-recipient-count" id="newsletterRecipientCount" aria-live="polite">0 recipients selected</p>
+                <div class="newsletter-recipient-list" id="newsletterRecipientList" aria-live="polite"></div>
+                <div class="admin-pagination newsletter-pagination" id="newsletterRecipientPagination" aria-label="Recipient selector pagination"></div>
+              </div>
+            </section>
             <div class="newsletter-composer-grid">
               <section class="newsletter-composer-card">
                 <p class="admin-eyebrow">Content</p>
