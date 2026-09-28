@@ -50,6 +50,15 @@
       loading: false,
       requestId: 0,
       pendingStatusChange: null,
+      campaigns: {
+        items: [],
+        overviewItems: [],
+        total: 0,
+        page: 1,
+        pageSize: 10,
+        selected: new Set(),
+        requestId: 0,
+      },
       recipients: {
         mode: "all_active",
         subscribers: [],
@@ -196,6 +205,12 @@
   const newsletterPreview = document.querySelector("#newsletterPreview");
   const newsletterCampaignHistory = document.querySelector("#newsletterCampaignHistory");
   const newsletterCampaignStatus = document.querySelector("#newsletterCampaignStatus");
+  const newsletterCampaignPagination = document.querySelector("#newsletterCampaignPagination");
+  const newsletterCampaignSelectAll = document.querySelector("#newsletterCampaignSelectAll");
+  const selectAllVisibleCampaigns = document.querySelector("#selectAllVisibleCampaigns");
+  const newsletterCampaignBulkActions = document.querySelector("#newsletterCampaignBulkActions");
+  const newsletterCampaignSelectionCount = document.querySelector("#newsletterCampaignSelectionCount");
+  const deleteSelectedCampaigns = document.querySelector("#deleteSelectedCampaigns");
   const newsletterOverviewSummary = document.querySelector("#newsletterOverviewSummary");
   const newsletterPreviewEmpty = document.querySelector("#newsletterPreviewEmpty");
   const newsletterRecipientSelector = document.querySelector("#newsletterRecipientSelector");
@@ -669,14 +684,18 @@
   function renderNewsletterOverviewSummary() {
     if (!newsletterOverviewSummary) return;
     const latestSubscriber = state.newsletter.subscribers[0];
-    const latestCampaign = newsletterCampaigns[0];
+    const recentCampaigns = state.newsletter.campaigns.overviewItems;
+    const latestCampaign = recentCampaigns[0];
     const subscriberText = latestSubscriber
       ? formatSubscriberDate(latestSubscriber.subscribed_at)
       : "Subscriber activity will appear here.";
     const campaignText = latestCampaign
       ? `${Number(latestCampaign.successful_count || 0)} sent · ${Number(latestCampaign.failed_count || 0)} failed`
       : "No campaign history yet.";
-    newsletterOverviewSummary.innerHTML = `<article class="newsletter-overview-card"><p>Latest campaign</p><strong>${latestCampaign ? escapeHtml(latestCampaign.subject) : "No campaigns yet"}</strong><span>${campaignText}</span></article><article class="newsletter-overview-card"><p>Latest subscriber activity</p><strong>${latestSubscriber ? escapeHtml(latestSubscriber.email) : "No subscriber activity"}</strong><span>${subscriberText}</span></article>`;
+    const campaignList = recentCampaigns.length
+      ? `<ul class="newsletter-recent-campaigns">${recentCampaigns.slice(0, 5).map((campaign) => `<li><span>${escapeHtml(campaign.subject)}</span><small>${escapeHtml(String(campaign.status || "draft").replaceAll("_", " "))}</small></li>`).join("")}</ul>`
+      : '<span>No campaign history yet.</span>';
+    newsletterOverviewSummary.innerHTML = `<article class="newsletter-overview-card"><p>Latest campaign</p><strong>${latestCampaign ? escapeHtml(latestCampaign.subject) : "No campaigns yet"}</strong><span>${campaignText}</span></article><article class="newsletter-overview-card"><p>Latest subscriber activity</p><strong>${latestSubscriber ? escapeHtml(latestSubscriber.email) : "No subscriber activity"}</strong><span>${subscriberText}</span></article><article class="newsletter-overview-card newsletter-overview-card--recent"><p>Recent campaigns</p>${campaignList}<button class="admin-outline newsletter-action" type="button" data-newsletter-view="campaigns">View all campaigns</button></article>`;
   }
 
   function formatSubscriberDate(value) {
@@ -876,24 +895,93 @@
     cancelNewsletterStatus.focus();
   }
 
+  function openCampaignDeletionDialog(campaignIds) {
+    const ids = [...new Set(campaignIds.filter(Boolean))];
+    if (!ids.length) return;
+    state.newsletter.pendingStatusChange = { campaignDeletionIds: ids };
+    newsletterStatusDialogTitle.textContent = `Delete ${ids.length === 1 ? "campaign" : `${ids.length} campaigns`}?`;
+    newsletterStatusDialogDescription.textContent = ids.length === 1
+      ? "This campaign and its delivery records will be permanently deleted."
+      : "These campaigns and their delivery records will be permanently deleted.";
+    confirmNewsletterStatus.textContent = ids.length === 1 ? "Delete campaign" : "Delete campaigns";
+    newsletterStatusDialog.showModal();
+    cancelNewsletterStatus.focus();
+  }
+
   const sanitizeNewsletterHtml = (html) => html.replace(/<\/?(script|style|iframe|object|embed)[^>]*>/gi, "").replace(/\son\w+\s*=\s*(['"]).*?\1/gi, "").replace(/javascript:/gi, "");
   const newsletterPreviewHtml = (content) => `<div class="newsletter-email-frame"><div class="newsletter-email-header"><a href="https://ivenue.site" aria-label="iVenue home"><img src="https://ivenue.site/assets/ivenue-logo.png" alt="iVenue" /></a><p>Newsletter</p></div><div class="newsletter-email-content">${content}</div><div class="newsletter-email-cta"><a href="https://ivenue.site/shows.html">Explore Events</a></div><div class="newsletter-email-footer"><strong>iVenue</strong><p>Discover events. Choose your seat. Be there.</p><a href="https://ivenue.site">ivenue.site</a><a href="https://ivenue.site/unsubscribe.html?token=preview-link">Unsubscribe</a></div></div>`;
   const newsletterCampaignStatusClass = (status) =>
     `newsletter-status--${String(status || "draft").toLowerCase().replaceAll(/[^a-z]+/g, "-").replace(/^-|-$/g, "")}`;
 
-  async function loadNewsletterCampaigns() {
-    const { data, error } = await client.rpc("get_admin_newsletter_campaigns", { p_page: 1, p_page_size: 20 });
-    if (error) throw error;
-    newsletterCampaigns = data?.campaigns || [];
-    newsletterCampaignStatus.textContent = newsletterCampaigns.length
-      ? `${newsletterCampaigns.length} recent campaign${newsletterCampaigns.length === 1 ? "" : "s"}.`
+  function campaignPageButtons(page, totalPages) {
+    return [...new Set([1, page - 1, page, page + 1, totalPages])]
+      .filter((value) => value >= 1 && value <= totalPages)
+      .sort((left, right) => left - right)
+      .map((value, index, pages) => `${index && value - pages[index - 1] > 1 ? '<span class="newsletter-pagination__ellipsis" aria-hidden="true">â€¦</span>' : ""}<button class="admin-pagination-button${value === page ? " is-active" : ""}" data-campaign-page="${value}" type="button"${value === page ? ' aria-current="page"' : ""}>${value}</button>`)
+      .join("");
+  }
+
+  function renderCampaignSelection() {
+    const campaigns = state.newsletter.campaigns;
+    const deletable = campaigns.items.filter((campaign) => String(campaign.status || "draft").toLowerCase() !== "sending");
+    const selectedVisible = deletable.filter((campaign) => campaigns.selected.has(String(campaign.id))).length;
+    newsletterCampaignSelectAll.checked = Boolean(deletable.length) && selectedVisible === deletable.length;
+    newsletterCampaignSelectAll.indeterminate = selectedVisible > 0 && selectedVisible < deletable.length;
+    newsletterCampaignSelectAll.disabled = !deletable.length;
+    newsletterCampaignBulkActions.hidden = !campaigns.selected.size;
+    newsletterCampaignSelectionCount.textContent = `${campaigns.selected.size} campaign${campaigns.selected.size === 1 ? "" : "s"} selected`;
+  }
+
+  function renderCampaignPagination() {
+    const campaigns = state.newsletter.campaigns;
+    const totalPages = Math.max(1, Math.ceil(campaigns.total / campaigns.pageSize));
+    if (totalPages <= 1) {
+      newsletterCampaignPagination.innerHTML = "";
+      return;
+    }
+    newsletterCampaignPagination.innerHTML = `<button class="admin-pagination-button" data-campaign-page="${campaigns.page - 1}" type="button"${campaigns.page === 1 ? " disabled" : ""}>Previous</button>${campaignPageButtons(campaigns.page, totalPages)}<button class="admin-pagination-button" data-campaign-page="${campaigns.page + 1}" type="button"${campaigns.page === totalPages ? " disabled" : ""}>Next</button>`;
+  }
+
+  function renderNewsletterCampaigns() {
+    const campaigns = state.newsletter.campaigns;
+    newsletterCampaigns = campaigns.items;
+    newsletterCampaignStatus.textContent = campaigns.total
+      ? `${campaigns.total} campaign${campaigns.total === 1 ? "" : "s"}.`
       : "No campaigns yet.";
-    newsletterCampaignHistory.innerHTML = newsletterCampaigns.map((campaign) => {
+    newsletterCampaignHistory.innerHTML = campaigns.items.map((campaign) => {
       const status = String(campaign.status || "draft");
       const recipientCount = Number(campaign.recipient_count || 0);
       const recipientMode = campaign.recipient_mode === "selected" ? "Selected" : "All Active";
-      return `<tr><td data-label="Subject"><strong>${escapeHtml(campaign.subject)}</strong></td><td data-label="Status"><span class="newsletter-status ${newsletterCampaignStatusClass(status)}">${escapeHtml(status.replaceAll("_", " "))}</span></td><td data-label="Created">${escapeHtml(formatSubscriberDate(campaign.created_at))}</td><td data-label="Sent">${escapeHtml(formatSubscriberDate(campaign.sent_at))}</td><td data-label="Recipients"><span class="newsletter-target"><strong>${recipientMode}</strong><small>${recipientCount} recipient${recipientCount === 1 ? "" : "s"}</small></span></td><td data-label="Successful">${Number(campaign.successful_count || 0)}</td><td data-label="Failed">${Number(campaign.failed_count || 0)}</td></tr>`;
+      const id = String(campaign.id || "");
+      const isSending = status.toLowerCase() === "sending";
+      const isSelected = campaigns.selected.has(id);
+      return `<tr><td class="newsletter-campaign-select-cell" data-label="Select"><input type="checkbox" data-campaign-select="${escapeHtml(id)}" aria-label="Select ${escapeHtml(campaign.subject)}"${isSelected ? " checked" : ""}${isSending || !id ? " disabled" : ""} /></td><td data-label="Subject"><strong>${escapeHtml(campaign.subject)}</strong></td><td data-label="Status"><span class="newsletter-status ${newsletterCampaignStatusClass(status)}">${escapeHtml(status.replaceAll("_", " "))}</span></td><td data-label="Created">${escapeHtml(formatSubscriberDate(campaign.created_at))}</td><td data-label="Sent">${escapeHtml(formatSubscriberDate(campaign.sent_at))}</td><td data-label="Recipients"><span class="newsletter-target"><strong>${recipientMode}</strong><small>${recipientCount} recipient${recipientCount === 1 ? "" : "s"}</small></span></td><td data-label="Successful">${Number(campaign.successful_count || 0)}</td><td data-label="Failed">${Number(campaign.failed_count || 0)}</td><td data-label="Actions"><button class="newsletter-delete-button" type="button" data-delete-campaign="${escapeHtml(id)}"${isSending || !id ? " disabled" : ""}>Delete</button></td></tr>`;
     }).join("");
+    renderCampaignSelection();
+    renderCampaignPagination();
+  }
+
+  async function loadNewsletterCampaigns() {
+    const campaigns = state.newsletter.campaigns;
+    const requestId = ++campaigns.requestId;
+    const { data, error } = await client.rpc("get_admin_newsletter_campaigns", { p_page: campaigns.page, p_page_size: campaigns.pageSize });
+    if (error) throw error;
+    if (requestId !== campaigns.requestId) return;
+    campaigns.items = data?.campaigns || [];
+    campaigns.total = Number(data?.total || 0);
+    const totalPages = Math.max(1, Math.ceil(campaigns.total / campaigns.pageSize));
+    if (campaigns.page > totalPages) {
+      campaigns.page = totalPages;
+      campaigns.selected.clear();
+      return loadNewsletterCampaigns();
+    }
+    renderNewsletterCampaigns();
+  }
+
+  async function loadNewsletterOverviewCampaigns() {
+    const { data, error } = await client.rpc("get_admin_newsletter_campaigns", { p_page: 1, p_page_size: 5 });
+    if (error) throw error;
+    state.newsletter.campaigns.overviewItems = data?.campaigns || [];
     renderNewsletterOverviewSummary();
   }
 
@@ -2393,6 +2481,9 @@
         loadNewsletterCampaigns().catch(() =>
           setMessage("Campaign history could not be loaded.", "error"),
         );
+        loadNewsletterOverviewCampaigns().catch(() =>
+          setMessage("Campaign overview could not be loaded.", "error"),
+        );
       }
     }),
   );
@@ -2633,6 +2724,21 @@
     confirmNewsletterStatus.disabled = true;
     confirmNewsletterStatus.classList.add("is-loading");
     try {
+      if (pending.campaignDeletionIds) {
+        const { error } = await client.rpc("admin_delete_newsletter_campaigns", {
+          p_campaign_ids: pending.campaignDeletionIds,
+        });
+        if (error) throw error;
+        state.newsletter.campaigns.selected.clear();
+        newsletterStatusDialog.close();
+        state.newsletter.pendingStatusChange = null;
+        await Promise.all([loadNewsletterCampaigns(), loadNewsletterOverviewCampaigns()]);
+        setMessage(
+          `${pending.campaignDeletionIds.length} campaign${pending.campaignDeletionIds.length === 1 ? "" : "s"} deleted.`,
+          "success",
+        );
+        return;
+      }
       if (pending.campaign) {
         const { data, error } = await client.functions.invoke("newsletter-campaign", { body: { action: "send", campaignId: newsletterCampaignId } });
         if (error || data?.error) throw error || new Error(data.error);
@@ -2662,7 +2768,9 @@
     } catch (error) {
       console.error("Newsletter status could not be updated", error);
       setMessage(
-        "Subscriber status could not be updated. Please try again.",
+        pending.campaignDeletionIds
+          ? "Campaigns could not be deleted. Please try again."
+          : "Subscriber status could not be updated. Please try again.",
         "error",
       );
     } finally {
@@ -2679,8 +2787,52 @@
       item.tabIndex = active ? 0 : -1;
     });
     document.querySelectorAll("[data-newsletter-view-panel]").forEach((panel) => { const active = panel.dataset.newsletterViewPanel === view; panel.hidden = !active; panel.classList.toggle("is-active", active); });
-    if (view === "campaigns" || view === "overview") loadNewsletterCampaigns().catch(() => setMessage("Campaign history could not be loaded.", "error"));
+    if (view === "campaigns") loadNewsletterCampaigns().catch(() => setMessage("Campaign history could not be loaded.", "error"));
+    if (view === "overview") loadNewsletterOverviewCampaigns().catch(() => setMessage("Campaign history could not be loaded.", "error"));
   }));
+  newsletterOverviewSummary.addEventListener("click", (event) => {
+    const button = event.target.closest('[data-newsletter-view="campaigns"]');
+    if (!button) return;
+    document.querySelector('#newsletterCampaignsTab')?.click();
+  });
+  newsletterCampaignHistory.addEventListener("change", (event) => {
+    const input = event.target.closest("[data-campaign-select]");
+    if (!input || input.disabled) return;
+    const selected = state.newsletter.campaigns.selected;
+    if (input.checked) selected.add(input.dataset.campaignSelect);
+    else selected.delete(input.dataset.campaignSelect);
+    renderCampaignSelection();
+  });
+  newsletterCampaignHistory.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-delete-campaign]");
+    if (!button || button.disabled) return;
+    openCampaignDeletionDialog([button.dataset.deleteCampaign]);
+  });
+  newsletterCampaignSelectAll.addEventListener("change", () => {
+    const campaigns = state.newsletter.campaigns;
+    campaigns.items.forEach((campaign) => {
+      if (String(campaign.status || "draft").toLowerCase() !== "sending" && campaign.id) {
+        if (newsletterCampaignSelectAll.checked) campaigns.selected.add(String(campaign.id));
+        else campaigns.selected.delete(String(campaign.id));
+      }
+    });
+    renderNewsletterCampaigns();
+  });
+  selectAllVisibleCampaigns.addEventListener("click", () => {
+    const selected = state.newsletter.campaigns.selected;
+    state.newsletter.campaigns.items.forEach((campaign) => {
+      if (String(campaign.status || "draft").toLowerCase() !== "sending" && campaign.id) selected.add(String(campaign.id));
+    });
+    renderNewsletterCampaigns();
+  });
+  deleteSelectedCampaigns.addEventListener("click", () => openCampaignDeletionDialog([...state.newsletter.campaigns.selected]));
+  newsletterCampaignPagination.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-campaign-page]");
+    if (!button || button.disabled) return;
+    state.newsletter.campaigns.page = Number(button.dataset.campaignPage);
+    state.newsletter.campaigns.selected.clear();
+    loadNewsletterCampaigns().catch(() => setMessage("Campaign history could not be loaded.", "error"));
+  });
   document.querySelector("#previewNewsletter").addEventListener("click", () => { newsletterPreview.hidden = false; newsletterPreviewEmpty.hidden = true; newsletterPreview.innerHTML = newsletterPreviewHtml(`<p>${escapeHtml(newsletterEditor.value).replaceAll("\n", "<br>")}</p>`); });
   document.querySelectorAll('input[name="recipientMode"]').forEach((input) => input.addEventListener("change", () => {
     if (!input.checked) return;

@@ -433,13 +433,21 @@
             <div><h3>Campaigns</h3><p>Review drafts and delivery outcomes for recent newsletter campaigns.</p></div>
             <button class="auth-submit" type="button" data-newsletter-view="create">Create Newsletter</button>
           </div>
+          <div class="newsletter-campaign-controls">
+            <button class="admin-outline newsletter-action" id="selectAllVisibleCampaigns" type="button">Select All Visible</button>
+          </div>
+          <div class="newsletter-campaign-bulk-actions" id="newsletterCampaignBulkActions" hidden>
+            <span id="newsletterCampaignSelectionCount">0 campaigns selected</span>
+            <button class="newsletter-delete-button" id="deleteSelectedCampaigns" type="button">Delete Selected</button>
+          </div>
           <p class="newsletter-table-status" id="newsletterCampaignStatus" role="status" aria-live="polite"></p>
           <div class="newsletter-table-wrap newsletter-campaign-table-wrap">
             <table class="newsletter-table newsletter-campaign-table">
-              <thead><tr><th>Subject</th><th>Status</th><th>Created</th><th>Sent</th><th>Recipients</th><th>Successful</th><th>Failed</th></tr></thead>
+              <thead><tr><th class="newsletter-campaign-select-column"><input id="newsletterCampaignSelectAll" type="checkbox" aria-label="Select all visible deletable campaigns" /></th><th>Subject</th><th>Status</th><th>Created</th><th>Sent</th><th>Recipients</th><th>Successful</th><th>Failed</th><th>Actions</th></tr></thead>
               <tbody id="newsletterCampaignHistory"></tbody>
             </table>
           </div>
+          <div class="admin-pagination newsletter-pagination" id="newsletterCampaignPagination" aria-label="Campaigns pagination"></div>
         </section>
 
         <section class="admin-content-block newsletter-view newsletter-create" id="newsletterCreatePanel" data-newsletter-view-panel="create" role="tabpanel" aria-labelledby="newsletterCreateTab" hidden>

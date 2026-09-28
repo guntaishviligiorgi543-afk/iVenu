@@ -494,6 +494,11 @@
 .newsletter-overview-card p { margin: 0; color: #ff9475; font-size: .72rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
 .newsletter-overview-card strong { color: #fff; font-size: 1.1rem; overflow-wrap: anywhere; }
 .newsletter-overview-card span { color: rgba(255,255,255,.64); font-size: .9rem; line-height: 1.45; }
+.newsletter-overview-card--recent { grid-column: 1 / -1; }
+.newsletter-recent-campaigns { display: grid; gap: 7px; margin: 0; padding: 0; list-style: none; }
+.newsletter-recent-campaigns li { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; min-width: 0; color: rgba(255,255,255,.88); font-size: .88rem; }
+.newsletter-recent-campaigns li span { min-width: 0; overflow: hidden; color: inherit; font-size: inherit; text-overflow: ellipsis; white-space: nowrap; }
+.newsletter-recent-campaigns li small { flex: 0 0 auto; color: rgba(255,255,255,.56); font-size: .73rem; text-transform: capitalize; }
 
 .newsletter-editor { box-sizing: border-box; width: 100%; min-height: 220px; border: 1px solid rgba(255,255,255,.2); border-radius: 6px; padding: 12px; color: #fff; background: #151515; font: inherit; resize: vertical; }
 .newsletter-composer { display: grid; gap: 18px; }
@@ -620,6 +625,15 @@
 .newsletter-campaign-table th:first-child, .newsletter-campaign-table td:first-child { min-width: 200px; }
 .newsletter-campaign-table td { white-space: nowrap; }
 .newsletter-campaign-table td:first-child { white-space: normal; }
+.newsletter-campaign-table .newsletter-campaign-select-column,
+.newsletter-campaign-table .newsletter-campaign-select-cell { width: 42px; min-width: 42px; text-align: center; }
+.newsletter-campaign-select-cell input,
+.newsletter-campaign-select-column input { accent-color: #ff9475; }
+.newsletter-campaign-controls { display: flex; justify-content: flex-end; margin: 0 0 10px; }
+.newsletter-campaign-bulk-actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0 0 12px; padding: 10px 12px; border: 1px solid rgba(222,86,61,.42); border-radius: 7px; background: rgba(222,86,61,.09); color: rgba(255,255,255,.85); font-size: .86rem; }
+.newsletter-delete-button { border: 1px solid rgba(222,86,61,.64); border-radius: 5px; padding: 7px 10px; color: #ffd2ca; background: rgba(222,86,61,.12); font: inherit; font-size: .8rem; font-weight: 700; cursor: pointer; }
+.newsletter-delete-button:hover:not(:disabled), .newsletter-delete-button:focus-visible:not(:disabled) { color: #fff; background: rgba(222,86,61,.35); outline: none; }
+.newsletter-delete-button:disabled { opacity: .46; cursor: not-allowed; }
 .newsletter-target { display: grid; gap: 3px; }
 .newsletter-target strong { color: #fff; font-size: .86rem; }
 .newsletter-target small { color: rgba(255,255,255,.62); }
@@ -3165,6 +3179,12 @@ body.event-editor-mode .admin-event-wizard {
   }
 
   .newsletter-campaign-table td { white-space: normal; }
+  .newsletter-campaign-table .newsletter-campaign-select-cell { display: flex; align-items: center; justify-content: flex-end; width: auto; min-height: 22px; padding-bottom: 0; border-bottom: 0; }
+  .newsletter-campaign-table .newsletter-campaign-select-cell::before { margin-right: auto; }
+  .newsletter-campaign-controls { justify-content: stretch; }
+  .newsletter-campaign-controls button, .newsletter-campaign-bulk-actions .newsletter-delete-button { width: 100%; }
+  .newsletter-campaign-bulk-actions { align-items: stretch; flex-direction: column; }
+  .newsletter-recent-campaigns li { align-items: flex-start; flex-direction: column; gap: 2px; }
 
   .admin-event-desktop-list {
     display: none;
