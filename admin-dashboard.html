@@ -118,6 +118,15 @@
           </div>
         </form>
       </dialog>
+      <dialog class="newsletter-preview-dialog" id="newsletterPreviewDialog" aria-labelledby="newsletterPreviewDialogTitle">
+        <section class="newsletter-preview-dialog__panel">
+          <header class="newsletter-preview-dialog__header">
+            <div><p class="admin-eyebrow">Newsletter preview</p><h2 id="newsletterPreviewDialogTitle">Email preview</h2></div>
+            <button class="admin-outline" id="closeNewsletterPreview" type="button">Close preview</button>
+          </header>
+          <div class="newsletter-preview-dialog__canvas" id="newsletterExpandedPreview"></div>
+        </section>
+      </dialog>
 
       <section class="admin-panel is-active" data-panel="overview">
         <div class="admin-panel-heading">
@@ -451,8 +460,9 @@
         </section>
 
         <section class="admin-content-block newsletter-view newsletter-create" id="newsletterCreatePanel" data-newsletter-view-panel="create" role="tabpanel" aria-labelledby="newsletterCreateTab" hidden>
-          <div class="admin-content-block__heading newsletter-view-heading">
-            <div><h3>Create Newsletter</h3><p>Build a draft, review it, then choose how to test or send it.</p></div>
+          <div class="newsletter-create-header">
+            <button class="newsletter-create-back" id="newsletterCreateBack" type="button" aria-label="Back to newsletter management">&#8592;<span>Back</span></button>
+            <div><p class="admin-eyebrow">Newsletter campaign</p><h3>Create Newsletter</h3><p>Build a draft, review the complete email, then choose how to test or send it.</p></div>
           </div>
           <form class="admin-form newsletter-composer" id="newsletterCampaignForm">
             <section class="newsletter-composer-card newsletter-composer-card--details">
@@ -479,10 +489,11 @@
             <div class="newsletter-composer-grid">
               <section class="newsletter-composer-card">
                 <p class="admin-eyebrow">Content</p>
+                <div class="newsletter-editor-toolbar" aria-label="Editor tools"><span>Plain-text email content</span><span>Line breaks are preserved in the preview.</span></div>
                 <label>Newsletter content<textarea class="newsletter-editor" id="newsletterEditor" rows="12" required></textarea></label>
               </section>
               <section class="newsletter-composer-card newsletter-composer-card--preview">
-                <p class="admin-eyebrow">Preview</p>
+                <div class="newsletter-preview-heading"><p class="admin-eyebrow">Preview</p><button class="admin-outline newsletter-action" id="expandNewsletterPreview" type="button">Expand Preview</button></div>
                 <div class="newsletter-preview" id="newsletterPreview" hidden></div>
                 <p class="newsletter-preview-empty" id="newsletterPreviewEmpty">Select Preview to review the email layout before saving a draft.</p>
               </section>

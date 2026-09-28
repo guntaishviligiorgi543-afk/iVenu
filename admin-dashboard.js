@@ -50,6 +50,10 @@
       loading: false,
       requestId: 0,
       pendingStatusChange: null,
+      activeView: "overview",
+      previousView: "campaigns",
+      composerBaseline: null,
+      composerDirty: false,
       campaigns: {
         items: [],
         overviewItems: [],
@@ -202,6 +206,7 @@
   );
   const newsletterCampaignForm = document.querySelector("#newsletterCampaignForm");
   const newsletterEditor = document.querySelector("#newsletterEditor");
+  const newsletterCreateBack = document.querySelector("#newsletterCreateBack");
   const newsletterPreview = document.querySelector("#newsletterPreview");
   const newsletterCampaignHistory = document.querySelector("#newsletterCampaignHistory");
   const newsletterCampaignStatus = document.querySelector("#newsletterCampaignStatus");
@@ -213,6 +218,10 @@
   const deleteSelectedCampaigns = document.querySelector("#deleteSelectedCampaigns");
   const newsletterOverviewSummary = document.querySelector("#newsletterOverviewSummary");
   const newsletterPreviewEmpty = document.querySelector("#newsletterPreviewEmpty");
+  const newsletterPreviewDialog = document.querySelector("#newsletterPreviewDialog");
+  const newsletterExpandedPreview = document.querySelector("#newsletterExpandedPreview");
+  const closeNewsletterPreview = document.querySelector("#closeNewsletterPreview");
+  const expandNewsletterPreview = document.querySelector("#expandNewsletterPreview");
   const newsletterRecipientSelector = document.querySelector("#newsletterRecipientSelector");
   const newsletterAllActiveCount = document.querySelector("#newsletterAllActiveCount");
   const newsletterRecipientTrigger = document.querySelector("#newsletterRecipientTrigger");
@@ -891,6 +900,7 @@
       isActive ? "reactivated" : "deactivated"
     } for future newsletter management.`;
     confirmNewsletterStatus.textContent = action;
+    cancelNewsletterStatus.textContent = "Cancel";
     newsletterStatusDialog.showModal();
     cancelNewsletterStatus.focus();
   }
@@ -904,8 +914,94 @@
       ? "This campaign and its delivery records will be permanently deleted."
       : "These campaigns and their delivery records will be permanently deleted.";
     confirmNewsletterStatus.textContent = ids.length === 1 ? "Delete campaign" : "Delete campaigns";
+    cancelNewsletterStatus.textContent = "Cancel";
     newsletterStatusDialog.showModal();
     cancelNewsletterStatus.focus();
+  }
+
+  function newsletterComposerSnapshot() {
+    return {
+      subject: newsletterCampaignForm.elements.subject.value,
+      content: newsletterEditor.value,
+      recipientMode: state.newsletter.recipients.mode,
+      selectedRecipients: selectedRecipientEmails(),
+    };
+  }
+
+  function resetNewsletterComposerDirty() {
+    state.newsletter.composerBaseline = newsletterComposerSnapshot();
+    state.newsletter.composerDirty = false;
+  }
+
+  function updateNewsletterComposerDirty() {
+    const baseline = state.newsletter.composerBaseline;
+    state.newsletter.composerDirty = Boolean(baseline) &&
+      JSON.stringify(newsletterComposerSnapshot()) !== JSON.stringify(baseline);
+  }
+
+  function restoreNewsletterComposerBaseline() {
+    const baseline = state.newsletter.composerBaseline;
+    if (!baseline) return;
+    newsletterCampaignForm.elements.subject.value = baseline.subject;
+    newsletterEditor.value = baseline.content;
+    state.newsletter.recipients.mode = baseline.recipientMode;
+    state.newsletter.recipients.selected = new Set(baseline.selectedRecipients);
+    document.querySelectorAll('input[name="recipientMode"]').forEach((input) => {
+      input.checked = input.value === baseline.recipientMode;
+    });
+    invalidateNewsletterDraft();
+    renderRecipientList();
+    renderRecipientSelection();
+    state.newsletter.composerDirty = false;
+  }
+
+  function openDiscardNewsletterDialog() {
+    state.newsletter.pendingStatusChange = { discardNewsletter: true };
+    newsletterStatusDialogTitle.textContent = "Discard newsletter?";
+    newsletterStatusDialogDescription.textContent = "Your unsaved newsletter changes will be lost.";
+    confirmNewsletterStatus.textContent = "Discard";
+    cancelNewsletterStatus.textContent = "Keep editing";
+    newsletterStatusDialog.showModal();
+    cancelNewsletterStatus.focus();
+  }
+
+  function activateNewsletterView(view) {
+    const validViews = new Set(["overview", "subscribers", "campaigns", "create"]);
+    const targetView = validViews.has(view) ? view : "campaigns";
+    const newsletterPanel = document.querySelector('.admin-panel[data-panel="newsletter"]');
+    if (targetView === "create" && state.newsletter.activeView !== "create")
+      state.newsletter.previousView = validViews.has(state.newsletter.activeView) && state.newsletter.activeView !== "create"
+        ? state.newsletter.activeView
+        : "campaigns";
+    state.newsletter.activeView = targetView;
+    newsletterPanel.classList.toggle("newsletter-create-mode", targetView === "create");
+    document.querySelectorAll('[role="tab"][data-newsletter-view]').forEach((item) => {
+      const active = item.dataset.newsletterView === targetView;
+      item.classList.toggle("is-active", active);
+      item.setAttribute("aria-selected", String(active));
+      item.tabIndex = active ? 0 : -1;
+    });
+    document.querySelectorAll("[data-newsletter-view-panel]").forEach((panel) => {
+      const active = panel.dataset.newsletterViewPanel === targetView;
+      panel.hidden = !active;
+      panel.classList.toggle("is-active", active);
+    });
+    if (targetView === "campaigns") loadNewsletterCampaigns().catch(() => setMessage("Campaign history could not be loaded.", "error"));
+    if (targetView === "overview") loadNewsletterOverviewCampaigns().catch(() => setMessage("Campaign history could not be loaded.", "error"));
+  }
+
+  function leaveNewsletterComposer() {
+    const fallback = new Set(["overview", "subscribers", "campaigns"]);
+    activateNewsletterView(fallback.has(state.newsletter.previousView) ? state.newsletter.previousView : "campaigns");
+  }
+
+  function renderNewsletterPreview() {
+    const content = `<p>${escapeHtml(newsletterEditor.value).replaceAll("\n", "<br>")}</p>`;
+    const html = newsletterPreviewHtml(content);
+    newsletterPreview.hidden = false;
+    newsletterPreviewEmpty.hidden = true;
+    newsletterPreview.innerHTML = html;
+    newsletterExpandedPreview.innerHTML = html;
   }
 
   const sanitizeNewsletterHtml = (html) => html.replace(/<\/?(script|style|iframe|object|embed)[^>]*>/gi, "").replace(/\son\w+\s*=\s*(['"]).*?\1/gi, "").replace(/javascript:/gi, "");
@@ -2739,11 +2835,19 @@
         );
         return;
       }
+      if (pending.discardNewsletter) {
+        restoreNewsletterComposerBaseline();
+        newsletterStatusDialog.close();
+        state.newsletter.pendingStatusChange = null;
+        leaveNewsletterComposer();
+        return;
+      }
       if (pending.campaign) {
         const { data, error } = await client.functions.invoke("newsletter-campaign", { body: { action: "send", campaignId: newsletterCampaignId } });
         if (error || data?.error) throw error || new Error(data.error);
         newsletterStatusDialog.close();
         state.newsletter.pendingStatusChange = null;
+        resetNewsletterComposerDirty();
         setMessage(`Newsletter complete. Sent: ${Number(data.successful || 0)}. Failed: ${Number(data.failed || 0)}.`, "success");
         await loadNewsletterCampaigns();
         return;
@@ -2778,18 +2882,11 @@
       confirmNewsletterStatus.classList.remove("is-loading");
     }
   });
-  document.querySelectorAll("[data-newsletter-view]").forEach((button) => button.addEventListener("click", () => {
-    const view = button.dataset.newsletterView;
-    document.querySelectorAll('[role="tab"][data-newsletter-view]').forEach((item) => {
-      const active = item.dataset.newsletterView === view;
-      item.classList.toggle("is-active", active);
-      item.setAttribute("aria-selected", String(active));
-      item.tabIndex = active ? 0 : -1;
-    });
-    document.querySelectorAll("[data-newsletter-view-panel]").forEach((panel) => { const active = panel.dataset.newsletterViewPanel === view; panel.hidden = !active; panel.classList.toggle("is-active", active); });
-    if (view === "campaigns") loadNewsletterCampaigns().catch(() => setMessage("Campaign history could not be loaded.", "error"));
-    if (view === "overview") loadNewsletterOverviewCampaigns().catch(() => setMessage("Campaign history could not be loaded.", "error"));
-  }));
+  document.querySelectorAll("[data-newsletter-view]").forEach((button) => button.addEventListener("click", () => activateNewsletterView(button.dataset.newsletterView)));
+  newsletterCreateBack.addEventListener("click", () => {
+    if (state.newsletter.composerDirty) openDiscardNewsletterDialog();
+    else leaveNewsletterComposer();
+  });
   newsletterOverviewSummary.addEventListener("click", (event) => {
     const button = event.target.closest('[data-newsletter-view="campaigns"]');
     if (!button) return;
@@ -2833,12 +2930,21 @@
     state.newsletter.campaigns.selected.clear();
     loadNewsletterCampaigns().catch(() => setMessage("Campaign history could not be loaded.", "error"));
   });
-  document.querySelector("#previewNewsletter").addEventListener("click", () => { newsletterPreview.hidden = false; newsletterPreviewEmpty.hidden = true; newsletterPreview.innerHTML = newsletterPreviewHtml(`<p>${escapeHtml(newsletterEditor.value).replaceAll("\n", "<br>")}</p>`); });
+  document.querySelector("#previewNewsletter").addEventListener("click", renderNewsletterPreview);
+  expandNewsletterPreview.addEventListener("click", () => {
+    renderNewsletterPreview();
+    newsletterPreviewDialog.showModal();
+    closeNewsletterPreview.focus();
+  });
+  closeNewsletterPreview.addEventListener("click", () => newsletterPreviewDialog.close());
+  newsletterCampaignForm.elements.subject.addEventListener("input", updateNewsletterComposerDirty);
+  newsletterEditor.addEventListener("input", updateNewsletterComposerDirty);
   document.querySelectorAll('input[name="recipientMode"]').forEach((input) => input.addEventListener("change", () => {
     if (!input.checked) return;
     state.newsletter.recipients.mode = input.value;
     invalidateNewsletterDraft();
     renderRecipientSelection();
+    updateNewsletterComposerDirty();
     if (input.value === "selected") loadRecipientSubscribers();
   }));
   function setRecipientDropdownOpen(open, { focusSearch = false } = {}) {
@@ -2877,6 +2983,7 @@
     invalidateNewsletterDraft();
     renderRecipientList();
     renderRecipientSelection();
+    updateNewsletterComposerDirty();
   });
   newsletterRecipientChips.addEventListener("click", (event) => {
     const removeButton = event.target.closest("[data-remove-recipient]");
@@ -2885,6 +2992,7 @@
     invalidateNewsletterDraft();
     renderRecipientList();
     renderRecipientSelection();
+    updateNewsletterComposerDirty();
   });
   newsletterRecipientPagination.addEventListener("click", (event) => {
     const button = event.target.closest("[data-recipient-page]");
@@ -2902,9 +3010,10 @@
     setRecipientDropdownOpen(false);
     newsletterRecipientTrigger.focus();
   });
+  resetNewsletterComposerDirty();
   newsletterCampaignForm.addEventListener("submit", async (event) => {
     event.preventDefault(); const values = newsletterDraftValues(); if (!values) return;
-    try { await ensureNewsletterDraft(values); setMessage("Newsletter draft created.", "success"); }
+    try { await ensureNewsletterDraft(values); resetNewsletterComposerDirty(); setMessage("Newsletter draft created.", "success"); }
     catch (error) { console.error("Newsletter draft could not be created", error); setMessage("Newsletter draft could not be created. Please try again.", "error"); }
   });
   document.querySelector("#testNewsletter").addEventListener("click", async () => {
@@ -2927,6 +3036,7 @@
       if (error || data?.error) throw error || new Error(data.error);
       if (Number(data?.successful) !== 1 || Number(data?.failed) > 0)
         throw new Error("The test email was not accepted by the email provider.");
+      resetNewsletterComposerDirty();
       setMessage("Test email sent to your signed-in admin address.", "success");
     } catch (error) {
       const response = error?.context;
@@ -2950,6 +3060,7 @@
     newsletterStatusDialogTitle.textContent = "Send newsletter?";
     newsletterStatusDialogDescription.textContent = `Send this newsletter to ${recipientDescription}? Subscribers who unsubscribe before delivery will be skipped.`;
     confirmNewsletterStatus.textContent = "Send Newsletter";
+    cancelNewsletterStatus.textContent = "Cancel";
     state.newsletter.pendingStatusChange = { campaign: true };
     newsletterStatusDialog.showModal();
   });
