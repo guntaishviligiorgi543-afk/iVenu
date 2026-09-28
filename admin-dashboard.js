@@ -52,6 +52,7 @@
       pendingStatusChange: null,
       activeView: "overview",
       previousView: "campaigns",
+      returnScrollY: 0,
       composerBaseline: null,
       composerDirty: false,
       campaigns: {
@@ -205,6 +206,7 @@
     "#confirmNewsletterStatus",
   );
   const newsletterCampaignForm = document.querySelector("#newsletterCampaignForm");
+  const newsletterEditorShell = document.querySelector("#newsletterEditorShell");
   const newsletterEditor = document.querySelector("#newsletterEditor");
   const newsletterCreateBack = document.querySelector("#newsletterCreateBack");
   const newsletterPreview = document.querySelector("#newsletterPreview");
@@ -966,15 +968,9 @@
   }
 
   function activateNewsletterView(view) {
-    const validViews = new Set(["overview", "subscribers", "campaigns", "create"]);
+    const validViews = new Set(["overview", "subscribers", "campaigns"]);
     const targetView = validViews.has(view) ? view : "campaigns";
-    const newsletterPanel = document.querySelector('.admin-panel[data-panel="newsletter"]');
-    if (targetView === "create" && state.newsletter.activeView !== "create")
-      state.newsletter.previousView = validViews.has(state.newsletter.activeView) && state.newsletter.activeView !== "create"
-        ? state.newsletter.activeView
-        : "campaigns";
     state.newsletter.activeView = targetView;
-    newsletterPanel.classList.toggle("newsletter-create-mode", targetView === "create");
     document.querySelectorAll('[role="tab"][data-newsletter-view]').forEach((item) => {
       const active = item.dataset.newsletterView === targetView;
       item.classList.toggle("is-active", active);
@@ -991,8 +987,7 @@
   }
 
   function leaveNewsletterComposer() {
-    const fallback = new Set(["overview", "subscribers", "campaigns"]);
-    activateNewsletterView(fallback.has(state.newsletter.previousView) ? state.newsletter.previousView : "campaigns");
+    leaveNewsletterEditor();
   }
 
   function renderNewsletterPreview() {
@@ -2556,6 +2551,33 @@
     );
   }
 
+  function enterNewsletterEditor() {
+    if (!document.body.classList.contains("newsletter-editor-mode")) {
+      const availableViews = new Set(["overview", "subscribers", "campaigns"]);
+      state.newsletter.previousView = availableViews.has(state.newsletter.activeView)
+        ? state.newsletter.activeView
+        : "campaigns";
+      state.newsletter.returnScrollY = window.scrollY;
+    }
+    setActiveDashboardPanel("create-newsletter");
+    document.body.classList.add("newsletter-editor-mode");
+    newsletterEditorShell.scrollTop = 0;
+  }
+
+  function leaveNewsletterEditor() {
+    const availableViews = new Set(["overview", "subscribers", "campaigns"]);
+    document.body.classList.remove("newsletter-editor-mode");
+    setActiveDashboardPanel("newsletter");
+    activateNewsletterView(
+      availableViews.has(state.newsletter.previousView)
+        ? state.newsletter.previousView
+        : "campaigns",
+    );
+    window.requestAnimationFrame(() =>
+      window.scrollTo({ top: state.newsletter.returnScrollY, left: 0 }),
+    );
+  }
+
   function requestEventEditorExit(destination) {
     if (state.wizardDirty && !window.confirm("Discard unsaved event changes?"))
       return;
@@ -2883,6 +2905,9 @@
     }
   });
   document.querySelectorAll("[data-newsletter-view]").forEach((button) => button.addEventListener("click", () => activateNewsletterView(button.dataset.newsletterView)));
+  document.querySelectorAll("[data-open-newsletter-composer]").forEach((button) =>
+    button.addEventListener("click", enterNewsletterEditor),
+  );
   newsletterCreateBack.addEventListener("click", () => {
     if (state.newsletter.composerDirty) openDiscardNewsletterDialog();
     else leaveNewsletterComposer();

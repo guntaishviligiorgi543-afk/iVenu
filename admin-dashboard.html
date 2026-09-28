@@ -390,13 +390,12 @@
           <button class="is-active" id="newsletterOverviewTab" type="button" data-newsletter-view="overview" role="tab" aria-selected="true" aria-controls="newsletterOverviewPanel">Overview</button>
           <button id="newsletterSubscribersTab" type="button" data-newsletter-view="subscribers" role="tab" aria-selected="false" aria-controls="newsletterSubscribersPanel" tabindex="-1">Subscribers</button>
           <button id="newsletterCampaignsTab" type="button" data-newsletter-view="campaigns" role="tab" aria-selected="false" aria-controls="newsletterCampaignsPanel" tabindex="-1">Campaigns</button>
-          <button id="newsletterCreateTab" type="button" data-newsletter-view="create" role="tab" aria-selected="false" aria-controls="newsletterCreatePanel" tabindex="-1">Create Newsletter</button>
         </nav>
 
         <section class="admin-content-block newsletter-view is-active newsletter-overview" id="newsletterOverviewPanel" data-newsletter-view-panel="overview" role="tabpanel" aria-labelledby="newsletterOverviewTab">
           <div class="admin-content-block__heading newsletter-view-heading">
             <div><h3>Newsletter Overview</h3><p>Monitor audience growth and move quickly into your next campaign.</p></div>
-            <button class="auth-submit" type="button" data-newsletter-view="create">Create Newsletter</button>
+            <button class="auth-submit" type="button" data-open-newsletter-composer>Create Newsletter</button>
           </div>
           <div class="admin-metrics newsletter-metrics" id="newsletterMetrics" aria-live="polite"></div>
           <div class="newsletter-overview-grid" id="newsletterOverviewSummary" aria-live="polite"></div>
@@ -440,7 +439,7 @@
         <section class="admin-content-block newsletter-view" id="newsletterCampaignsPanel" data-newsletter-view-panel="campaigns" role="tabpanel" aria-labelledby="newsletterCampaignsTab" hidden>
           <div class="admin-content-block__heading newsletter-view-heading">
             <div><h3>Campaigns</h3><p>Review drafts and delivery outcomes for recent newsletter campaigns.</p></div>
-            <button class="auth-submit" type="button" data-newsletter-view="create">Create Newsletter</button>
+            <button class="auth-submit" type="button" data-open-newsletter-composer>Create Newsletter</button>
           </div>
           <div class="newsletter-campaign-controls">
             <button class="admin-outline newsletter-action" id="selectAllVisibleCampaigns" type="button">Select All Visible</button>
@@ -459,7 +458,12 @@
           <div class="admin-pagination newsletter-pagination" id="newsletterCampaignPagination" aria-label="Campaigns pagination"></div>
         </section>
 
-        <section class="admin-content-block newsletter-view newsletter-create" id="newsletterCreatePanel" data-newsletter-view-panel="create" role="tabpanel" aria-labelledby="newsletterCreateTab" hidden>
+      </section>
+
+      <section class="admin-panel newsletter-editor-panel" data-panel="create-newsletter">
+        <div class="newsletter-editor-shell" id="newsletterEditorShell">
+          <div class="newsletter-editor-stage">
+            <div class="newsletter-composer-workspace">
           <div class="newsletter-create-header">
             <button class="newsletter-create-back" id="newsletterCreateBack" type="button" aria-label="Back to newsletter management">&#8592;<span>Back</span></button>
             <div><p class="admin-eyebrow">Newsletter campaign</p><h3>Create Newsletter</h3><p>Build a draft, review the complete email, then choose how to test or send it.</p></div>
@@ -504,7 +508,9 @@
               <div class="newsletter-action-group newsletter-action-group--production"><p>Production</p><div><button class="admin-danger-button" id="sendNewsletter" type="button">Send Newsletter</button></div></div>
             </section>
           </form>
-        </section>
+            </div>
+          </div>
+        </div>
       </section>
 
       <section class="admin-panel event-editor-panel" data-panel="add-event">

@@ -478,14 +478,21 @@
 .newsletter-view-heading p { max-width: 620px; margin: 7px 0 0; color: rgba(255,255,255,.66); line-height: 1.55; }
 .newsletter-view-heading > button { flex: 0 0 auto; }
 
-.newsletter-create-mode > .admin-panel-heading,
-.newsletter-create-mode > .newsletter-tabs { display: none; }
-.newsletter-create-mode .newsletter-create { width: min(100%, 1320px); margin: 0 auto; }
 .newsletter-create-header { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: start; gap: 18px; margin: 0 0 26px; }
 .newsletter-create-header h3 { margin: 2px 0 7px; color: #fff; font-size: clamp(1.45rem, 2.4vw, 2rem); }
 .newsletter-create-header p:not(.admin-eyebrow) { max-width: 670px; margin: 0; color: rgba(255,255,255,.66); line-height: 1.55; }
 .newsletter-create-back { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 11px; border: 1px solid rgba(255,255,255,.2); border-radius: 6px; color: #fff; background: #151515; font: inherit; cursor: pointer; }
 .newsletter-create-back:hover, .newsletter-create-back:focus-visible { border-color: rgba(255,148,117,.8); background: rgba(255,148,117,.1); outline: none; }
+
+.newsletter-editor-shell { display: none; }
+body.newsletter-editor-mode { overflow: hidden; }
+body.newsletter-editor-mode .admin-shell { display: block; width: 100%; min-height: 100dvh; padding: 0; }
+body.newsletter-editor-mode .admin-shell > :not(.newsletter-editor-panel):not(dialog) { display: none; }
+body.newsletter-editor-mode .newsletter-editor-panel { display: block; width: 100%; margin: 0; }
+body.newsletter-editor-mode .newsletter-editor-shell { display: block; width: 100%; height: 100dvh; overflow-x: hidden; overflow-y: auto; background: #080808; }
+.newsletter-editor-stage { display: flex; align-items: center; justify-content: center; box-sizing: border-box; min-height: 100dvh; padding: clamp(24px, 5vw, 56px) clamp(18px, 4vw, 48px); }
+.newsletter-composer-workspace { width: min(1320px, 100%); }
+body.newsletter-editor-mode .newsletter-composer { max-width: none; margin: 0; }
 
 .newsletter-metrics { margin-bottom: 26px; }
 
@@ -3149,7 +3156,6 @@ body.event-editor-mode .admin-event-wizard {
 }
 
 @media (max-width: 600px) {
-  .newsletter-create-mode .newsletter-create { width: 100%; }
   .newsletter-create-header { grid-template-columns: 1fr; gap: 12px; margin-bottom: 18px; }
   .newsletter-create-back { justify-self: start; }
   .newsletter-tabs { margin-right: -2px; margin-left: -2px; }
