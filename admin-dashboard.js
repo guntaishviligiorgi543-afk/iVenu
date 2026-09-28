@@ -59,6 +59,7 @@
         search: "",
         selected: new Set(),
         requestId: 0,
+        dropdownOpen: false,
       },
     },
   };
@@ -199,12 +200,12 @@
   const newsletterPreviewEmpty = document.querySelector("#newsletterPreviewEmpty");
   const newsletterRecipientSelector = document.querySelector("#newsletterRecipientSelector");
   const newsletterAllActiveCount = document.querySelector("#newsletterAllActiveCount");
+  const newsletterRecipientTrigger = document.querySelector("#newsletterRecipientTrigger");
+  const newsletterRecipientDropdown = document.querySelector("#newsletterRecipientDropdown");
   const newsletterRecipientSearch = document.querySelector("#newsletterRecipientSearch");
   const newsletterRecipientList = document.querySelector("#newsletterRecipientList");
-  const newsletterRecipientCount = document.querySelector("#newsletterRecipientCount");
+  const newsletterRecipientChips = document.querySelector("#newsletterRecipientChips");
   const newsletterRecipientPagination = document.querySelector("#newsletterRecipientPagination");
-  const selectVisibleRecipients = document.querySelector("#selectVisibleRecipients");
-  const clearSelectedRecipients = document.querySelector("#clearSelectedRecipients");
   const sendNewsletterButton = document.querySelector("#sendNewsletter");
   let newsletterCampaignId = null;
   let newsletterCampaignSignature = null;
@@ -703,8 +704,16 @@
     const selectedCount = recipients.selected.size;
     const isSelectedMode = recipients.mode === "selected";
     newsletterAllActiveCount.textContent = `${activeSubscriberCount()} active subscriber${activeSubscriberCount() === 1 ? "" : "s"}`;
-    newsletterRecipientCount.textContent = `${selectedCount} recipient${selectedCount === 1 ? "" : "s"} selected`;
     newsletterRecipientSelector.hidden = !isSelectedMode;
+    if (!isSelectedMode) recipients.dropdownOpen = false;
+    newsletterRecipientTrigger.textContent = selectedCount
+      ? `${selectedCount} recipient${selectedCount === 1 ? "" : "s"} selected`
+      : "Select recipients";
+    newsletterRecipientTrigger.setAttribute("aria-expanded", String(isSelectedMode && recipients.dropdownOpen));
+    newsletterRecipientDropdown.hidden = !isSelectedMode || !recipients.dropdownOpen;
+    const selectedEmails = selectedRecipientEmails();
+    const visibleChips = selectedEmails.slice(0, 6);
+    newsletterRecipientChips.innerHTML = `${visibleChips.map((email) => `<span class="newsletter-recipient-chip">${escapeHtml(email)}<button type="button" data-remove-recipient="${escapeHtml(email)}" aria-label="Remove ${escapeHtml(email)}">&times;</button></span>`).join("")}${selectedEmails.length > visibleChips.length ? `<span class="newsletter-recipient-chip-summary">+${selectedEmails.length - visibleChips.length} more selected</span>` : ""}`;
     document.querySelectorAll('input[name="recipientMode"]').forEach((input) => {
       input.closest(".newsletter-recipient-mode").classList.toggle("is-active", input.checked);
     });
@@ -730,8 +739,8 @@
     }
     newsletterRecipientList.innerHTML = recipients.subscribers.map((subscriber) => {
       const email = String(subscriber.email || "").toLowerCase();
-      const checked = recipients.selected.has(email) ? " checked" : "";
-      return `<label class="newsletter-recipient-row"><input type="checkbox" data-recipient-email="${escapeHtml(email)}"${checked} /><span>${escapeHtml(email)}</span></label>`;
+      const isSelected = recipients.selected.has(email);
+      return `<button class="newsletter-recipient-option${isSelected ? " is-selected" : ""}" type="button" role="option" aria-selected="${isSelected}" data-recipient-email="${escapeHtml(email)}"><span>${escapeHtml(email)}</span><span class="newsletter-recipient-option__check" aria-hidden="true">&#10003;</span></button>`;
     }).join("");
     renderRecipientPagination();
   }
@@ -2679,6 +2688,24 @@
     renderRecipientSelection();
     if (input.value === "selected") loadRecipientSubscribers();
   }));
+  function setRecipientDropdownOpen(open, { focusSearch = false } = {}) {
+    const recipients = state.newsletter.recipients;
+    if (recipients.mode !== "selected") return;
+    recipients.dropdownOpen = open;
+    renderRecipientSelection();
+    if (open) {
+      loadRecipientSubscribers();
+      if (focusSearch) window.requestAnimationFrame(() => newsletterRecipientSearch.focus());
+    }
+  }
+  newsletterRecipientTrigger.addEventListener("click", () => {
+    setRecipientDropdownOpen(!state.newsletter.recipients.dropdownOpen, { focusSearch: true });
+  });
+  newsletterRecipientTrigger.addEventListener("keydown", (event) => {
+    if (event.key !== "ArrowDown") return;
+    event.preventDefault();
+    setRecipientDropdownOpen(true, { focusSearch: true });
+  });
   let newsletterRecipientSearchTimeout = null;
   newsletterRecipientSearch.addEventListener("input", () => {
     window.clearTimeout(newsletterRecipientSearchTimeout);
@@ -2688,25 +2715,20 @@
       loadRecipientSubscribers();
     }, 300);
   });
-  newsletterRecipientList.addEventListener("change", (event) => {
-    const input = event.target.closest("[data-recipient-email]");
-    if (!input) return;
-    const email = input.dataset.recipientEmail;
-    if (input.checked) state.newsletter.recipients.selected.add(email);
-    else state.newsletter.recipients.selected.delete(email);
-    invalidateNewsletterDraft();
-    renderRecipientSelection();
-  });
-  selectVisibleRecipients.addEventListener("click", () => {
-    state.newsletter.recipients.subscribers.forEach((subscriber) =>
-      state.newsletter.recipients.selected.add(String(subscriber.email).toLowerCase()),
-    );
+  newsletterRecipientList.addEventListener("click", (event) => {
+    const option = event.target.closest("[data-recipient-email]");
+    if (!option) return;
+    const email = option.dataset.recipientEmail;
+    if (state.newsletter.recipients.selected.has(email)) state.newsletter.recipients.selected.delete(email);
+    else state.newsletter.recipients.selected.add(email);
     invalidateNewsletterDraft();
     renderRecipientList();
     renderRecipientSelection();
   });
-  clearSelectedRecipients.addEventListener("click", () => {
-    state.newsletter.recipients.selected.clear();
+  newsletterRecipientChips.addEventListener("click", (event) => {
+    const removeButton = event.target.closest("[data-remove-recipient]");
+    if (!removeButton) return;
+    state.newsletter.recipients.selected.delete(removeButton.dataset.removeRecipient);
     invalidateNewsletterDraft();
     renderRecipientList();
     renderRecipientSelection();
@@ -2716,6 +2738,16 @@
     if (!button || button.disabled) return;
     state.newsletter.recipients.page = Number(button.dataset.recipientPage);
     loadRecipientSubscribers();
+  });
+  document.addEventListener("pointerdown", (event) => {
+    if (!state.newsletter.recipients.dropdownOpen || newsletterRecipientSelector.contains(event.target)) return;
+    setRecipientDropdownOpen(false);
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape" || !state.newsletter.recipients.dropdownOpen) return;
+    event.preventDefault();
+    setRecipientDropdownOpen(false);
+    newsletterRecipientTrigger.focus();
   });
   newsletterCampaignForm.addEventListener("submit", async (event) => {
     event.preventDefault(); const values = newsletterDraftValues(); if (!values) return;
