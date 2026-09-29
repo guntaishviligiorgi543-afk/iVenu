@@ -125,6 +125,26 @@
             />
             <span class="field-error" data-field-error="confirmPassword"></span>
           </label>
+          <label class="auth-consent">
+            <input
+              type="checkbox"
+              name="policyConsent"
+              aria-describedby="policyConsentError"
+              required
+            />
+            <span>
+              I agree to the
+              <a href="https://ivenue.site/terms-of-use.html">Terms of Use</a>
+              and confirm that I have read the
+              <a href="https://ivenue.site/privacy-policy.html">Privacy Policy</a>.
+            </span>
+          </label>
+          <span
+            class="field-error"
+            id="policyConsentError"
+            data-field-error="policyConsent"
+            role="alert"
+          ></span>
           <button class="auth-submit" type="submit">Create account</button>
           <div class="social-auth" aria-label="Social sign-up options">
             <div class="social-auth__divider" aria-hidden="true">
@@ -203,6 +223,7 @@
           "phone",
           "password",
           "confirmPassword",
+          "policyConsent",
         ].map((name) => [name, form.elements[name]]),
       );
       const fieldErrors = Object.fromEntries(
@@ -315,6 +336,12 @@
       };
 
       const getFieldError = (name, forceRequired = false) => {
+        if (name === "policyConsent")
+          return fields.policyConsent.checked
+            ? ""
+            : forceRequired
+              ? "Please agree to the Terms of Use and Privacy Policy to create an account."
+              : "";
         const value = String(fields[name].value || "");
         const isEmpty = !value.trim();
         if (name === "firstName")

@@ -3531,6 +3531,39 @@ body.auth-gate-open {
   line-height: 1.38;
 }
 
+.auth-consent {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin: 4px 0 0;
+  color: rgba(255, 255, 255, 0.84);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  cursor: pointer;
+}
+
+.auth-consent input {
+  width: 18px;
+  height: 18px;
+  margin: 2px 0 0;
+  accent-color: #ff9475;
+}
+
+.auth-consent input.invalid {
+  outline: 2px solid #ff9475;
+  outline-offset: 2px;
+}
+
+.auth-consent a {
+  color: #ff9475;
+  font-weight: 700;
+}
+
+.auth-consent + .field-error {
+  display: block;
+  margin-top: -4px;
+}
+
 @media (max-width: 430px) {
   .account-page .overview-card h3 { font-size: 0.98rem; }
   .account-page .overview-card > strong { font-size: 1.12rem; }

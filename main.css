@@ -1,6 +1,123 @@
 @import url("https://fonts.googleapis.com/css2?family=Fjalla+One&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Cabin:ital,wght@0,400..700;1,400..700&display=swap");
 
+.policy-consent-open {
+  overflow: hidden;
+}
+
+.policy-consent {
+  position: fixed;
+  z-index: 10000;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(0, 0, 0, 0.78);
+}
+
+.policy-consent__dialog {
+  width: min(100%, 560px);
+  padding: clamp(24px, 5vw, 42px);
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  background: #111;
+  color: #fff;
+  box-shadow: 10px 10px 0 rgba(255, 148, 117, 0.55);
+  font-family: "Cabin", Arial, sans-serif;
+}
+
+.policy-consent__eyebrow {
+  margin: 0 0 10px;
+  color: #ff9475;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.policy-consent h2 {
+  margin: 0 0 14px;
+  font-family: "Fjalla One", Impact, sans-serif;
+  font-size: clamp(2rem, 6vw, 3.1rem);
+  font-weight: 400;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.policy-consent p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.6;
+}
+
+.policy-consent__check {
+  display: flex;
+  gap: 11px;
+  align-items: flex-start;
+  margin-top: 25px;
+  color: #fff;
+  font-size: 0.98rem;
+  line-height: 1.5;
+  cursor: pointer;
+}
+
+.policy-consent__check input {
+  width: 18px;
+  height: 18px;
+  margin: 3px 0 0;
+  accent-color: #ff9475;
+}
+
+.policy-consent__check a {
+  color: #ff9475;
+  font-weight: 700;
+}
+
+.policy-consent__message {
+  min-height: 1.6em;
+  margin-top: 13px !important;
+  color: #ffb09a !important;
+}
+
+.policy-consent__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+.policy-consent__actions button {
+  min-height: 44px;
+  padding: 11px 17px;
+  border: 1px solid #ff9475;
+  color: #000;
+  background: #ff9475;
+  font: 700 0.92rem "Cabin", Arial, sans-serif;
+  cursor: pointer;
+}
+
+.policy-consent__actions button:last-child {
+  color: #fff;
+  background: transparent;
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.policy-consent__actions button:hover:not(:disabled),
+.policy-consent__actions button:focus-visible:not(:disabled) {
+  border-color: #fff;
+  outline: none;
+}
+
+.policy-consent__actions button:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+
+@media (max-width: 500px) {
+  .policy-consent { padding: 16px; }
+  .policy-consent__dialog { box-shadow: 6px 6px 0 rgba(255, 148, 117, 0.5); }
+  .policy-consent__actions button { width: 100%; }
+}
+
 * {
   margin: 0;
   padding: 0;

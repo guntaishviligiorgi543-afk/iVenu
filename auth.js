@@ -1,5 +1,9 @@
 (() => {
   const client = window.supabaseClient;
+  const CURRENT_POLICY_VERSIONS = Object.freeze({
+    terms_of_use: "2026-09-29",
+    privacy_policy: "2026-09-29",
+  });
 
   if (!client) {
     throw new Error("Supabase client is not configured.");
@@ -371,6 +375,37 @@
     return client.auth.onAuthStateChange(callback);
   }
 
+  const isPolicyPage = () =>
+    /(?:^|\/)(?:privacy-policy|terms-of-use|data-deletion|login|register|verify-email|forgot-password|reset-password)\.html$/
+      .test(window.location.pathname);
+
+  const policyRecordsAreCurrent = (records) => {
+    const accepted = new Set(
+      (records || []).map((record) =>
+        `${record.policy_type}:${record.policy_version}`,
+      ),
+    );
+    return Object.entries(CURRENT_POLICY_VERSIONS).every(
+      ([type, version]) => accepted.has(`${type}:${version}`),
+    );
+  };
+
+  async function hasAcceptedCurrentPolicies(userId) {
+    const { data, error } = await client
+      .from("user_policy_acceptances")
+      .select("policy_type, policy_version")
+      .eq("user_id", userId)
+      .in("policy_type", Object.keys(CURRENT_POLICY_VERSIONS));
+    if (error) throw error;
+    return policyRecordsAreCurrent(data);
+  }
+
+  async function acceptCurrentPolicies() {
+    const { data, error } = await client.rpc("accept_current_policy_versions");
+    if (error) throw error;
+    return policyRecordsAreCurrent(data);
+  }
+
   window.authApi = {
     getSession,
     getUser,
@@ -394,7 +429,95 @@
     normalizeEmail,
     validatePassword,
     subscribeToAuthChanges,
+    currentPolicyVersions: CURRENT_POLICY_VERSIONS,
+    hasAcceptedCurrentPolicies,
+    acceptCurrentPolicies,
   };
+  let policyConsentUserId = null;
+  let policyConsentCheckInFlight = false;
+  let policyConsentDialog = null;
+
+  const clearPolicyConsentDialog = () => {
+    policyConsentDialog?.remove();
+    policyConsentDialog = null;
+    document.body.classList.remove("policy-consent-open");
+  };
+
+  const showPolicyConsentDialog = (session, initialMessage = "") => {
+    if (policyConsentDialog) return;
+    document.body.insertAdjacentHTML(
+      "beforeend",
+      `<div class="policy-consent" role="presentation"><section class="policy-consent__dialog" role="dialog" aria-modal="true" aria-labelledby="policyConsentTitle" aria-describedby="policyConsentDescription"><p class="policy-consent__eyebrow">Before you continue</p><h2 id="policyConsentTitle">Review iVenue policies</h2><p id="policyConsentDescription">Please review and accept the current Terms of Use and Privacy Policy to continue using your account.</p><label class="policy-consent__check"><input type="checkbox" data-policy-consent-check /><span>I agree to the <a href="terms-of-use.html">Terms of Use</a> and confirm that I have read the <a href="privacy-policy.html">Privacy Policy</a>.</span></label><p class="policy-consent__message" role="alert" aria-live="assertive" data-policy-consent-message></p><div class="policy-consent__actions"><button type="button" data-policy-consent-accept>Accept and continue</button><button type="button" data-policy-consent-logout>Log out</button></div></section></div>`,
+    );
+    policyConsentDialog = document.querySelector(".policy-consent");
+    document.body.classList.add("policy-consent-open");
+    const checkbox = policyConsentDialog.querySelector("[data-policy-consent-check]");
+    const message = policyConsentDialog.querySelector("[data-policy-consent-message]");
+    const accept = policyConsentDialog.querySelector("[data-policy-consent-accept]");
+    const logout = policyConsentDialog.querySelector("[data-policy-consent-logout]");
+    message.textContent = initialMessage;
+    checkbox.focus();
+    accept.addEventListener("click", async () => {
+      if (!checkbox.checked) {
+        message.textContent = "Please confirm your agreement before continuing.";
+        checkbox.focus();
+        return;
+      }
+      accept.disabled = true;
+      logout.disabled = true;
+      message.textContent = "Saving your acceptance...";
+      try {
+        if (!(await acceptCurrentPolicies())) {
+          throw new Error("Your policy acceptance could not be confirmed.");
+        }
+        clearPolicyConsentDialog();
+        policyConsentUserId = session.user.id;
+        await remindIncompleteProfile(session);
+      } catch (error) {
+        console.error("Unable to record policy acceptance", error);
+        message.textContent = "We could not save your acceptance. Please try again.";
+        accept.disabled = false;
+        logout.disabled = false;
+      }
+    });
+    logout.addEventListener("click", async () => {
+      accept.disabled = true;
+      logout.disabled = true;
+      try {
+        await signOut({ redirectTo: "index.html" });
+      } catch (error) {
+        console.error("Unable to sign out", error);
+        message.textContent = "We could not sign you out. Please try again.";
+        accept.disabled = false;
+        logout.disabled = false;
+      }
+    });
+  };
+
+  async function enforcePolicyAcceptance(session) {
+    const userId = session?.user?.id;
+    if (!userId || isPolicyPage()) return true;
+    if (policyConsentDialog || policyConsentCheckInFlight || policyConsentUserId === userId)
+      return false;
+    policyConsentCheckInFlight = true;
+    try {
+      if (await hasAcceptedCurrentPolicies(userId)) {
+        policyConsentUserId = userId;
+        return true;
+      }
+      showPolicyConsentDialog(session);
+      return false;
+    } catch (error) {
+      console.error("Unable to confirm policy acceptance", error);
+      showPolicyConsentDialog(
+        session,
+        "We could not confirm your policy acceptance. Please try again.",
+      );
+      return false;
+    } finally {
+      policyConsentCheckInFlight = false;
+    }
+  }
   let profileReminderUserId = null;
   let profileReminderInFlight = false;
   const profileReminderDismissalWindowMs = 24 * 60 * 60 * 1000;
@@ -484,16 +607,21 @@
   }
 
   getSession()
-    .then(remindIncompleteProfile)
+    .then(async (session) => {
+      if ((await enforcePolicyAcceptance(session)) && !isPolicyPage())
+        await remindIncompleteProfile(session);
+    })
     .catch((error) => console.error("Unable to read the current session", error));
   subscribeToAuthChanges((event, session) => {
     if (event === "SIGNED_OUT") {
       clearReservationLogoutDialog();
       profileReminderUserId = null;
+      policyConsentUserId = null;
+      clearPolicyConsentDialog();
       return;
     }
-    remindIncompleteProfile(session).catch((error) =>
-      console.error("Unable to check profile completeness", error),
-    );
+    enforcePolicyAcceptance(session)
+      .then((accepted) => accepted && !isPolicyPage() && remindIncompleteProfile(session))
+      .catch((error) => console.error("Unable to check policy acceptance", error));
   });
 })();
