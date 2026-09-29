@@ -9,6 +9,25 @@ const corsHeaders = {
 const json = (body: Record<string, unknown>, status = 200) => new Response(JSON.stringify(body), { status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 const durations = new Set([24, 168, 720, -1]);
 
+async function recordReconciliation(
+  client: any,
+  operationId: string,
+  action: "ban" | "unban",
+  targetUserId: string,
+  actorUserId: string,
+  error: { code?: string; message?: string },
+) {
+  const { error: recordError } = await client.from("user_enforcement_reconciliations").insert({
+    operation_id: operationId,
+    action,
+    target_user_id: targetUserId,
+    actor_user_id: actorUserId,
+    audit_error_code: error.code || null,
+    audit_error_message: String(error.message || "Audit persistence failed.").slice(0, 2000),
+  });
+  if (recordError) console.error(JSON.stringify({ scope: "ADMIN_USER_ENFORCEMENT", operationId, action, targetId: targetUserId, reconciliationRecordFailed: true, recordCode: recordError.code }));
+}
+
 Deno.serve(async (request) => {
   if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: corsHeaders });
   if (request.method !== "POST") return json({ error: "Method not allowed." }, 405);
@@ -45,6 +64,7 @@ Deno.serve(async (request) => {
     if (authBanError) return json({ error: "Unable to apply the Auth ban." }, authBanError.status || 500);
     const { data: banId, error: auditError } = await serviceClient.rpc("admin_record_user_ban", { p_actor_user_id: caller.id, p_user_id: targetId, p_reason: reason, p_internal_note: String(body.internalNote || ""), p_duration_hours: durationHours });
     if (auditError) {
+      await recordReconciliation(serviceClient, operationId, "ban", targetId, caller.id, auditError);
       console.error(JSON.stringify({ scope: "ADMIN_USER_ENFORCEMENT", operationId, action: "ban", targetId, auditCode: auditError.code }));
       return json({ error: "The Auth ban was applied, but its audit record needs reconciliation. Do not retry blindly.", code: "RECONCILIATION_REQUIRED", operationId }, 500);
     }
@@ -55,6 +75,7 @@ Deno.serve(async (request) => {
     if (authUnbanError) return json({ error: "Unable to remove the Auth ban." }, authUnbanError.status || 500);
     const { data: banId, error: auditError } = await serviceClient.rpc("admin_record_user_unban", { p_actor_user_id: caller.id, p_user_id: targetId, p_note: String(body.unbanNote || "") });
     if (auditError) {
+      await recordReconciliation(serviceClient, operationId, "unban", targetId, caller.id, auditError);
       console.error(JSON.stringify({ scope: "ADMIN_USER_ENFORCEMENT", operationId, action: "unban", targetId, auditCode: auditError.code }));
       return json({ error: "The Auth ban was removed, but its audit record needs reconciliation. Do not retry blindly.", code: "RECONCILIATION_REQUIRED", operationId }, 500);
     }

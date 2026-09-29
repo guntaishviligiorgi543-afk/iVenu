@@ -592,6 +592,9 @@ body.newsletter-editor-mode .newsletter-composer { max-width: none; margin: 0; }
 .user-status { display: inline-flex; align-items: center; min-height: 26px; padding: 3px 8px; border: 1px solid rgba(132,221,166,.45); border-radius: 999px; color: #a8edbb; background: rgba(132,221,166,.09); font-size: .74rem; font-weight: 700; white-space: nowrap; }
 .user-status--temporarily-banned { border-color: rgba(255,190,105,.55); color: #ffd18b; background: rgba(255,190,105,.1); }
 .user-status--permanently-banned { border-color: rgba(235,109,89,.6); color: #ffab98; background: rgba(235,109,89,.12); }
+.policy-status { display: inline-flex; align-items: center; padding: 3px 8px; border: 1px solid rgba(132,221,166,.4); border-radius: 999px; color: #a8edbb; background: rgba(132,221,166,.08); font-size: .74rem; font-weight: 700; text-transform: capitalize; }
+.policy-status--warning { border-color: rgba(255,190,105,.55); color: #ffd18b; background: rgba(255,190,105,.1); }
+.policy-status--review { border-color: rgba(235,109,89,.6); color: #ffab98; background: rgba(235,109,89,.12); }
 .users-mobile-list { display: none; }
 .users-dialog { width: min(760px, calc(100vw - 28px)); max-height: min(88vh, 900px); padding: 0; border: 1px solid rgba(255,255,255,.2); border-radius: 10px; color: #fff; background: #121212; }
 .users-dialog::backdrop { background: rgba(0,0,0,.78); }
