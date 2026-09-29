@@ -3532,7 +3532,8 @@ body.auth-gate-open {
 }
 
 .auth-consent {
-  display: flex;
+  display: flex !important;
+  flex-direction: row;
   gap: 10px;
   align-items: center;
   margin: 4px 0 0;
@@ -3543,10 +3544,16 @@ body.auth-gate-open {
 }
 
 .auth-consent input {
+  flex: 0 0 auto;
   width: 18px;
   height: 18px;
   margin: 0;
   accent-color: #ff9475;
+}
+
+.auth-consent > span {
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .auth-consent input.invalid {
