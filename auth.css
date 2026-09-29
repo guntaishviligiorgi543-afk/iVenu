@@ -3500,6 +3500,42 @@ body.auth-gate-open {
   outline: none;
 }
 
+/* Keep the User Dashboard deliberately flat and compact. */
+.account-page .account-dashboard,
+.account-page .account-dashboard * {
+  border-radius: 0;
+}
+
+.account-page .overview-welcome {
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.account-page .overview-skeleton {
+  background: rgba(255, 255, 255, 0.055);
+}
+
+.account-page .overview-card h3 {
+  font-size: clamp(1rem, 1.55vw, 1.16rem);
+  line-height: 1.14;
+}
+
+.account-page .overview-card > strong {
+  font-size: clamp(1.15rem, 2.2vw, 1.5rem);
+  line-height: 1.08;
+}
+
+.account-page .overview-card span,
+.account-page .overview-card small,
+.account-page .overview-card em {
+  font-size: 0.74rem;
+  line-height: 1.38;
+}
+
+@media (max-width: 430px) {
+  .account-page .overview-card h3 { font-size: 0.98rem; }
+  .account-page .overview-card > strong { font-size: 1.12rem; }
+}
+
 @media (max-width: 560px) {
   #eventCartPanel {
     width: min(92vw, 420px);
