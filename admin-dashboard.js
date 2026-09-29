@@ -76,6 +76,7 @@
         dropdownOpen: false,
       },
     },
+    userManagement: { items: [], total: 0, summary: null, page: 1, pageSize: 20, selectedId: null, detail: null },
   };
   let expoGeorgiaPavilion11BlueprintPromise = null;
   const status = document.querySelector("#adminStatus");
@@ -233,6 +234,27 @@
   const newsletterRecipientChips = document.querySelector("#newsletterRecipientChips");
   const newsletterRecipientPagination = document.querySelector("#newsletterRecipientPagination");
   const sendNewsletterButton = document.querySelector("#sendNewsletter");
+  const usersMetrics = document.querySelector("#usersMetrics");
+  const usersSearch = document.querySelector("#usersSearch");
+  const usersAccountFilter = document.querySelector("#usersAccountFilter");
+  const usersProfileFilter = document.querySelector("#usersProfileFilter");
+  const usersNewsletterFilter = document.querySelector("#usersNewsletterFilter");
+  const usersPolicyFilter = document.querySelector("#usersPolicyFilter");
+  const usersSort = document.querySelector("#usersSort");
+  const usersStatus = document.querySelector("#usersStatus");
+  const usersList = document.querySelector("#usersList");
+  const usersMobileList = document.querySelector("#usersMobileList");
+  const usersPagination = document.querySelector("#usersPagination");
+  const userDetailDialog = document.querySelector("#userDetailDialog");
+  const userDetailTitle = document.querySelector("#userDetailTitle");
+  const userDetailContent = document.querySelector("#userDetailContent");
+  const addViolationButton = document.querySelector("#addViolationButton");
+  const banUserButton = document.querySelector("#banUserButton");
+  const unbanUserButton = document.querySelector("#unbanUserButton");
+  const userViolationDialog = document.querySelector("#userViolationDialog");
+  const userViolationForm = document.querySelector("#userViolationForm");
+  const userBanDialog = document.querySelector("#userBanDialog");
+  const userBanForm = document.querySelector("#userBanForm");
   let newsletterCampaignId = null;
   let newsletterCampaignSignature = null;
   let newsletterCampaignTarget = null;
@@ -2471,6 +2493,46 @@
     eventMapPreviewCanvas.appendChild(svg);
   }
 
+  const formatUserDate = (value) => value ? new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(new Date(value)) : "—";
+  const userLabel = (user) => [user.first_name, user.last_name].filter(Boolean).join(" ") || user.email || "Unnamed user";
+  const userStatusLabel = (status) => ({ active: "Active", temporarily_banned: "Temporarily Banned", permanently_banned: "Permanently Banned" }[status] || "Active");
+  const userStatusClass = (status) => `user-status user-status--${String(status || "active").replaceAll("_", "-")}`;
+  function renderUsers() {
+    const items = state.userManagement.items;
+    usersStatus.textContent = items.length ? `${state.userManagement.total} user${state.userManagement.total === 1 ? "" : "s"}` : "No users found.";
+    const row = (u) => `<tr><td><strong>${escapeHtml(userLabel(u))}</strong><small>${escapeHtml(u.email || "No email")}</small><small>Joined ${formatUserDate(u.joined_at)}</small></td><td><span class="${userStatusClass(u.account_status)}">${userStatusLabel(u.account_status)}</span></td><td>${escapeHtml(u.profile_status)}</td><td>${escapeHtml(u.newsletter_status === "subscribed" ? "Subscribed" : "Not subscribed")}</td><td>${escapeHtml(u.policy_status)}${u.violation_points ? ` (${u.violation_points})` : ""}</td><td>${escapeHtml(u.top_category || "No data")}</td><td><button class="admin-outline" type="button" data-user-detail="${u.id}">Details</button></td></tr>`;
+    const card = (u) => `<article class="user-card"><div><strong>${escapeHtml(userLabel(u))}</strong><small>${escapeHtml(u.email || "No email")}</small></div><span class="${userStatusClass(u.account_status)}">${userStatusLabel(u.account_status)}</span><dl><div><dt>Profile</dt><dd>${escapeHtml(u.profile_status)}</dd></div><div><dt>Newsletter</dt><dd>${escapeHtml(u.newsletter_status === "subscribed" ? "Subscribed" : "Not subscribed")}</dd></div><div><dt>Policy</dt><dd>${escapeHtml(u.policy_status)}</dd></div></dl><button class="admin-outline" type="button" data-user-detail="${u.id}">Details</button></article>`;
+    usersList.innerHTML = items.map(row).join(""); usersMobileList.innerHTML = items.map(card).join("");
+    const pages = Math.max(1, Math.ceil(state.userManagement.total / state.userManagement.pageSize));
+    usersPagination.innerHTML = pages > 1 ? Array.from({ length: pages }, (_, index) => `<button class="admin-outline${index + 1 === state.userManagement.page ? " is-active" : ""}" type="button" data-users-page="${index + 1}" ${index + 1 === state.userManagement.page ? "aria-current=\"page\"" : ""}>${index + 1}</button>`).join("") : "";
+    const summary = state.userManagement.summary || {};
+    usersMetrics.innerHTML = `<article class="admin-metric"><strong>${summary.total ?? state.userManagement.total}</strong><span>Total users</span></article><article class="admin-metric"><strong>${summary.active ?? "—"}</strong><span>Active</span></article><article class="admin-metric"><strong>${summary.temporarily_banned ?? "—"}</strong><span>Temporarily Banned</span></article><article class="admin-metric"><strong>${summary.permanently_banned ?? "—"}</strong><span>Permanently Banned</span></article><article class="admin-metric"><strong>${summary.incomplete_profiles ?? "—"}</strong><span>Incomplete profiles</span></article>`;
+  }
+  async function loadUsers() {
+    usersStatus.textContent = "Loading users…";
+    const [usersResult, summaryResult] = await Promise.all([client.rpc("get_admin_users", { p_search: usersSearch.value.trim() || null, p_profile: usersProfileFilter.value || null, p_newsletter: usersNewsletterFilter.value || null, p_policy: usersPolicyFilter.value || null, p_account: usersAccountFilter.value || null, p_sort: usersSort.value, p_page: state.userManagement.page, p_page_size: state.userManagement.pageSize }), client.rpc("get_admin_users_summary")]);
+    const { data, error } = usersResult;
+    if (error) throw error;
+    if (summaryResult.error) throw summaryResult.error;
+    state.userManagement.items = data?.items || []; state.userManagement.total = Number(data?.total || 0); state.userManagement.summary = summaryResult.data || null; renderUsers();
+  }
+  async function openUserDetail(userId) {
+    const { data, error } = await client.rpc("get_admin_user_detail", { p_user_id: userId }); if (error) throw error;
+    state.userManagement.selectedId = userId; state.userManagement.detail = data;
+    const user = data.user; userDetailTitle.textContent = userLabel(user);
+    const history = (data.bans || []).map((b) => `<li><strong>${escapeHtml(b.status === "active" ? "Active" : b.status === "expired" ? "Expired" : "Unbanned")}</strong> — ${escapeHtml(b.reason)}<br><small>Duration: ${b.is_permanent ? "Permanent" : `${formatUserDate(b.banned_at)} to ${formatUserDate(b.banned_until)}`} · Banned by ${escapeHtml(b.banned_by || "System")} · Unbanned: ${formatUserDate(b.unbanned_at)}${b.unbanned_by ? ` by ${escapeHtml(b.unbanned_by)}` : ""}</small></li>`).join("") || "<li>No ban history.</li>";
+    const violations = (data.violations || []).map((v) => `<li><strong>${escapeHtml(v.type)}</strong> (${escapeHtml(v.severity)}, ${v.points} points) — ${escapeHtml(v.reason)}<br><small>${formatUserDate(v.created_at)} · ${escapeHtml(v.created_by || "System")}</small></li>`).join("") || "<li>No violations.</li>";
+    userDetailContent.innerHTML = `<dl class="user-detail-summary"><div><dt>Email</dt><dd>${escapeHtml(user.email || "—")}</dd></div><div><dt>Phone</dt><dd>${escapeHtml(user.phone || "—")}</dd></div><div><dt>Joined</dt><dd>${formatUserDate(user.joined_at)}</dd></div><div><dt>Activity</dt><dd>${data.activity.orders} orders · ${data.activity.cart_additions} cart additions · ${data.activity.active_reservations} active reservations</dd></div></dl><h3>Violations</h3><ul class="user-history">${violations}</ul><h3>Ban History</h3><ul class="user-history">${history}</ul>`;
+    const activeBan = (data.bans || []).some((b) => b.status === "active");
+    banUserButton.hidden = activeBan || user.is_admin; unbanUserButton.hidden = !activeBan || user.is_admin; addViolationButton.disabled = user.is_admin;
+    userDetailDialog.showModal();
+  }
+  async function submitEnforcement(action, formData) {
+    const { data, error } = await client.functions.invoke("admin-user-enforcement", { body: { action, userId: state.userManagement.selectedId, reason: formData.get("reason"), durationHours: Number(formData.get("duration")), internalNote: formData.get("note"), unbanNote: formData.get("note") } });
+    if (error || data?.error) throw error || new Error(data.error);
+    userBanDialog.close(); await loadUsers(); await openUserDetail(state.userManagement.selectedId); setMessage(action === "ban" ? "User banned." : "User unbanned.", "success");
+  }
+
   function activeDashboardPanel() {
     return (
       document.querySelector(".admin-panel.is-active")?.dataset.panel ||
@@ -2603,11 +2665,26 @@
           setMessage("Campaign overview could not be loaded.", "error"),
         );
       }
+      if (button.dataset.panel === "users") loadUsers().catch((error) => setMessage(error.message || "Users could not be loaded.", "error"));
     }),
   );
   adminMenuToggle?.addEventListener("click", () => {
     setAdminMenuOpen(!adminMenuOpen);
   });
+  let usersSearchTimer = null;
+  usersSearch.addEventListener("input", () => { window.clearTimeout(usersSearchTimer); usersSearchTimer = window.setTimeout(() => { state.userManagement.page = 1; loadUsers().catch((error) => setMessage(error.message, "error")); }, 300); });
+  [usersAccountFilter, usersProfileFilter, usersNewsletterFilter, usersPolicyFilter, usersSort].forEach((control) => control.addEventListener("change", () => { state.userManagement.page = 1; loadUsers().catch((error) => setMessage(error.message, "error")); }));
+  usersPagination.addEventListener("click", (event) => { const button = event.target.closest("[data-users-page]"); if (!button) return; state.userManagement.page = Number(button.dataset.usersPage); loadUsers().catch((error) => setMessage(error.message, "error")); });
+  const handleUserDetailClick = (event) => { const button = event.target.closest("[data-user-detail]"); if (button) openUserDetail(button.dataset.userDetail).catch((error) => setMessage(error.message || "User details could not be loaded.", "error")); };
+  usersList.addEventListener("click", handleUserDetailClick); usersMobileList.addEventListener("click", handleUserDetailClick);
+  document.querySelector(".users-dialog-close").addEventListener("click", () => userDetailDialog.close());
+  addViolationButton.addEventListener("click", () => userViolationDialog.showModal());
+  document.querySelector("[data-close-violation]").addEventListener("click", () => userViolationDialog.close());
+  userViolationForm.addEventListener("submit", async (event) => { event.preventDefault(); const values = new FormData(userViolationForm); try { const { error } = await client.rpc("admin_add_user_policy_violation", { p_user_id: state.userManagement.selectedId, p_violation_type: values.get("type"), p_severity: values.get("severity"), p_reason: values.get("reason"), p_internal_note: values.get("note") || null, p_expires_at: null }); if (error) throw error; userViolationDialog.close(); userViolationForm.reset(); await openUserDetail(state.userManagement.selectedId); await loadUsers(); setMessage("Violation recorded.", "success"); } catch (error) { setMessage(error.message || "Violation could not be recorded.", "error"); } });
+  const openBanDialog = (action) => { const unban = action === "unban"; document.querySelector("#userBanDialogTitle").textContent = unban ? "Unban user" : "Ban user"; document.querySelector("#userBanReasonLabel").hidden = unban; document.querySelector("#userBanDurationLabel").hidden = unban; document.querySelector("#userBanSubmit").textContent = unban ? "Unban User" : "Ban User"; userBanForm.dataset.action = action; userBanDialog.showModal(); };
+  banUserButton.addEventListener("click", () => openBanDialog("ban")); unbanUserButton.addEventListener("click", () => openBanDialog("unban"));
+  document.querySelector("[data-close-ban]").addEventListener("click", () => userBanDialog.close());
+  userBanForm.addEventListener("submit", async (event) => { event.preventDefault(); const submit = document.querySelector("#userBanSubmit"); submit.disabled = true; try { await submitEnforcement(userBanForm.dataset.action, new FormData(userBanForm)); userBanForm.reset(); } catch (error) { document.querySelector("#userBanMessage").hidden = false; document.querySelector("#userBanMessage").textContent = error.message || "Enforcement could not be completed."; } finally { submit.disabled = false; } });
   adminMenu?.addEventListener("click", (event) => {
     if (event.target === adminMenu) setAdminMenuOpen(false);
   });

@@ -55,6 +55,7 @@
         <button data-panel="homepage-content" type="button">
           Homepage Content
         </button>
+        <button data-panel="users" type="button">Users</button>
         <button data-panel="newsletter" type="button">Newsletter</button>
         <button data-panel="add-event" type="button">Add Event</button>
         <button data-panel="stats" type="button">Ticket statistics</button>
@@ -377,6 +378,27 @@
           </form>
         </dialog>
       </section>
+
+      <section class="admin-panel" data-panel="users">
+        <div class="admin-panel-heading"><div><p class="admin-eyebrow">Account oversight</p><h2>Users Management</h2><p>Review user accounts, recorded violations, and enforcement history.</p></div></div>
+        <div class="admin-metrics" id="usersMetrics" aria-live="polite"></div>
+        <div class="users-controls">
+          <label>Search<input id="usersSearch" type="search" placeholder="Name or email" autocomplete="off" /></label>
+          <label>Account<select id="usersAccountFilter"><option value="">All account states</option><option value="active">Active</option><option value="temporarily_banned">Temporarily Banned</option><option value="permanently_banned">Permanently Banned</option></select></label>
+          <label>Profile<select id="usersProfileFilter"><option value="">All profiles</option><option value="complete">Complete</option><option value="incomplete">Incomplete</option></select></label>
+          <label>Newsletter<select id="usersNewsletterFilter"><option value="">All</option><option value="subscribed">Subscribed</option><option value="not_subscribed">Not subscribed</option></select></label>
+          <label>Policy<select id="usersPolicyFilter"><option value="">All</option><option value="clean">Clean</option><option value="warning">Warning</option><option value="review">Review</option></select></label>
+          <label>Sort<select id="usersSort"><option value="recent">Newest</option><option value="oldest">Oldest</option><option value="name_asc">Name A–Z</option><option value="name_desc">Name Z–A</option></select></label>
+        </div>
+        <p class="newsletter-table-status" id="usersStatus" role="status"></p>
+        <div class="newsletter-table-wrap users-table-wrap"><table class="newsletter-table users-table"><thead><tr><th>User</th><th>Account status</th><th>Profile</th><th>Newsletter</th><th>Policy</th><th>Top category</th><th>Actions</th></tr></thead><tbody id="usersList"></tbody></table></div>
+        <div class="users-mobile-list" id="usersMobileList"></div>
+        <div class="admin-pagination" id="usersPagination" aria-label="Users pagination"></div>
+      </section>
+
+      <dialog class="admin-delete-dialog users-dialog" id="userDetailDialog"><section class="admin-delete-dialog__panel"><button class="newsletter-preview-dialog__close users-dialog-close" type="button" aria-label="Close user details">&times;</button><p class="admin-eyebrow">User details</p><h2 id="userDetailTitle">User</h2><div id="userDetailContent"></div><div class="admin-delete-dialog__actions"><button class="admin-outline" id="addViolationButton" type="button">Add Violation</button><button class="admin-outline" id="banUserButton" type="button">Ban User</button><button class="admin-outline" id="unbanUserButton" type="button" hidden>Unban User</button><button class="admin-danger-button" type="button" disabled title="Disabled to preserve account history">Delete User (disabled)</button></div></section></dialog>
+      <dialog class="admin-delete-dialog users-dialog" id="userViolationDialog"><form class="admin-delete-dialog__panel" id="userViolationForm"><p class="admin-eyebrow">Policy violation</p><h2>Add Violation</h2><label>Type<input name="type" maxlength="120" required /></label><label>Severity<select name="severity"><option value="low">Low</option><option value="medium">Medium</option><option value="severe">Severe</option></select></label><label>Reason<textarea name="reason" maxlength="2000" required></textarea></label><label>Internal note (optional)<textarea name="note"></textarea></label><div class="admin-delete-dialog__actions"><button class="admin-outline" type="button" data-close-violation>Cancel</button><button class="auth-submit" type="submit">Add Violation</button></div></form></dialog>
+      <dialog class="admin-delete-dialog users-dialog" id="userBanDialog"><form class="admin-delete-dialog__panel" id="userBanForm"><p class="admin-eyebrow">Account enforcement</p><h2 id="userBanDialogTitle">Ban user</h2><label id="userBanReasonLabel">Reason<textarea name="reason" maxlength="2000"></textarea></label><label id="userBanDurationLabel">Duration<select name="duration"><option value="24">24 hours</option><option value="168">7 days</option><option value="720">30 days</option><option value="-1">Permanent</option></select></label><label>Internal note (optional)<textarea name="note"></textarea></label><p class="admin-delete-dialog__message" id="userBanMessage" hidden></p><div class="admin-delete-dialog__actions"><button class="admin-outline" type="button" data-close-ban>Cancel</button><button class="admin-danger-button" type="submit" id="userBanSubmit">Ban User</button></div></form></dialog>
 
       <section class="admin-panel" data-panel="newsletter">
         <div class="admin-panel-heading">
