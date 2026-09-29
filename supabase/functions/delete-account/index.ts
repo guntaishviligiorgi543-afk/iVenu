@@ -57,6 +57,16 @@ Deno.serve(async (request) => {
     });
   }
 
+  const { error: restrictionError } = await userClient.rpc(
+    "assert_current_user_not_banned",
+  );
+  if (restrictionError) {
+    return new Response(JSON.stringify({ error: "This account is currently restricted." }), {
+      status: 403,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
   let body: { currentPassword?: string };
   try {
     body = await request.json();

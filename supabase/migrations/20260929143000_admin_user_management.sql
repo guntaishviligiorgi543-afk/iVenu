@@ -140,24 +140,169 @@ $$;
 revoke all on function public.get_admin_user_detail(uuid) from public, anon;
 grant execute on function public.get_admin_user_detail(uuid) to authenticated;
 
--- A valid existing JWT can outlive an Auth ban briefly. This trigger is the
--- central server-side backstop for user-owned account and cart mutations,
--- including calls made through SECURITY DEFINER reservation/checkout RPCs.
-create or replace function public.prevent_banned_user_mutation()
-returns trigger language plpgsql security definer set search_path = '' as $$
+-- A valid JWT can outlive an Auth ban briefly.  Keep the backstop at the
+-- user-facing boundary: SECURITY DEFINER reservation RPCs assert the actor's
+-- ban state themselves, while restrictive RLS policies cover the existing
+-- direct PostgREST profile and legacy-cart writes.  This deliberately avoids
+-- row triggers, so expiry/FK/service maintenance is never inferred to be an
+-- action by the user whose rows it touches.
+create policy "Banned users cannot mutate profiles" on public.profiles
+as restrictive for all to authenticated
+using (not (select public.is_current_user_banned()))
+with check (not (select public.is_current_user_banned()));
+
+create policy "Banned users cannot mutate cart items" on public.cart_items
+as restrictive for all to authenticated
+using (not (select public.is_current_user_banned()))
+with check (not (select public.is_current_user_banned()));
+
+create or replace function public.reserve_event_seat(p_event_seat_id uuid)
+returns table (event_seat_id uuid, reserved_until timestamptz)
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_user_id uuid := auth.uid();
+  v_ticket_type_id uuid;
+  v_event_id uuid;
+  v_status text;
+  v_reserved_by uuid;
+  v_current_reserved_until timestamptz;
+  v_reserved_until timestamptz := now() + interval '10 minutes';
 begin
   perform public.assert_current_user_not_banned();
-  if tg_op = 'DELETE' then
-    return old;
+  if v_user_id is null then
+    raise exception 'Authentication is required to reserve a seat.';
   end if;
-  return new;
+
+  -- Preserve the deployed reservation behavior; only the explicit actor
+  -- assertion above is new.  This lock serializes a customer's browser tabs.
+  perform pg_advisory_xact_lock(hashtextextended(v_user_id::text, 0));
+
+  select es.event_id, es.ticket_type_id, es.status, es.reserved_by, es.reserved_until
+    into v_event_id, v_ticket_type_id, v_status, v_reserved_by, v_current_reserved_until
+  from public.event_seats es
+  join public.events e on e.id = es.event_id and e.status = 'active'
+  where es.id = p_event_seat_id
+  for update of es;
+
+  if v_event_id is null then
+    raise exception 'This seat is no longer available.' using errcode = 'P0001';
+  end if;
+
+  if v_status <> 'available'
+     and not (
+       v_status = 'reserved'
+       and (v_current_reserved_until <= now() or v_reserved_by = v_user_id)
+     ) then
+    raise exception 'This seat is no longer available.' using errcode = 'P0001';
+  end if;
+
+  -- A customer may not hold seats across events simultaneously.  The matching
+  -- exact cart entry establishes that the reservation is still canonical.
+  if exists (
+    select 1
+    from public.event_seats active_seat
+    join public.cart_items active_cart
+      on active_cart.event_seat_id = active_seat.id
+     and active_cart.user_id = v_user_id
+    where active_seat.reserved_by = v_user_id
+      and active_seat.status = 'reserved'
+      and active_seat.reserved_until > now()
+      and active_seat.event_id <> v_event_id
+  ) then
+    raise exception 'ACTIVE_RESERVATION_FOR_ANOTHER_EVENT' using errcode = 'P0001';
+  end if;
+
+  update public.event_seats as es
+  set status = 'reserved',
+      reserved_by = v_user_id,
+      reserved_until = v_reserved_until,
+      sold_at = null,
+      updated_at = now()
+  where id = p_event_seat_id;
+
+  update public.cart_items as ci
+  set updated_at = now()
+  where ci.user_id = v_user_id and ci.event_seat_id = p_event_seat_id;
+  if not found then
+    insert into public.cart_items (user_id, ticket_type_id, event_seat_id, quantity)
+    values (v_user_id, v_ticket_type_id, p_event_seat_id, 1);
+  end if;
+  return query select p_event_seat_id, v_reserved_until;
 end;
 $$;
-revoke all on function public.prevent_banned_user_mutation() from public, anon;
 
-create trigger profiles_reject_banned_mutations
-before insert or update or delete on public.profiles
-for each row execute function public.prevent_banned_user_mutation();
-create trigger cart_items_reject_banned_mutations
-before insert or update or delete on public.cart_items
-for each row execute function public.prevent_banned_user_mutation();
+create or replace function public.release_event_seat(p_event_seat_id uuid)
+returns boolean
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_user_id uuid := auth.uid();
+begin
+  perform public.assert_current_user_not_banned();
+  if v_user_id is null then
+    raise exception 'Authentication is required to release a seat.';
+  end if;
+  update public.event_seats
+  set status = 'available', reserved_by = null, reserved_until = null, updated_at = now()
+  where id = p_event_seat_id and status = 'reserved' and reserved_by = v_user_id;
+  delete from public.cart_items
+  where user_id = v_user_id and event_seat_id = p_event_seat_id;
+  return found;
+end;
+$$;
+
+create or replace function public.checkout_reserved_event_seats()
+returns uuid
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_user_id uuid := auth.uid();
+  v_order_id uuid;
+  v_total numeric := 0;
+  v_count integer := 0;
+begin
+  perform public.assert_current_user_not_banned();
+  if v_user_id is null then
+    raise exception 'Authentication is required to checkout.';
+  end if;
+  perform public.expire_event_seat_reservations();
+
+  create temporary table if not exists pg_temp.checkout_event_seats on commit drop as
+  select es.id, es.ticket_type_id, es.unit_price
+  from public.event_seats es
+  where es.status = 'reserved'
+    and es.reserved_by = v_user_id
+    and es.reserved_until > now()
+  for update;
+
+  select count(*), coalesce(sum(unit_price), 0)
+  into v_count, v_total
+  from pg_temp.checkout_event_seats;
+  if v_count = 0 then
+    raise exception 'There are no active seat reservations to checkout.';
+  end if;
+
+  insert into public.orders (user_id, total_price, status)
+  values (v_user_id, v_total, 'paid')
+  returning id into v_order_id;
+  insert into public.order_items (order_id, ticket_type_id, event_seat_id, quantity, unit_price)
+  select v_order_id, ticket_type_id, id, 1, unit_price
+  from pg_temp.checkout_event_seats;
+  update public.event_seats es
+  set status = 'sold', reserved_by = null, reserved_until = null,
+      sold_at = now(), updated_at = now()
+  from pg_temp.checkout_event_seats checkout_seat
+  where es.id = checkout_seat.id;
+  delete from public.cart_items
+  where user_id = v_user_id
+    and event_seat_id in (select id from pg_temp.checkout_event_seats);
+  return v_order_id;
+end;
+$$;

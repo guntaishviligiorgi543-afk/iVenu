@@ -230,6 +230,16 @@ Deno.serve(async (request) => {
         authMessage: authError?.message,
       });
     }
+    const { error: restrictionError } = await userClient.rpc(
+      "assert_current_user_not_banned",
+    );
+    if (restrictionError)
+      return diagnostic(
+        "ACCOUNT_RESTRICTED",
+        "This account is currently restricted.",
+        403,
+        { operation: "ban enforcement check" },
+      );
     const authenticatedEmail = user.email;
     if (!authenticatedEmail)
       return diagnostic(
