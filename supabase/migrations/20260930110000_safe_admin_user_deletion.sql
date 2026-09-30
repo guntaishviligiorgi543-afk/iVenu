@@ -29,8 +29,8 @@ as $$
       is distinct from (counts.total_count, counts.available_count);
 $$;
 
-revoke all on function public.refresh_ticket_type_inventory(uuid[]) from public, anon, authenticated;
-grant execute on function public.refresh_ticket_type_inventory(uuid[]) to supabase_auth_admin, service_role;
+revoke all on function public.refresh_ticket_type_inventory(uuid[])
+  from public, anon, authenticated, service_role, supabase_auth_admin;
 
 -- Release only an account's still-reserved seats before a profile is removed.
 -- This keeps the event_seats reservation check constraint valid during the FK cascade.
