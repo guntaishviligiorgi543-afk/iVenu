@@ -146,15 +146,23 @@ grant execute on function public.get_admin_user_detail(uuid) to authenticated;
 -- direct PostgREST profile and legacy-cart writes.  This deliberately avoids
 -- row triggers, so expiry/FK/service maintenance is never inferred to be an
 -- action by the user whose rows it touches.
-create policy "Banned users cannot mutate profiles" on public.profiles
-as restrictive for all to authenticated
+create policy "Banned users cannot update profiles" on public.profiles
+as restrictive for update to authenticated
 using (not (select public.is_current_user_banned()))
 with check (not (select public.is_current_user_banned()));
 
-create policy "Banned users cannot mutate cart items" on public.cart_items
-as restrictive for all to authenticated
+create policy "Banned users cannot insert cart items" on public.cart_items
+as restrictive for insert to authenticated
+with check (not (select public.is_current_user_banned()));
+
+create policy "Banned users cannot update cart items" on public.cart_items
+as restrictive for update to authenticated
 using (not (select public.is_current_user_banned()))
 with check (not (select public.is_current_user_banned()));
+
+create policy "Banned users cannot delete cart items" on public.cart_items
+as restrictive for delete to authenticated
+using (not (select public.is_current_user_banned()));
 
 create or replace function public.reserve_event_seat(p_event_seat_id uuid)
 returns table (event_seat_id uuid, reserved_until timestamptz)
@@ -215,7 +223,7 @@ begin
     raise exception 'ACTIVE_RESERVATION_FOR_ANOTHER_EVENT' using errcode = 'P0001';
   end if;
 
-  update public.event_seats as es
+  update public.event_seats
   set status = 'reserved',
       reserved_by = v_user_id,
       reserved_until = v_reserved_until,
@@ -223,7 +231,7 @@ begin
       updated_at = now()
   where id = p_event_seat_id;
 
-  update public.cart_items as ci
+  update public.cart_items ci
   set updated_at = now()
   where ci.user_id = v_user_id and ci.event_seat_id = p_event_seat_id;
   if not found then

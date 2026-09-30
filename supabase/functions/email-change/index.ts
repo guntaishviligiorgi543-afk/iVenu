@@ -240,14 +240,6 @@ Deno.serve(async (request) => {
         403,
         { operation: "ban enforcement check" },
       );
-    const authenticatedEmail = user.email;
-    if (!authenticatedEmail)
-      return diagnostic(
-        "AUTH_ERROR",
-        "The signed-in account does not have an email address.",
-        400,
-        { operation: "authenticated user email check" },
-      );
     logStep("Authentication verified");
 
     let body: Body;
@@ -298,7 +290,7 @@ Deno.serve(async (request) => {
           },
         });
         const { error } = await isolated.auth.signInWithPassword({
-          email: authenticatedEmail,
+          email: user.email!,
           password: String(body.currentPassword || ""),
         });
         await isolated.auth.signOut({ scope: "local" });
@@ -481,7 +473,7 @@ Deno.serve(async (request) => {
         return json({ error: "Current password is required." }, 400);
       if (!validEmail(newEmail))
         return json({ error: "Enter a valid new email address." }, 400);
-      if (newEmail === authenticatedEmail.toLowerCase())
+      if (newEmail === user.email?.toLowerCase())
         return json(
           { error: "New email must be different from your current email." },
           400,
