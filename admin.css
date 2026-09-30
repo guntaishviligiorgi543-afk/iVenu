@@ -585,7 +585,7 @@ body.newsletter-editor-mode .newsletter-composer { max-width: none; margin: 0; }
 .newsletter-preview-dialog__canvas .newsletter-email-frame { flex: 0 0 600px; }
 
 /* Users management */
-.users-controls { display: grid; grid-template-columns: minmax(220px, 2fr) repeat(5, minmax(130px, 1fr)); gap: 12px; margin: 0 0 16px; }
+.users-controls { display: grid; grid-template-columns: minmax(220px, 2fr) repeat(5, minmax(130px, 1fr)); gap: 12px; margin: 20px 0 16px; }
 .users-controls label { display: grid; gap: 7px; color: rgba(255,255,255,.76); font-size: .74rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
 .users-controls input, .users-controls select, .users-dialog textarea, .users-dialog input, .users-dialog select { box-sizing: border-box; width: 100%; border: 1px solid rgba(255,255,255,.2); border-radius: 6px; padding: 10px; color: #fff; background: #151515; font: inherit; text-transform: none; }
 .users-table td small, .user-card small { display: block; margin-top: 4px; color: rgba(255,255,255,.58); font-size: .76rem; }
