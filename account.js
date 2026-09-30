@@ -540,13 +540,15 @@
       }
     }
     const values = new FormData(form);
+    const firstName = values.get("firstName").trim();
+    const lastName = values.get("lastName").trim();
     setMessage("Saving profile...");
 
     const { error } = await client
       .from("profiles")
       .update({
-        first_name: values.get("firstName").trim(),
-        last_name: values.get("lastName").trim(),
+        first_name: firstName,
+        last_name: lastName,
         phone: values.get("phone").trim(),
         avatar_url: values.get("avatarUrl").trim() || null,
         updated_at: new Date().toISOString(),
@@ -562,9 +564,27 @@
       return;
     }
 
+    const userMetadata = session.user.user_metadata || {};
+    const nameMetadata = { first_name: firstName, last_name: lastName };
+    const fullName = [firstName, lastName].filter(Boolean).join(" ");
+    if (Object.hasOwn(userMetadata, "full_name")) nameMetadata.full_name = fullName;
+    if (Object.hasOwn(userMetadata, "name")) nameMetadata.name = fullName;
+    const { error: authMetadataError } = await client.auth.updateUser({
+      data: nameMetadata,
+    });
+
+    if (authMetadataError) {
+      setMessage(
+        "Profile saved, but your Auth display name could not be synchronized. Please try again.",
+        "error",
+      );
+      submitButton.disabled = false;
+      return;
+    }
+
     updateProfilePreview({
-      first_name: values.get("firstName"),
-      last_name: values.get("lastName"),
+      first_name: firstName,
+      last_name: lastName,
       email: values.get("email"),
       avatar_url: values.get("avatarUrl"),
     });
