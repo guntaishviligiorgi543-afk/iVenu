@@ -3,3 +3,6 @@ verify_jwt = false
 
 [functions.admin-user-enforcement]
 verify_jwt = true
+
+[functions.admin-delete-user]
+verify_jwt = true

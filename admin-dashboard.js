@@ -251,10 +251,17 @@
   const addViolationButton = document.querySelector("#addViolationButton");
   const banUserButton = document.querySelector("#banUserButton");
   const unbanUserButton = document.querySelector("#unbanUserButton");
+  const userDeleteButton = document.querySelector("#userDeleteButton");
   const userViolationDialog = document.querySelector("#userViolationDialog");
   const userViolationForm = document.querySelector("#userViolationForm");
   const userBanDialog = document.querySelector("#userBanDialog");
   const userBanForm = document.querySelector("#userBanForm");
+  const userDeleteDialog = document.querySelector("#userDeleteDialog");
+  const userDeleteForm = document.querySelector("#userDeleteForm");
+  const userDeleteConfirmation = document.querySelector("#userDeleteConfirmation");
+  const userDeleteSubmit = document.querySelector("#userDeleteSubmit");
+  const userDeleteMessage = document.querySelector("#userDeleteMessage");
+  const adminDeleteUserEnabled = false;
   let newsletterCampaignId = null;
   let newsletterCampaignSignature = null;
   let newsletterCampaignTarget = null;
@@ -2531,6 +2538,7 @@
     userDetailContent.innerHTML = `<dl class="user-detail-summary"><div><dt>Account</dt><dd>${user.is_admin ? "Administrator" : "Regular user"}</dd></div><div><dt>Email</dt><dd>${escapeHtml(user.email || "—")}</dd></div><div><dt>Profile</dt><dd>${escapeHtml([user.first_name, user.last_name].filter(Boolean).join(" ") || "Incomplete")}</dd></div><div><dt>Phone</dt><dd>${escapeHtml(user.phone || "—")}</dd></div><div><dt>Newsletter</dt><dd>${user.newsletter_subscribed ? "Subscribed" : "Not subscribed"}</dd></div><div><dt>Policy status</dt><dd>${policyStatusLabel(activePoints)} (${activePoints} active points)</dd></div><div><dt>Joined</dt><dd>${formatUserDate(user.joined_at)}</dd></div><div><dt>Demo activity</dt><dd>${data.activity.orders} orders · ${data.activity.cart_additions} cart additions · ${data.activity.active_reservations} active reservations</dd></div></dl><h3>Violations</h3><ul class="user-history">${detailedViolations}</ul><h3>Ban History</h3><ul class="user-history">${detailedHistory}</ul>`;
     const activeBan = (data.bans || []).some((b) => b.status === "active");
     banUserButton.hidden = activeBan || user.is_admin; unbanUserButton.hidden = !activeBan || user.is_admin; addViolationButton.disabled = user.is_admin;
+    userDeleteButton.disabled = !adminDeleteUserEnabled;
     userDetailDialog.showModal();
   }
   async function submitEnforcement(action, formData) {
@@ -2691,6 +2699,38 @@
   banUserButton.addEventListener("click", () => openBanDialog("ban")); unbanUserButton.addEventListener("click", () => openBanDialog("unban"));
   document.querySelector("[data-close-ban]").addEventListener("click", () => userBanDialog.close());
   userBanForm.addEventListener("submit", async (event) => { event.preventDefault(); const submit = document.querySelector("#userBanSubmit"); submit.disabled = true; try { await submitEnforcement(userBanForm.dataset.action, new FormData(userBanForm)); userBanForm.reset(); } catch (error) { document.querySelector("#userBanMessage").hidden = false; document.querySelector("#userBanMessage").textContent = error.message || "Enforcement could not be completed."; } finally { submit.disabled = false; } });
+  userDeleteButton.addEventListener("click", () => {
+    if (!adminDeleteUserEnabled) return;
+    userDeleteForm.reset();
+    userDeleteMessage.hidden = true;
+    userDeleteSubmit.disabled = true;
+    userDeleteDialog.showModal();
+  });
+  document.querySelector("[data-close-user-delete]").addEventListener("click", () => userDeleteDialog.close());
+  userDeleteConfirmation.addEventListener("input", () => {
+    userDeleteSubmit.disabled = userDeleteConfirmation.value !== "DELETE";
+  });
+  userDeleteForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!adminDeleteUserEnabled || userDeleteConfirmation.value !== "DELETE" || !state.userManagement.selectedId) return;
+    userDeleteSubmit.disabled = true;
+    userDeleteMessage.hidden = true;
+    try {
+      const { data, error } = await client.functions.invoke("admin-delete-user", {
+        body: { userId: state.userManagement.selectedId, confirmation: "DELETE" },
+      });
+      if (error || data?.error) throw error || new Error(data.error);
+      userDeleteDialog.close();
+      userDetailDialog.close();
+      await loadUsers();
+      setMessage("User deleted.", "success");
+    } catch (error) {
+      userDeleteMessage.textContent = error.message || "User deletion could not be completed.";
+      userDeleteMessage.hidden = false;
+    } finally {
+      userDeleteSubmit.disabled = userDeleteConfirmation.value !== "DELETE";
+    }
+  });
   adminMenu?.addEventListener("click", (event) => {
     if (event.target === adminMenu) setAdminMenuOpen(false);
   });
