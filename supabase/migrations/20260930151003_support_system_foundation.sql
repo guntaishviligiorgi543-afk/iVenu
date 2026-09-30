@@ -413,6 +413,7 @@ begin
   if not exists (
     select 1 from public.support_users s
     where s.user_id = p_support_user_id and s.revoked_at is null
+      and not exists (select 1 from public.admin_users a where a.user_id = s.user_id)
   ) then
     raise exception 'The selected user is not an active Support employee.' using errcode = '22023';
   end if;
