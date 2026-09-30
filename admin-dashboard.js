@@ -261,7 +261,13 @@
   const userDeleteConfirmation = document.querySelector("#userDeleteConfirmation");
   const userDeleteSubmit = document.querySelector("#userDeleteSubmit");
   const userDeleteMessage = document.querySelector("#userDeleteMessage");
-  const adminDeleteUserEnabled = false;
+  const temporaryDeleteUserEmail = "giogunta06@gmail.com";
+  const canDeleteTemporaryTestUser = (user) =>
+    Boolean(
+      user &&
+      !user.is_admin &&
+      String(user.email || "").trim().toLowerCase() === temporaryDeleteUserEmail,
+    );
   let newsletterCampaignId = null;
   let newsletterCampaignSignature = null;
   let newsletterCampaignTarget = null;
@@ -2538,7 +2544,7 @@
     userDetailContent.innerHTML = `<dl class="user-detail-summary"><div><dt>Account</dt><dd>${user.is_admin ? "Administrator" : "Regular user"}</dd></div><div><dt>Email</dt><dd>${escapeHtml(user.email || "—")}</dd></div><div><dt>Profile</dt><dd>${escapeHtml([user.first_name, user.last_name].filter(Boolean).join(" ") || "Incomplete")}</dd></div><div><dt>Phone</dt><dd>${escapeHtml(user.phone || "—")}</dd></div><div><dt>Newsletter</dt><dd>${user.newsletter_subscribed ? "Subscribed" : "Not subscribed"}</dd></div><div><dt>Policy status</dt><dd>${policyStatusLabel(activePoints)} (${activePoints} active points)</dd></div><div><dt>Joined</dt><dd>${formatUserDate(user.joined_at)}</dd></div><div><dt>Demo activity</dt><dd>${data.activity.orders} orders · ${data.activity.cart_additions} cart additions · ${data.activity.active_reservations} active reservations</dd></div></dl><h3>Violations</h3><ul class="user-history">${detailedViolations}</ul><h3>Ban History</h3><ul class="user-history">${detailedHistory}</ul>`;
     const activeBan = (data.bans || []).some((b) => b.status === "active");
     banUserButton.hidden = activeBan || user.is_admin; unbanUserButton.hidden = !activeBan || user.is_admin; addViolationButton.disabled = user.is_admin;
-    userDeleteButton.disabled = !adminDeleteUserEnabled;
+    userDeleteButton.disabled = !canDeleteTemporaryTestUser(user);
     userDetailDialog.showModal();
   }
   async function submitEnforcement(action, formData) {
@@ -2700,7 +2706,7 @@
   document.querySelector("[data-close-ban]").addEventListener("click", () => userBanDialog.close());
   userBanForm.addEventListener("submit", async (event) => { event.preventDefault(); const submit = document.querySelector("#userBanSubmit"); submit.disabled = true; try { await submitEnforcement(userBanForm.dataset.action, new FormData(userBanForm)); userBanForm.reset(); } catch (error) { document.querySelector("#userBanMessage").hidden = false; document.querySelector("#userBanMessage").textContent = error.message || "Enforcement could not be completed."; } finally { submit.disabled = false; } });
   userDeleteButton.addEventListener("click", () => {
-    if (!adminDeleteUserEnabled) return;
+    if (!canDeleteTemporaryTestUser(state.userManagement.detail?.user)) return;
     userDeleteForm.reset();
     userDeleteMessage.hidden = true;
     userDeleteSubmit.disabled = true;
@@ -2712,7 +2718,7 @@
   });
   userDeleteForm.addEventListener("submit", async (event) => {
     event.preventDefault();
-    if (!adminDeleteUserEnabled || userDeleteConfirmation.value !== "DELETE" || !state.userManagement.selectedId) return;
+    if (!canDeleteTemporaryTestUser(state.userManagement.detail?.user) || userDeleteConfirmation.value !== "DELETE" || !state.userManagement.selectedId) return;
     userDeleteSubmit.disabled = true;
     userDeleteMessage.hidden = true;
     try {
