@@ -622,7 +622,7 @@ body.newsletter-editor-mode .newsletter-composer { max-width: none; margin: 0; }
   .users-controls label:first-child { grid-column: 1 / -1; }
   .users-table-wrap { display: none; }
   .users-mobile-list { display: grid; gap: 12px; }
-  .user-card { display: grid; gap: 12px; padding: 15px; border: 1px solid rgba(255,255,255,.14); border-radius: 8px; background: #121212; }
+  .user-card { display: grid; gap: 12px; padding: 15px; border: 1px solid rgba(255,255,255,.14); border-radius: 8px; color: rgba(255,255,255,.94); background: #121212; font-weight: 600; }
   .user-card > div { min-width: 0; }
   .user-card dl { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 8px; margin: 0; }
   .user-card dl div { min-width: 0; }
