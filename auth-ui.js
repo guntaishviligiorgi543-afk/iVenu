@@ -13,7 +13,9 @@
       !visible || document.body.classList.contains("mobile-menu-open");
   };
 
-  const showAuthGate = () => {
+  const showAuthGate = (
+    message = "You have to be signed in first to choose tickets.",
+  ) => {
     let gate = document.querySelector(".auth-gate");
     if (!gate) {
       gate = document.createElement("div");
@@ -25,7 +27,7 @@
             <img src="assets/ivenue-logo.png" alt="iVenue" />
           </a>
           <h2 id="authGateTitle">Sign in first</h2>
-          <p id="authGateMessage">You have to be signed in first to choose tickets.</p>
+          <p id="authGateMessage"></p>
           <div class="auth-gate__actions">
             <a href="login.html">Log In</a>
             <a href="register.html">Register</a>
@@ -47,6 +49,7 @@
       document.addEventListener("keydown", handleKeydown);
       document.body.appendChild(gate);
     }
+    gate.querySelector("#authGateMessage").textContent = message;
     document.body.classList.add("auth-gate-open");
     return false;
   };
@@ -63,6 +66,13 @@
     window.authApi.subscribeToAuthChanges(async (_event, session) => {
       setFloatingAdminVisibility(await window.authApi.isAdmin(session));
     });
+  }
+  if (window.authApi) {
+    window.requireAuthForSupport = async () => {
+      const session = await window.authApi.getSession();
+      if (session) return true;
+      return showAuthGate("Please sign in or register to send a support request.");
+    };
   }
   const nav = document.querySelector("header nav");
   if (!nav || !window.authApi) return;

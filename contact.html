@@ -425,12 +425,12 @@
    NAME
 ========================================================= */
 
-    .contactForm label[for="name"] {
+    .contactForm label[for="contact-name"] {
       grid-column: 1;
       grid-row: 1;
     }
 
-    .contactForm #name {
+    .contactForm #contact-name {
       grid-column: 1;
       grid-row: 2;
     }
@@ -439,12 +439,12 @@
    EMAIL
 ========================================================= */
 
-    .contactForm label[for="email"] {
+    .contactForm label[for="contact-email"] {
       grid-column: 2;
       grid-row: 1;
     }
 
-    .contactForm #email {
+    .contactForm #contact-email {
       grid-column: 2;
       grid-row: 2;
     }
@@ -453,16 +453,40 @@
    MESSAGE
 ========================================================= */
 
-    .contactForm label[for="message"] {
+    .contactForm label[for="contact-subject"] {
       grid-column: 1 / -1;
       grid-row: 3;
 
       margin-top: 6px;
     }
 
-    .contactForm textarea {
+    .contactForm #contact-subject {
       grid-column: 1 / -1;
       grid-row: 4;
+    }
+
+    .contactForm label[for="contact-category"] {
+      grid-column: 1 / -1;
+      grid-row: 5;
+
+      margin-top: 6px;
+    }
+
+    .contactForm #contact-category {
+      grid-column: 1 / -1;
+      grid-row: 6;
+    }
+
+    .contactForm label[for="contact-message"] {
+      grid-column: 1 / -1;
+      grid-row: 7;
+
+      margin-top: 6px;
+    }
+
+    .contactForm textarea {
+      grid-column: 1 / -1;
+      grid-row: 8;
     }
 
     /* =========================================================
@@ -470,7 +494,8 @@
 ========================================================= */
 
     .contactForm input,
-    .contactForm textarea {
+    .contactForm textarea,
+    .contactForm select {
       width: 100%;
 
       border: 2px solid #ffffff;
@@ -502,8 +527,37 @@
     }
 
     .contactForm input:focus,
-    .contactForm textarea:focus {
+    .contactForm textarea:focus,
+    .contactForm select:focus {
       border-color: #f89b7d;
+    }
+
+    .contactForm select {
+      height: 48px;
+      padding: 8px 12px;
+    }
+
+    .contactForm select:invalid {
+      color: #b8b0ac;
+    }
+
+    .contactForm__message {
+      grid-column: 1 / -1;
+      grid-row: 9;
+      min-height: 1.4em;
+      margin: 4px 0 0;
+      color: #ffffff;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+
+    .contactForm__message.error {
+      color: #ffb09a;
+    }
+
+    .contactForm__message.success {
+      color: #b9e4b4;
     }
 
     /* =========================================================
@@ -512,7 +566,7 @@
 
     .contactForm button {
       grid-column: 1 / -1;
-      grid-row: 5;
+      grid-row: 10;
 
       justify-self: end;
 
@@ -799,19 +853,26 @@
         gap: 10px;
       }
 
-      .contactForm label[for="name"],
-      .contactForm #name,
-      .contactForm label[for="email"],
-      .contactForm #email,
-      .contactForm label[for="message"],
+      .contactForm label[for="contact-name"],
+      .contactForm #contact-name,
+      .contactForm label[for="contact-email"],
+      .contactForm #contact-email,
+      .contactForm label[for="contact-subject"],
+      .contactForm #contact-subject,
+      .contactForm label[for="contact-category"],
+      .contactForm #contact-category,
+      .contactForm label[for="contact-message"],
       .contactForm textarea,
+      .contactForm__message,
       .contactForm button {
         grid-column: 1;
         grid-row: auto;
       }
 
-      .contactForm label[for="email"],
-      .contactForm label[for="message"] {
+      .contactForm label[for="contact-email"],
+      .contactForm label[for="contact-subject"],
+      .contactForm label[for="contact-category"],
+      .contactForm label[for="contact-message"] {
         margin-top: 8px;
       }
 
@@ -1016,17 +1077,33 @@
               <p>email: info@example.com</p>
             </div>
             <div class="contactForm">
-              <form>
-                <label for="name">Name:</label>
-                <input type="text" id="name" name="name" required />
+              <form id="contact-support-form">
+                <label for="contact-name">Name:</label>
+                <input type="text" id="contact-name" name="contactName" autocomplete="name" readonly required />
 
-                <label for="email">Email:</label>
-                <input type="email" id="email" name="email" required />
+                <label for="contact-email">Email:</label>
+                <input type="email" id="contact-email" name="contactEmail" autocomplete="email" readonly required />
 
-                <label for="message">Message:</label>
-                <textarea id="message" name="message" required></textarea>
+                <label for="contact-subject">Subject:</label>
+                <input type="text" id="contact-subject" name="contactSubject" maxlength="200" required />
 
-                <button type="submit">get in touch</button>
+                <label for="contact-category">Category:</label>
+                <select id="contact-category" name="contactCategory" required>
+                  <option value="" selected disabled>Select a category</option>
+                  <option value="general">General</option>
+                  <option value="account">Account</option>
+                  <option value="event">Event</option>
+                  <option value="reservation">Reservation</option>
+                  <option value="order">Order</option>
+                  <option value="technical">Technical</option>
+                  <option value="other">Other</option>
+                </select>
+
+                <label for="contact-message">Message:</label>
+                <textarea id="contact-message" name="contactMessage" maxlength="10000" required></textarea>
+
+                <p class="contactForm__message" role="status" aria-live="polite"></p>
+                <button type="submit">Send support request</button>
               </form>
             </div>
           </div>
@@ -1075,5 +1152,6 @@
     <script src="auth.js"></script>
     <script src="event-cart.js"></script>
     <script src="auth-ui.js"></script>
+    <script src="contact.js"></script>
   </body>
 </html>
