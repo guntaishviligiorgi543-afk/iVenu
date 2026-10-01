@@ -228,6 +228,14 @@ begin
   if v_customer_id is null then
     raise exception 'Authentication is required.' using errcode = '42501';
   end if;
+  if public.is_current_user_support_admin()
+     or exists (
+       select 1
+       from public.support_users s
+       where s.user_id = v_customer_id and s.revoked_at is null
+     ) then
+    raise exception 'Support employees and administrators cannot act as customers.' using errcode = '42501';
+  end if;
   if nullif(btrim(p_subject), '') is null or char_length(btrim(p_subject)) > 200 then
     raise exception 'A subject of up to 200 characters is required.' using errcode = '22023';
   end if;
@@ -276,6 +284,14 @@ declare
 begin
   if v_customer_id is null then
     raise exception 'Authentication is required.' using errcode = '42501';
+  end if;
+  if public.is_current_user_support_admin()
+     or exists (
+       select 1
+       from public.support_users s
+       where s.user_id = v_customer_id and s.revoked_at is null
+     ) then
+    raise exception 'Support employees and administrators cannot act as customers.' using errcode = '42501';
   end if;
   if nullif(btrim(p_body), '') is null or char_length(btrim(p_body)) > 10000 then
     raise exception 'A message of up to 10000 characters is required.' using errcode = '22023';

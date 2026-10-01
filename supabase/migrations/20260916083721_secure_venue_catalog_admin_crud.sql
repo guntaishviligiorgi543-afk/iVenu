@@ -1,0 +1,3 @@
+create policy "Admins can insert venue catalog items" on public.venue_catalog for insert to authenticated with check (exists (select 1 from public.admin_users where user_id = auth.uid()));
+create policy "Admins can update venue catalog items" on public.venue_catalog for update to authenticated using (exists (select 1 from public.admin_users where user_id = auth.uid())) with check (exists (select 1 from public.admin_users where user_id = auth.uid()));
+create policy "Admins can delete venue catalog items" on public.venue_catalog for delete to authenticated using (exists (select 1 from public.admin_users where user_id = auth.uid()));;
