@@ -33,20 +33,6 @@
     resolveButton = $("#resolveRequest"),
     resolveDialog = $("#resolveDialog"),
     confirmResolve = $("#confirmResolve");
-  const supportPage = $(".support-page");
-  const supportHeader = $(".support-header");
-  const syncSupportHeaderHeight = () => {
-    if (!supportPage || !supportHeader) return;
-    supportPage.style.setProperty(
-      "--support-header-height",
-      `${Math.ceil(supportHeader.getBoundingClientRect().height)}px`,
-    );
-  };
-  syncSupportHeaderHeight();
-  requestAnimationFrame(syncSupportHeaderHeight);
-  if ("ResizeObserver" in window && supportHeader)
-    new ResizeObserver(syncSupportHeaderHeight).observe(supportHeader);
-
   const redirect = (path) => window.location.replace(path);
   const setNotice = (message = "", type = "") => {
     notice.textContent = message;
