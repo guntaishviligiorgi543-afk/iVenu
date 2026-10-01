@@ -81,6 +81,15 @@
   }
   mobileDashboard?.classList.add("mobileDashboardLink");
   mobileDashboard.hidden = true;
+  let mobileSupport = nav?.querySelector(".mobileSupportLink");
+  if (!mobileSupport && nav) {
+    mobileSupport = document.createElement("a");
+    mobileSupport.className = "mobileSupportLink";
+    mobileSupport.href = "support.html";
+    mobileSupport.textContent = "Support workspace";
+    nav.append(mobileSupport);
+  }
+  mobileSupport.hidden = true;
   let socialSlot = menu.querySelector(".mobileMenuSocial");
   let account = menu.querySelector(".mobileMenuAccount");
   if (!socialSlot && panel) {
@@ -102,7 +111,12 @@
   headerAccount.href = "profile.html";
   headerAccount.textContent = "account";
   headerNav?.querySelectorAll(".authNavLink").forEach((link) => link.remove());
-  headerNav?.append(headerAuth, headerAccount);
+  const headerSupport = document.createElement("a");
+  headerSupport.className = "authNavLink supportWorkspaceLink";
+  headerSupport.href = "support.html";
+  headerSupport.textContent = "support";
+  headerSupport.hidden = true;
+  headerNav?.append(headerAuth, headerAccount, headerSupport);
 
   const normalizedPagePath = (pathname) => {
     const normalized = pathname.replace(/\/+$/, "") || "/";
@@ -171,6 +185,8 @@
     syncActiveNavigation();
     if (mobileCart) mobileCart.hidden = !signedIn;
     mobileDashboard.hidden = true;
+    mobileSupport.hidden = true;
+    headerSupport.hidden = true;
     account.replaceChildren();
 
     if (!signedIn) {
@@ -206,6 +222,18 @@
     if (renderId !== authRenderId) return;
     mobileDashboard.href = "admin-dashboard.html";
     mobileDashboard.hidden = !admin;
+    if (admin) return;
+    try {
+      const { data: isSupportEmployee, error } = await window.supabaseClient.rpc(
+        "is_current_user_support_employee",
+      );
+      if (error) throw error;
+      if (renderId !== authRenderId) return;
+      mobileSupport.hidden = isSupportEmployee !== true;
+      headerSupport.hidden = isSupportEmployee !== true;
+    } catch (error) {
+      console.error("Unable to check Support workspace access", error);
+    }
   };
 
   headerAuth.addEventListener("click", async (event) => {
