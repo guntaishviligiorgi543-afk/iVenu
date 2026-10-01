@@ -1,2 +1,5 @@
 # graft's local graph cache — regenerable, not committed (run `graft build`).
 /graft/
+
+# Supabase CLI generated version marker - local only.
+/supabase/.temp/cli-latest
