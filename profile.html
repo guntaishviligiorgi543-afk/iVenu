@@ -729,15 +729,21 @@
                 id="supportRequestConversation"
                 hidden
               >
-                <button
-                  class="account-text-button support-conversation-back"
-                  id="supportConversationBack"
-                  type="button"
-                >
-                  ← All Support Requests
-                </button>
                 <header class="support-conversation-header">
-                  <div>
+                  <div class="support-conversation-header__top">
+                    <button
+                      class="account-text-button support-conversation-back"
+                      id="supportConversationBack"
+                      type="button"
+                    >
+                      ← All Support Requests
+                    </button>
+                    <span
+                      class="support-request-status"
+                      id="supportConversationStatus"
+                    ></span>
+                  </div>
+                  <div class="support-conversation-header__details">
                     <p
                       class="account-eyebrow"
                       id="supportConversationCategory"
@@ -745,10 +751,6 @@
                     <h3 id="supportConversationSubject"></h3>
                     <p id="supportConversationMeta"></p>
                   </div>
-                  <span
-                    class="support-request-status"
-                    id="supportConversationStatus"
-                  ></span>
                 </header>
                 <div
                   class="support-customer-message-list"
