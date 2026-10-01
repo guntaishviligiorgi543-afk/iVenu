@@ -8,6 +8,14 @@
   const state = { session: null, requests: [], selectedId: null, activeFilter: "all", isLoadingQueue: false, isLoadingDetail: false, isActionPending: false };
   const $ = (selector) => document.querySelector(selector);
   const accessStatus = $("#supportAccessStatus"), notice = $("#supportNotice"), queueList = $("#supportQueueList"), detail = $("#supportDetail"), noSelection = $("#supportNoSelection"), search = $("#supportSearch"), refreshQueue = $("#refreshQueue"), claimRow = $("#supportClaimRow"), claimButton = $("#claimRequest"), replyForm = $("#supportReplyForm"), reply = $("#supportReply"), sendReply = $("#sendReply"), replyCount = $("#supportReplyCount"), resolveButton = $("#resolveRequest"), resolveDialog = $("#resolveDialog"), confirmResolve = $("#confirmResolve");
+  const supportHeader = $(".support-header");
+  const syncSupportHeaderHeight = () => {
+    if (!supportHeader) return;
+    document.body.style.setProperty("--support-header-height", `${Math.ceil(supportHeader.getBoundingClientRect().height)}px`);
+  };
+  syncSupportHeaderHeight();
+  requestAnimationFrame(syncSupportHeaderHeight);
+  if ("ResizeObserver" in window && supportHeader) new ResizeObserver(syncSupportHeaderHeight).observe(supportHeader);
 
   const redirect = (path) => window.location.replace(path);
   const setNotice = (message = "", type = "") => { notice.textContent = message; notice.hidden = !message; notice.className = `support-notice${type ? ` is-${type}` : ""}`; };
