@@ -13,7 +13,7 @@
   <body class="account-page">
     <main class="account-page-main">
       <section class="account-dashboard" aria-labelledby="account-title">
-        <a class="account-home-link" href="index.html">← Home</a>
+        <a class="account-home-link" href="index.html">← Go back to site</a>
         <header class="account-header">
           <div>
             <p class="account-eyebrow">Member area</p>
@@ -628,8 +628,8 @@
             >
               <div class="account-section-header">
                 <div>
-                  <p class="account-eyebrow">Your ticket history</p>
-                  <h2 id="orders-title">Orders</h2>
+                  <p class="account-eyebrow">View your ticket purchases</p>
+                  <h2 id="orders-title">My Orders</h2>
                 </div>
                 <span class="section-count" id="ordersCount">0 orders</span>
               </div>
@@ -650,8 +650,8 @@
             >
               <div class="account-section-header">
                 <div>
-                  <p class="account-eyebrow">Ready when you are</p>
-                  <h2 id="cart-title">Cart</h2>
+                  <p class="account-eyebrow">Review your selected tickets</p>
+                  <h2 id="cart-title">Your Cart</h2>
                 </div>
                 <span class="section-count" id="cartCount">0 items</span>
               </div>
@@ -680,7 +680,8 @@
                 >
               </div>
 
-              <div class="support-request-toolbar">
+              <div class="support-inbox">
+                <div class="support-request-toolbar">
                 <div
                   class="support-request-filters"
                   role="group"
@@ -703,19 +704,25 @@
                 >
               </div>
 
-              <div id="supportRequestsList" class="dashboard-list">
-                <div class="dashboard-loading">Loading Support requests...</div>
+                <div id="supportRequestsList" class="dashboard-list">
+                  <div class="dashboard-loading">Loading Support requests...</div>
+                </div>
+                <div class="empty-state" id="supportRequestsEmpty" hidden>
+                  <strong>You don't have any Support requests yet.</strong>
+                  <span>Need help? Send us a Support request.</span>
+                  <a class="auth-submit" href="contact.html">Contact Support</a>
+                </div>
+                <div
+                  class="support-requests-pagination"
+                  id="supportRequestsPagination"
+                  aria-label="Support request pagination"
+                ></div>
               </div>
-              <div class="empty-state" id="supportRequestsEmpty" hidden>
-                <strong>You don't have any Support requests yet.</strong>
-                <span>Need help? Send us a Support request.</span>
-                <a class="auth-submit" href="contact.html">Contact Support</a>
+
+              <div class="support-conversation-empty" aria-live="polite">
+                <strong>Select a Support request</strong>
+                <span>Choose a request from the inbox to view the conversation.</span>
               </div>
-              <div
-                class="support-requests-pagination"
-                id="supportRequestsPagination"
-                aria-label="Support request pagination"
-              ></div>
 
               <div
                 class="support-request-conversation"

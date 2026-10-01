@@ -99,6 +99,8 @@
     unread: new Map(),
     unreadTotal: 0,
   };
+  const isSupportMobile = () =>
+    window.matchMedia("(max-width: 760px)").matches;
   let avatarPreviewUrl = "";
 
   function setMessage(text, type = "", target = message) {
@@ -499,9 +501,14 @@
 
   async function openSupportRequest(requestId) {
     supportState.selectedId = requestId;
-    supportRequestsList.hidden = true;
-    supportRequestsEmpty.hidden = true;
-    supportRequestsPagination.hidden = true;
+    if (isSupportMobile()) {
+      supportRequestsList.hidden = true;
+      supportRequestsEmpty.hidden = true;
+      supportRequestsPagination.hidden = true;
+    } else {
+      supportRequestsList.hidden = false;
+      supportRequestsPagination.hidden = false;
+    }
     supportRequestConversation.hidden = false;
     supportCustomerMessageList.replaceChildren();
     const loading = document.createElement("p");
@@ -632,6 +639,7 @@
   }
 
   function showSupportRequestList() {
+    if (!isSupportMobile()) return;
     supportState.selectedId = null;
     supportRequestConversation.hidden = true;
     supportRequestsList.hidden = false;
@@ -851,6 +859,13 @@
     });
   });
   supportConversationBack.addEventListener("click", showSupportRequestList);
+  window.addEventListener("resize", () => {
+    if (supportRequestConversation.hidden) return;
+    const hideInbox = isSupportMobile();
+    supportRequestsList.hidden = hideInbox;
+    supportRequestsPagination.hidden = hideInbox;
+    if (hideInbox) supportRequestsEmpty.hidden = true;
+  });
   supportCustomerReplyForm.addEventListener(
     "submit",
     submitSupportCustomerReply,
