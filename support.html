@@ -6,20 +6,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="robots" content="noindex, nofollow" />
     <title>Support Workspace | iVenue</title>
+
     <link rel="stylesheet" href="main.css" />
     <link rel="stylesheet" href="auth.css" />
     <link rel="stylesheet" href="support.css" />
   </head>
+
   <body class="support-page support-gated">
     <main class="support-shell" aria-live="polite">
       <header class="support-header">
-        <div class="support-header__identity">
-          <p class="support-eyebrow">iVenue operations</p>
-          <h1>iVenue Support</h1>
-          <p class="support-header__status" id="supportAccessStatus">
-            Checking Support access…
-          </p>
+        <div class="support-brand">
+          <div class="support-brand__title">
+            <span>iVenue</span><strong>Support</strong>
+          </div>
+
+          <div class="support-access">
+            <span class="support-access__dot" aria-hidden="true"></span>
+            <span id="supportAccessStatus">Checking Support access…</span>
+          </div>
         </div>
+
         <div class="support-header__actions">
           <a class="support-button support-button--quiet" href="index.html"
             >Back to site</a
@@ -28,47 +34,50 @@
             Sign out
           </button>
         </div>
-        <p class="support-notice" id="supportNotice" role="status" hidden></p>
       </header>
+
+      <p class="support-notice" id="supportNotice" role="status" hidden></p>
 
       <section class="support-workspace" aria-label="Support requests">
         <aside class="support-queue" aria-label="Support request queue">
-          <div class="support-queue__header">
-            <div>
-              <p class="support-eyebrow">Incoming</p>
-              <h2>Requests</h2>
+          <div class="support-queue__controls">
+            <div class="support-queue__header">
+              <h1>Requests</h1>
+              <button
+                class="support-icon-button"
+                id="refreshQueue"
+                type="button"
+                aria-label="Refresh requests"
+                title="Refresh requests"
+              >
+                ↻
+              </button>
             </div>
-            <button
-              class="support-icon-button"
-              id="refreshQueue"
-              type="button"
-              aria-label="Refresh requests"
-              title="Refresh requests"
+
+            <label class="support-search">
+              <span class="sr-only">Search requests</span>
+              <input
+                id="supportSearch"
+                type="search"
+                placeholder="Search requests..."
+                autocomplete="off"
+              />
+            </label>
+
+            <div
+              class="support-filters"
+              role="group"
+              aria-label="Request filters"
             >
-              ↻
-            </button>
+              <button class="is-active" type="button" data-filter="all">
+                All
+              </button>
+              <button type="button" data-filter="open">Open</button>
+              <button type="button" data-filter="mine">Mine</button>
+              <button type="button" data-filter="resolved">Resolved</button>
+            </div>
           </div>
-          <label class="support-search">
-            <span class="sr-only">Search requests</span>
-            <input
-              id="supportSearch"
-              type="search"
-              placeholder="Search requests"
-              autocomplete="off"
-            />
-          </label>
-          <div
-            class="support-filters"
-            role="group"
-            aria-label="Request filters"
-          >
-            <button class="is-active" type="button" data-filter="all">
-              All
-            </button>
-            <button type="button" data-filter="open">Open</button>
-            <button type="button" data-filter="mine">Assigned to me</button>
-            <button type="button" data-filter="resolved">Resolved</button>
-          </div>
+
           <div
             class="support-queue__list"
             id="supportQueueList"
@@ -85,25 +94,34 @@
           aria-labelledby="supportConversationTitle"
         >
           <div class="support-empty-state" id="supportNoSelection">
-            <p class="support-eyebrow">Support queue</p>
-            <h2>Select a request</h2>
-            <p>
-              Choose a request to review the customer conversation and take
-              action.
-            </p>
+            <div>
+              <h2>Select a request</h2>
+              <p>Choose a request from the inbox to view the conversation.</p>
+            </div>
           </div>
 
           <div class="support-detail" id="supportDetail" hidden>
             <header class="support-detail__header">
-              <div>
-                <p class="support-eyebrow" id="supportDetailCategory"></p>
-                <h2 id="supportConversationTitle"></h2>
-                <p class="support-detail__meta" id="supportDetailMeta"></p>
+              <button
+                class="support-mobile-back"
+                id="supportMobileBack"
+                type="button"
+              >
+                ← Requests
+              </button>
+
+              <div class="support-detail__title-row">
+                <div>
+                  <p class="support-eyebrow" id="supportDetailCategory"></p>
+                  <h2 id="supportConversationTitle"></h2>
+                  <p class="support-detail__meta" id="supportDetailMeta"></p>
+                </div>
+                <span class="support-status" id="supportDetailStatus"></span>
               </div>
-              <span class="support-status" id="supportDetailStatus"></span>
+
+              <dl class="support-request-meta" id="supportRequestMeta"></dl>
             </header>
 
-            <dl class="support-request-meta" id="supportRequestMeta"></dl>
             <div
               class="support-message-list"
               id="supportMessageList"
@@ -116,24 +134,29 @@
                 id="supportActionMessage"
                 role="status"
               ></p>
+
               <div class="support-action-row" id="supportClaimRow" hidden>
                 <button class="support-button" id="claimRequest" type="button">
                   Claim request
                 </button>
               </div>
+
               <form class="support-reply-form" id="supportReplyForm">
                 <label for="supportReply">Reply to customer</label>
+
                 <textarea
                   id="supportReply"
                   name="supportReply"
-                  rows="5"
+                  rows="4"
                   maxlength="10000"
-                  placeholder="Write a clear, helpful response…"
+                  placeholder="Write a clear, helpful response..."
                   required
                 ></textarea>
+
                 <div class="support-reply-form__footer">
                   <span id="supportReplyCount">0 / 10,000</span>
-                  <div>
+
+                  <div class="support-reply-actions">
                     <button
                       class="support-button support-button--quiet"
                       id="resolveRequest"
@@ -141,6 +164,7 @@
                     >
                       Resolve
                     </button>
+
                     <button class="support-button" id="sendReply" type="submit">
                       Send reply
                     </button>
@@ -162,6 +186,7 @@
         <p class="support-eyebrow">Resolve request</p>
         <h2 id="resolveDialogTitle">Mark this request as resolved?</h2>
         <p>The customer can contact Support again if they need further help.</p>
+
         <div class="support-confirm-dialog__actions">
           <button class="support-button support-button--quiet" value="cancel">
             Cancel
