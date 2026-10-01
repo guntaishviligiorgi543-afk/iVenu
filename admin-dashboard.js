@@ -76,7 +76,26 @@
         dropdownOpen: false,
       },
     },
-    userManagement: { items: [], total: 0, summary: null, page: 1, pageSize: 20, selectedId: null, detail: null },
+    userManagement: {
+      items: [],
+      total: 0,
+      summary: null,
+      page: 1,
+      pageSize: 20,
+      selectedId: null,
+      detail: null,
+    },
+    supportManagement: {
+      memberships: [],
+      userResults: [],
+      historyPage: 1,
+      historyPageSize: 10,
+      historyFilter: "all",
+      historySearch: "",
+      userSearch: "",
+      pendingAction: null,
+      loading: false,
+    },
   };
   let expoGeorgiaPavilion11BlueprintPromise = null;
   const status = document.querySelector("#adminStatus");
@@ -206,45 +225,136 @@
   const confirmNewsletterStatus = document.querySelector(
     "#confirmNewsletterStatus",
   );
-  const newsletterCampaignForm = document.querySelector("#newsletterCampaignForm");
-  const newsletterEditorShell = document.querySelector("#newsletterEditorShell");
+  const newsletterCampaignForm = document.querySelector(
+    "#newsletterCampaignForm",
+  );
+  const newsletterEditorShell = document.querySelector(
+    "#newsletterEditorShell",
+  );
   const newsletterEditor = document.querySelector("#newsletterEditor");
   const newsletterCreateBack = document.querySelector("#newsletterCreateBack");
   const newsletterPreview = document.querySelector("#newsletterPreview");
-  const newsletterCampaignHistory = document.querySelector("#newsletterCampaignHistory");
-  const newsletterCampaignStatus = document.querySelector("#newsletterCampaignStatus");
-  const newsletterCampaignPagination = document.querySelector("#newsletterCampaignPagination");
-  const newsletterCampaignSelectAll = document.querySelector("#newsletterCampaignSelectAll");
-  const selectAllVisibleCampaigns = document.querySelector("#selectAllVisibleCampaigns");
-  const newsletterCampaignBulkActions = document.querySelector("#newsletterCampaignBulkActions");
-  const newsletterCampaignSelectionCount = document.querySelector("#newsletterCampaignSelectionCount");
-  const deleteSelectedCampaigns = document.querySelector("#deleteSelectedCampaigns");
-  const newsletterOverviewSummary = document.querySelector("#newsletterOverviewSummary");
-  const newsletterPreviewEmpty = document.querySelector("#newsletterPreviewEmpty");
-  const newsletterPreviewDialog = document.querySelector("#newsletterPreviewDialog");
-  const newsletterExpandedPreview = document.querySelector("#newsletterExpandedPreview");
-  const closeNewsletterPreview = document.querySelector("#closeNewsletterPreview");
-  const expandNewsletterPreview = document.querySelector("#expandNewsletterPreview");
-  const newsletterRecipientSelector = document.querySelector("#newsletterRecipientSelector");
-  const newsletterAllActiveCount = document.querySelector("#newsletterAllActiveCount");
-  const newsletterRecipientTrigger = document.querySelector("#newsletterRecipientTrigger");
-  const newsletterRecipientDropdown = document.querySelector("#newsletterRecipientDropdown");
-  const newsletterRecipientSearch = document.querySelector("#newsletterRecipientSearch");
-  const newsletterRecipientList = document.querySelector("#newsletterRecipientList");
-  const newsletterRecipientChips = document.querySelector("#newsletterRecipientChips");
-  const newsletterRecipientPagination = document.querySelector("#newsletterRecipientPagination");
+  const newsletterCampaignHistory = document.querySelector(
+    "#newsletterCampaignHistory",
+  );
+  const newsletterCampaignStatus = document.querySelector(
+    "#newsletterCampaignStatus",
+  );
+  const newsletterCampaignPagination = document.querySelector(
+    "#newsletterCampaignPagination",
+  );
+  const newsletterCampaignSelectAll = document.querySelector(
+    "#newsletterCampaignSelectAll",
+  );
+  const selectAllVisibleCampaigns = document.querySelector(
+    "#selectAllVisibleCampaigns",
+  );
+  const newsletterCampaignBulkActions = document.querySelector(
+    "#newsletterCampaignBulkActions",
+  );
+  const newsletterCampaignSelectionCount = document.querySelector(
+    "#newsletterCampaignSelectionCount",
+  );
+  const deleteSelectedCampaigns = document.querySelector(
+    "#deleteSelectedCampaigns",
+  );
+  const newsletterOverviewSummary = document.querySelector(
+    "#newsletterOverviewSummary",
+  );
+  const newsletterPreviewEmpty = document.querySelector(
+    "#newsletterPreviewEmpty",
+  );
+  const newsletterPreviewDialog = document.querySelector(
+    "#newsletterPreviewDialog",
+  );
+  const newsletterExpandedPreview = document.querySelector(
+    "#newsletterExpandedPreview",
+  );
+  const closeNewsletterPreview = document.querySelector(
+    "#closeNewsletterPreview",
+  );
+  const expandNewsletterPreview = document.querySelector(
+    "#expandNewsletterPreview",
+  );
+  const newsletterRecipientSelector = document.querySelector(
+    "#newsletterRecipientSelector",
+  );
+  const newsletterAllActiveCount = document.querySelector(
+    "#newsletterAllActiveCount",
+  );
+  const newsletterRecipientTrigger = document.querySelector(
+    "#newsletterRecipientTrigger",
+  );
+  const newsletterRecipientDropdown = document.querySelector(
+    "#newsletterRecipientDropdown",
+  );
+  const newsletterRecipientSearch = document.querySelector(
+    "#newsletterRecipientSearch",
+  );
+  const newsletterRecipientList = document.querySelector(
+    "#newsletterRecipientList",
+  );
+  const newsletterRecipientChips = document.querySelector(
+    "#newsletterRecipientChips",
+  );
+  const newsletterRecipientPagination = document.querySelector(
+    "#newsletterRecipientPagination",
+  );
   const sendNewsletterButton = document.querySelector("#sendNewsletter");
   const usersMetrics = document.querySelector("#usersMetrics");
   const usersSearch = document.querySelector("#usersSearch");
   const usersAccountFilter = document.querySelector("#usersAccountFilter");
   const usersProfileFilter = document.querySelector("#usersProfileFilter");
-  const usersNewsletterFilter = document.querySelector("#usersNewsletterFilter");
+  const usersNewsletterFilter = document.querySelector(
+    "#usersNewsletterFilter",
+  );
   const usersPolicyFilter = document.querySelector("#usersPolicyFilter");
   const usersSort = document.querySelector("#usersSort");
   const usersStatus = document.querySelector("#usersStatus");
   const usersList = document.querySelector("#usersList");
   const usersMobileList = document.querySelector("#usersMobileList");
   const usersPagination = document.querySelector("#usersPagination");
+  const supportMetrics = document.querySelector("#supportMetrics");
+  const supportActiveStatus = document.querySelector("#supportActiveStatus");
+  const supportActiveList = document.querySelector("#supportActiveList");
+  const supportActiveMobileList = document.querySelector(
+    "#supportActiveMobileList",
+  );
+  const supportUserSearch = document.querySelector("#supportUserSearch");
+  const supportUserSearchStatus = document.querySelector(
+    "#supportUserSearchStatus",
+  );
+  const supportUserResults = document.querySelector("#supportUserResults");
+  const supportHistorySearch = document.querySelector("#supportHistorySearch");
+  const supportHistoryFilter = document.querySelector("#supportHistoryFilter");
+  const supportHistoryStatus = document.querySelector("#supportHistoryStatus");
+  const supportMembershipList = document.querySelector(
+    "#supportMembershipList",
+  );
+  const supportMembershipMobileList = document.querySelector(
+    "#supportMembershipMobileList",
+  );
+  const supportMembershipPagination = document.querySelector(
+    "#supportMembershipPagination",
+  );
+  const supportMembershipDialog = document.querySelector(
+    "#supportMembershipDialog",
+  );
+  const supportMembershipDialogTitle = document.querySelector(
+    "#supportMembershipDialogTitle",
+  );
+  const supportMembershipDialogDescription = document.querySelector(
+    "#supportMembershipDialogDescription",
+  );
+  const supportMembershipDialogMessage = document.querySelector(
+    "#supportMembershipDialogMessage",
+  );
+  const cancelSupportMembership = document.querySelector(
+    "#cancelSupportMembership",
+  );
+  const confirmSupportMembership = document.querySelector(
+    "#confirmSupportMembership",
+  );
   const userDetailDialog = document.querySelector("#userDetailDialog");
   const userDetailTitle = document.querySelector("#userDetailTitle");
   const userDetailContent = document.querySelector("#userDetailContent");
@@ -258,7 +368,9 @@
   const userBanForm = document.querySelector("#userBanForm");
   const userDeleteDialog = document.querySelector("#userDeleteDialog");
   const userDeleteForm = document.querySelector("#userDeleteForm");
-  const userDeleteConfirmation = document.querySelector("#userDeleteConfirmation");
+  const userDeleteConfirmation = document.querySelector(
+    "#userDeleteConfirmation",
+  );
   const userDeleteSubmit = document.querySelector("#userDeleteSubmit");
   const userDeleteMessage = document.querySelector("#userDeleteMessage");
   const adminDeleteUserEnabled = true;
@@ -293,18 +405,28 @@
       best_selling: "Best Selling",
       custom_selection: "Custom Selection",
     };
-    document.querySelector("#homepageHeroSummaryCount").textContent = `${state.heroPreview.length} event${state.heroPreview.length === 1 ? "" : "s"}`;
-    document.querySelector("#homepageHeroSummaryMode").textContent = modeNames[state.heroConfig.mode] || "Latest Added";
-    document.querySelector("#homepageUpcomingSummaryCount").textContent = `${state.upcomingShowsPreview.length} event${state.upcomingShowsPreview.length === 1 ? "" : "s"}`;
-    document.querySelector("#homepageCatalogSummaryCount").textContent = `${state.catalog.length} image${state.catalog.length === 1 ? "" : "s"}`;
+    document.querySelector("#homepageHeroSummaryCount").textContent =
+      `${state.heroPreview.length} event${state.heroPreview.length === 1 ? "" : "s"}`;
+    document.querySelector("#homepageHeroSummaryMode").textContent =
+      modeNames[state.heroConfig.mode] || "Latest Added";
+    document.querySelector("#homepageUpcomingSummaryCount").textContent =
+      `${state.upcomingShowsPreview.length} event${state.upcomingShowsPreview.length === 1 ? "" : "s"}`;
+    document.querySelector("#homepageCatalogSummaryCount").textContent =
+      `${state.catalog.length} image${state.catalog.length === 1 ? "" : "s"}`;
   }
 
   function homepageEventList(events, editAttribute) {
     return `<div class="homepage-event-list">${events
       .map((event) => {
-        const title = escapeHtml(event.title || event.performer || "Untitled event");
-        const venue = escapeHtml(event.venues?.name || event.venue || "Venue TBA");
-        const category = escapeHtml(event.categories?.name || event.category || "Uncategorized");
+        const title = escapeHtml(
+          event.title || event.performer || "Untitled event",
+        );
+        const venue = escapeHtml(
+          event.venues?.name || event.venue || "Venue TBA",
+        );
+        const category = escapeHtml(
+          event.categories?.name || event.category || "Uncategorized",
+        );
         const date = escapeHtml(event.event_date || "Date TBA");
         const image = event.image_url
           ? `<img src="${escapeHtml(event.image_url)}" alt="" />`
@@ -713,7 +835,10 @@
           ["Total Subscribers", overview.total_subscribers],
           ["Active Subscribers", overview.active_subscribers],
           ["Inactive Subscribers", overview.inactive_subscribers],
-          ["New Subscribers — Last 30 Days", overview.new_subscribers_last_30_days],
+          [
+            "New Subscribers — Last 30 Days",
+            overview.new_subscribers_last_30_days,
+          ],
         ]
           .map(
             ([label, value]) =>
@@ -735,8 +860,14 @@
       ? `${Number(latestCampaign.successful_count || 0)} sent · ${Number(latestCampaign.failed_count || 0)} failed`
       : "No campaign history yet.";
     const campaignList = recentCampaigns.length
-      ? `<ul class="newsletter-recent-campaigns">${recentCampaigns.slice(0, 5).map((campaign) => `<li><span>${escapeHtml(campaign.subject)}</span><small>${escapeHtml(String(campaign.status || "draft").replaceAll("_", " "))}</small></li>`).join("")}</ul>`
-      : '<span>No campaign history yet.</span>';
+      ? `<ul class="newsletter-recent-campaigns">${recentCampaigns
+          .slice(0, 5)
+          .map(
+            (campaign) =>
+              `<li><span>${escapeHtml(campaign.subject)}</span><small>${escapeHtml(String(campaign.status || "draft").replaceAll("_", " "))}</small></li>`,
+          )
+          .join("")}</ul>`
+      : "<span>No campaign history yet.</span>";
     newsletterOverviewSummary.innerHTML = `<article class="newsletter-overview-card"><p>Latest campaign</p><strong>${latestCampaign ? escapeHtml(latestCampaign.subject) : "No campaigns yet"}</strong><span>${campaignText}</span></article><article class="newsletter-overview-card"><p>Latest subscriber activity</p><strong>${latestSubscriber ? escapeHtml(latestSubscriber.email) : "No subscriber activity"}</strong><span>${subscriberText}</span></article><article class="newsletter-overview-card newsletter-overview-card--recent"><p>Recent campaigns</p>${campaignList}<button class="admin-outline newsletter-action" type="button" data-newsletter-view="campaigns">View all campaigns</button></article>`;
   }
 
@@ -770,20 +901,31 @@
     newsletterRecipientTrigger.textContent = selectedCount
       ? `${selectedCount} recipient${selectedCount === 1 ? "" : "s"} selected`
       : "Select recipients";
-    newsletterRecipientTrigger.setAttribute("aria-expanded", String(isSelectedMode && recipients.dropdownOpen));
-    newsletterRecipientDropdown.hidden = !isSelectedMode || !recipients.dropdownOpen;
+    newsletterRecipientTrigger.setAttribute(
+      "aria-expanded",
+      String(isSelectedMode && recipients.dropdownOpen),
+    );
+    newsletterRecipientDropdown.hidden =
+      !isSelectedMode || !recipients.dropdownOpen;
     const selectedEmails = selectedRecipientEmails();
     const visibleChips = selectedEmails.slice(0, 6);
     newsletterRecipientChips.innerHTML = `${visibleChips.map((email) => `<span class="newsletter-recipient-chip">${escapeHtml(email)}<button type="button" data-remove-recipient="${escapeHtml(email)}" aria-label="Remove ${escapeHtml(email)}">&times;</button></span>`).join("")}${selectedEmails.length > visibleChips.length ? `<span class="newsletter-recipient-chip-summary">+${selectedEmails.length - visibleChips.length} more selected</span>` : ""}`;
-    document.querySelectorAll('input[name="recipientMode"]').forEach((input) => {
-      input.closest(".newsletter-recipient-mode").classList.toggle("is-active", input.checked);
-    });
+    document
+      .querySelectorAll('input[name="recipientMode"]')
+      .forEach((input) => {
+        input
+          .closest(".newsletter-recipient-mode")
+          .classList.toggle("is-active", input.checked);
+      });
     sendNewsletterButton.disabled = isSelectedMode && selectedCount === 0;
   }
 
   function renderRecipientPagination() {
     const recipients = state.newsletter.recipients;
-    const totalPages = Math.max(1, Math.ceil(recipients.total / recipients.pageSize));
+    const totalPages = Math.max(
+      1,
+      Math.ceil(recipients.total / recipients.pageSize),
+    );
     if (totalPages <= 1) {
       newsletterRecipientPagination.innerHTML = "";
       return;
@@ -794,29 +936,36 @@
   function renderRecipientList() {
     const recipients = state.newsletter.recipients;
     if (!recipients.subscribers.length) {
-      newsletterRecipientList.innerHTML = '<p class="newsletter-recipient-empty">No active subscribers match your search.</p>';
+      newsletterRecipientList.innerHTML =
+        '<p class="newsletter-recipient-empty">No active subscribers match your search.</p>';
       newsletterRecipientPagination.innerHTML = "";
       return;
     }
-    newsletterRecipientList.innerHTML = recipients.subscribers.map((subscriber) => {
-      const email = String(subscriber.email || "").toLowerCase();
-      const isSelected = recipients.selected.has(email);
-      return `<button class="newsletter-recipient-option${isSelected ? " is-selected" : ""}" type="button" role="option" aria-selected="${isSelected}" data-recipient-email="${escapeHtml(email)}"><span>${escapeHtml(email)}</span><span class="newsletter-recipient-option__check" aria-hidden="true">&#10003;</span></button>`;
-    }).join("");
+    newsletterRecipientList.innerHTML = recipients.subscribers
+      .map((subscriber) => {
+        const email = String(subscriber.email || "").toLowerCase();
+        const isSelected = recipients.selected.has(email);
+        return `<button class="newsletter-recipient-option${isSelected ? " is-selected" : ""}" type="button" role="option" aria-selected="${isSelected}" data-recipient-email="${escapeHtml(email)}"><span>${escapeHtml(email)}</span><span class="newsletter-recipient-option__check" aria-hidden="true">&#10003;</span></button>`;
+      })
+      .join("");
     renderRecipientPagination();
   }
 
   async function loadRecipientSubscribers() {
     const recipients = state.newsletter.recipients;
     const requestId = ++recipients.requestId;
-    newsletterRecipientList.innerHTML = '<p class="newsletter-recipient-empty">Loading active subscribers…</p>';
+    newsletterRecipientList.innerHTML =
+      '<p class="newsletter-recipient-empty">Loading active subscribers…</p>';
     try {
-      const { data, error } = await client.rpc("get_admin_newsletter_subscribers", {
-        p_search: recipients.search,
-        p_is_active: true,
-        p_page: recipients.page,
-        p_page_size: recipients.pageSize,
-      });
+      const { data, error } = await client.rpc(
+        "get_admin_newsletter_subscribers",
+        {
+          p_search: recipients.search,
+          p_is_active: true,
+          p_page: recipients.page,
+          p_page_size: recipients.pageSize,
+        },
+      );
       if (error) throw error;
       if (requestId !== recipients.requestId) return;
       recipients.subscribers = data?.subscribers || [];
@@ -825,7 +974,8 @@
     } catch (error) {
       if (requestId !== recipients.requestId) return;
       console.error("Recipient subscribers could not be loaded", error);
-      newsletterRecipientList.innerHTML = '<p class="newsletter-recipient-empty">Active subscribers could not be loaded. Please try again.</p>';
+      newsletterRecipientList.innerHTML =
+        '<p class="newsletter-recipient-empty">Active subscribers could not be loaded. Please try again.</p>';
       newsletterRecipientPagination.innerHTML = "";
     }
   }
@@ -842,9 +992,10 @@
       .sort((left, right) => left - right);
     const pageButtons = pages
       .map((value, index) => {
-        const gap = index && value - pages[index - 1] > 1
-          ? '<span class="newsletter-pagination__ellipsis" aria-hidden="true">…</span>'
-          : "";
+        const gap =
+          index && value - pages[index - 1] > 1
+            ? '<span class="newsletter-pagination__ellipsis" aria-hidden="true">…</span>'
+            : "";
         return `${gap}<button class="admin-pagination-button${value === page ? " is-active" : ""}" data-newsletter-page="${value}" type="button"${value === page ? ' aria-current="page"' : ""}>${value}</button>`;
       })
       .join("");
@@ -943,10 +1094,12 @@
     if (!ids.length) return;
     state.newsletter.pendingStatusChange = { campaignDeletionIds: ids };
     newsletterStatusDialogTitle.textContent = `Delete ${ids.length === 1 ? "campaign" : `${ids.length} campaigns`}?`;
-    newsletterStatusDialogDescription.textContent = ids.length === 1
-      ? "This campaign and its delivery records will be permanently deleted."
-      : "These campaigns and their delivery records will be permanently deleted.";
-    confirmNewsletterStatus.textContent = ids.length === 1 ? "Delete campaign" : "Delete campaigns";
+    newsletterStatusDialogDescription.textContent =
+      ids.length === 1
+        ? "This campaign and its delivery records will be permanently deleted."
+        : "These campaigns and their delivery records will be permanently deleted.";
+    confirmNewsletterStatus.textContent =
+      ids.length === 1 ? "Delete campaign" : "Delete campaigns";
     cancelNewsletterStatus.textContent = "Cancel";
     newsletterStatusDialog.showModal();
     cancelNewsletterStatus.focus();
@@ -968,7 +1121,8 @@
 
   function updateNewsletterComposerDirty() {
     const baseline = state.newsletter.composerBaseline;
-    state.newsletter.composerDirty = Boolean(baseline) &&
+    state.newsletter.composerDirty =
+      Boolean(baseline) &&
       JSON.stringify(newsletterComposerSnapshot()) !== JSON.stringify(baseline);
   }
 
@@ -979,9 +1133,11 @@
     newsletterEditor.value = baseline.content;
     state.newsletter.recipients.mode = baseline.recipientMode;
     state.newsletter.recipients.selected = new Set(baseline.selectedRecipients);
-    document.querySelectorAll('input[name="recipientMode"]').forEach((input) => {
-      input.checked = input.value === baseline.recipientMode;
-    });
+    document
+      .querySelectorAll('input[name="recipientMode"]')
+      .forEach((input) => {
+        input.checked = input.value === baseline.recipientMode;
+      });
     invalidateNewsletterDraft();
     renderRecipientList();
     renderRecipientSelection();
@@ -991,7 +1147,8 @@
   function openDiscardNewsletterDialog() {
     state.newsletter.pendingStatusChange = { discardNewsletter: true };
     newsletterStatusDialogTitle.textContent = "Discard newsletter?";
-    newsletterStatusDialogDescription.textContent = "Your unsaved newsletter changes will be lost.";
+    newsletterStatusDialogDescription.textContent =
+      "Your unsaved newsletter changes will be lost.";
     confirmNewsletterStatus.textContent = "Discard";
     cancelNewsletterStatus.textContent = "Keep editing";
     newsletterStatusDialog.showModal();
@@ -1002,19 +1159,29 @@
     const validViews = new Set(["overview", "subscribers", "campaigns"]);
     const targetView = validViews.has(view) ? view : "campaigns";
     state.newsletter.activeView = targetView;
-    document.querySelectorAll('[role="tab"][data-newsletter-view]').forEach((item) => {
-      const active = item.dataset.newsletterView === targetView;
-      item.classList.toggle("is-active", active);
-      item.setAttribute("aria-selected", String(active));
-      item.tabIndex = active ? 0 : -1;
-    });
-    document.querySelectorAll("[data-newsletter-view-panel]").forEach((panel) => {
-      const active = panel.dataset.newsletterViewPanel === targetView;
-      panel.hidden = !active;
-      panel.classList.toggle("is-active", active);
-    });
-    if (targetView === "campaigns") loadNewsletterCampaigns().catch(() => setMessage("Campaign history could not be loaded.", "error"));
-    if (targetView === "overview") loadNewsletterOverviewCampaigns().catch(() => setMessage("Campaign history could not be loaded.", "error"));
+    document
+      .querySelectorAll('[role="tab"][data-newsletter-view]')
+      .forEach((item) => {
+        const active = item.dataset.newsletterView === targetView;
+        item.classList.toggle("is-active", active);
+        item.setAttribute("aria-selected", String(active));
+        item.tabIndex = active ? 0 : -1;
+      });
+    document
+      .querySelectorAll("[data-newsletter-view-panel]")
+      .forEach((panel) => {
+        const active = panel.dataset.newsletterViewPanel === targetView;
+        panel.hidden = !active;
+        panel.classList.toggle("is-active", active);
+      });
+    if (targetView === "campaigns")
+      loadNewsletterCampaigns().catch(() =>
+        setMessage("Campaign history could not be loaded.", "error"),
+      );
+    if (targetView === "overview")
+      loadNewsletterOverviewCampaigns().catch(() =>
+        setMessage("Campaign history could not be loaded.", "error"),
+      );
   }
 
   function leaveNewsletterComposer() {
@@ -1030,25 +1197,43 @@
     newsletterExpandedPreview.innerHTML = html;
   }
 
-  const sanitizeNewsletterHtml = (html) => html.replace(/<\/?(script|style|iframe|object|embed)[^>]*>/gi, "").replace(/\son\w+\s*=\s*(['"]).*?\1/gi, "").replace(/javascript:/gi, "");
-  const newsletterPreviewHtml = (content) => `<div class="newsletter-email-frame"><div class="newsletter-email-header"><a href="https://ivenue.site" aria-label="iVenue home"><img src="https://ivenue.site/assets/ivenue-logo.png" alt="iVenue" /></a><p>Newsletter</p></div><div class="newsletter-email-content">${content}</div><div class="newsletter-email-cta"><a href="https://ivenue.site/shows.html">Explore Events</a></div><div class="newsletter-email-footer"><strong>iVenue</strong><p>Discover events. Choose your seat. Be there.</p><a href="https://ivenue.site">ivenue.site</a><a href="https://ivenue.site/unsubscribe.html?token=preview-link">Unsubscribe</a></div></div>`;
+  const sanitizeNewsletterHtml = (html) =>
+    html
+      .replace(/<\/?(script|style|iframe|object|embed)[^>]*>/gi, "")
+      .replace(/\son\w+\s*=\s*(['"]).*?\1/gi, "")
+      .replace(/javascript:/gi, "");
+  const newsletterPreviewHtml = (content) =>
+    `<div class="newsletter-email-frame"><div class="newsletter-email-header"><a href="https://ivenue.site" aria-label="iVenue home"><img src="https://ivenue.site/assets/ivenue-logo.png" alt="iVenue" /></a><p>Newsletter</p></div><div class="newsletter-email-content">${content}</div><div class="newsletter-email-cta"><a href="https://ivenue.site/shows.html">Explore Events</a></div><div class="newsletter-email-footer"><strong>iVenue</strong><p>Discover events. Choose your seat. Be there.</p><a href="https://ivenue.site">ivenue.site</a><a href="https://ivenue.site/unsubscribe.html?token=preview-link">Unsubscribe</a></div></div>`;
   const newsletterCampaignStatusClass = (status) =>
-    `newsletter-status--${String(status || "draft").toLowerCase().replaceAll(/[^a-z]+/g, "-").replace(/^-|-$/g, "")}`;
+    `newsletter-status--${String(status || "draft")
+      .toLowerCase()
+      .replaceAll(/[^a-z]+/g, "-")
+      .replace(/^-|-$/g, "")}`;
 
   function campaignPageButtons(page, totalPages) {
     return [...new Set([1, page - 1, page, page + 1, totalPages])]
       .filter((value) => value >= 1 && value <= totalPages)
       .sort((left, right) => left - right)
-      .map((value, index, pages) => `${index && value - pages[index - 1] > 1 ? '<span class="newsletter-pagination__ellipsis" aria-hidden="true">â€¦</span>' : ""}<button class="admin-pagination-button${value === page ? " is-active" : ""}" data-campaign-page="${value}" type="button"${value === page ? ' aria-current="page"' : ""}>${value}</button>`)
+      .map(
+        (value, index, pages) =>
+          `${index && value - pages[index - 1] > 1 ? '<span class="newsletter-pagination__ellipsis" aria-hidden="true">â€¦</span>' : ""}<button class="admin-pagination-button${value === page ? " is-active" : ""}" data-campaign-page="${value}" type="button"${value === page ? ' aria-current="page"' : ""}>${value}</button>`,
+      )
       .join("");
   }
 
   function renderCampaignSelection() {
     const campaigns = state.newsletter.campaigns;
-    const deletable = campaigns.items.filter((campaign) => String(campaign.status || "draft").toLowerCase() !== "sending");
-    const selectedVisible = deletable.filter((campaign) => campaigns.selected.has(String(campaign.id))).length;
-    newsletterCampaignSelectAll.checked = Boolean(deletable.length) && selectedVisible === deletable.length;
-    newsletterCampaignSelectAll.indeterminate = selectedVisible > 0 && selectedVisible < deletable.length;
+    const deletable = campaigns.items.filter(
+      (campaign) =>
+        String(campaign.status || "draft").toLowerCase() !== "sending",
+    );
+    const selectedVisible = deletable.filter((campaign) =>
+      campaigns.selected.has(String(campaign.id)),
+    ).length;
+    newsletterCampaignSelectAll.checked =
+      Boolean(deletable.length) && selectedVisible === deletable.length;
+    newsletterCampaignSelectAll.indeterminate =
+      selectedVisible > 0 && selectedVisible < deletable.length;
     newsletterCampaignSelectAll.disabled = !deletable.length;
     newsletterCampaignBulkActions.hidden = !campaigns.selected.size;
     newsletterCampaignSelectionCount.textContent = `${campaigns.selected.size} campaign${campaigns.selected.size === 1 ? "" : "s"} selected`;
@@ -1056,7 +1241,10 @@
 
   function renderCampaignPagination() {
     const campaigns = state.newsletter.campaigns;
-    const totalPages = Math.max(1, Math.ceil(campaigns.total / campaigns.pageSize));
+    const totalPages = Math.max(
+      1,
+      Math.ceil(campaigns.total / campaigns.pageSize),
+    );
     if (totalPages <= 1) {
       newsletterCampaignPagination.innerHTML = "";
       return;
@@ -1070,15 +1258,18 @@
     newsletterCampaignStatus.textContent = campaigns.total
       ? `${campaigns.total} campaign${campaigns.total === 1 ? "" : "s"}.`
       : "No campaigns yet.";
-    newsletterCampaignHistory.innerHTML = campaigns.items.map((campaign) => {
-      const status = String(campaign.status || "draft");
-      const recipientCount = Number(campaign.recipient_count || 0);
-      const recipientMode = campaign.recipient_mode === "selected" ? "Selected" : "All Active";
-      const id = String(campaign.id || "");
-      const isSending = status.toLowerCase() === "sending";
-      const isSelected = campaigns.selected.has(id);
-      return `<tr><td class="newsletter-campaign-select-cell" data-label="Select"><input type="checkbox" data-campaign-select="${escapeHtml(id)}" aria-label="Select ${escapeHtml(campaign.subject)}"${isSelected ? " checked" : ""}${isSending || !id ? " disabled" : ""} /></td><td data-label="Subject"><strong>${escapeHtml(campaign.subject)}</strong></td><td data-label="Status"><span class="newsletter-status ${newsletterCampaignStatusClass(status)}">${escapeHtml(status.replaceAll("_", " "))}</span></td><td data-label="Created">${escapeHtml(formatSubscriberDate(campaign.created_at))}</td><td data-label="Sent">${escapeHtml(formatSubscriberDate(campaign.sent_at))}</td><td data-label="Recipients"><span class="newsletter-target"><strong>${recipientMode}</strong><small>${recipientCount} recipient${recipientCount === 1 ? "" : "s"}</small></span></td><td data-label="Successful">${Number(campaign.successful_count || 0)}</td><td data-label="Failed">${Number(campaign.failed_count || 0)}</td><td data-label="Actions"><button class="newsletter-delete-button" type="button" data-delete-campaign="${escapeHtml(id)}"${isSending || !id ? " disabled" : ""}>Delete</button></td></tr>`;
-    }).join("");
+    newsletterCampaignHistory.innerHTML = campaigns.items
+      .map((campaign) => {
+        const status = String(campaign.status || "draft");
+        const recipientCount = Number(campaign.recipient_count || 0);
+        const recipientMode =
+          campaign.recipient_mode === "selected" ? "Selected" : "All Active";
+        const id = String(campaign.id || "");
+        const isSending = status.toLowerCase() === "sending";
+        const isSelected = campaigns.selected.has(id);
+        return `<tr><td class="newsletter-campaign-select-cell" data-label="Select"><input type="checkbox" data-campaign-select="${escapeHtml(id)}" aria-label="Select ${escapeHtml(campaign.subject)}"${isSelected ? " checked" : ""}${isSending || !id ? " disabled" : ""} /></td><td data-label="Subject"><strong>${escapeHtml(campaign.subject)}</strong></td><td data-label="Status"><span class="newsletter-status ${newsletterCampaignStatusClass(status)}">${escapeHtml(status.replaceAll("_", " "))}</span></td><td data-label="Created">${escapeHtml(formatSubscriberDate(campaign.created_at))}</td><td data-label="Sent">${escapeHtml(formatSubscriberDate(campaign.sent_at))}</td><td data-label="Recipients"><span class="newsletter-target"><strong>${recipientMode}</strong><small>${recipientCount} recipient${recipientCount === 1 ? "" : "s"}</small></span></td><td data-label="Successful">${Number(campaign.successful_count || 0)}</td><td data-label="Failed">${Number(campaign.failed_count || 0)}</td><td data-label="Actions"><button class="newsletter-delete-button" type="button" data-delete-campaign="${escapeHtml(id)}"${isSending || !id ? " disabled" : ""}>Delete</button></td></tr>`;
+      })
+      .join("");
     renderCampaignSelection();
     renderCampaignPagination();
   }
@@ -1086,12 +1277,18 @@
   async function loadNewsletterCampaigns() {
     const campaigns = state.newsletter.campaigns;
     const requestId = ++campaigns.requestId;
-    const { data, error } = await client.rpc("get_admin_newsletter_campaigns", { p_page: campaigns.page, p_page_size: campaigns.pageSize });
+    const { data, error } = await client.rpc("get_admin_newsletter_campaigns", {
+      p_page: campaigns.page,
+      p_page_size: campaigns.pageSize,
+    });
     if (error) throw error;
     if (requestId !== campaigns.requestId) return;
     campaigns.items = data?.campaigns || [];
     campaigns.total = Number(data?.total || 0);
-    const totalPages = Math.max(1, Math.ceil(campaigns.total / campaigns.pageSize));
+    const totalPages = Math.max(
+      1,
+      Math.ceil(campaigns.total / campaigns.pageSize),
+    );
     if (campaigns.page > totalPages) {
       campaigns.page = totalPages;
       campaigns.selected.clear();
@@ -1101,7 +1298,10 @@
   }
 
   async function loadNewsletterOverviewCampaigns() {
-    const { data, error } = await client.rpc("get_admin_newsletter_campaigns", { p_page: 1, p_page_size: 5 });
+    const { data, error } = await client.rpc("get_admin_newsletter_campaigns", {
+      p_page: 1,
+      p_page_size: 5,
+    });
     if (error) throw error;
     state.newsletter.campaigns.overviewItems = data?.campaigns || [];
     renderNewsletterOverviewSummary();
@@ -1114,41 +1314,68 @@
       setMessage("Subject and newsletter content are required.", "error");
       return null;
     }
-    const recipientMode = forTest ? "all_active" : state.newsletter.recipients.mode;
-    const selectedEmails = recipientMode === "selected" ? selectedRecipientEmails() : [];
-    const recipientCount = recipientMode === "selected"
-      ? selectedEmails.length
-      : activeSubscriberCount();
+    const recipientMode = forTest
+      ? "all_active"
+      : state.newsletter.recipients.mode;
+    const selectedEmails =
+      recipientMode === "selected" ? selectedRecipientEmails() : [];
+    const recipientCount =
+      recipientMode === "selected"
+        ? selectedEmails.length
+        : activeSubscriberCount();
     if (!forTest && recipientMode === "selected" && !selectedEmails.length) {
       setMessage("Select at least one recipient.", "error");
       return null;
     }
     if (!forTest && recipientMode === "all_active" && !recipientCount) {
-      setMessage("There are no active subscribers to receive this newsletter.", "error");
+      setMessage(
+        "There are no active subscribers to receive this newsletter.",
+        "error",
+      );
       return null;
     }
-    return { subject, content, recipientMode, selectedEmails, recipientCount, signature: `${subject}\n${content}\n${recipientMode}\n${selectedEmails.join("\n")}` };
+    return {
+      subject,
+      content,
+      recipientMode,
+      selectedEmails,
+      recipientCount,
+      signature: `${subject}\n${content}\n${recipientMode}\n${selectedEmails.join("\n")}`,
+    };
   }
 
   async function ensureNewsletterDraft(values, { setCurrent = true } = {}) {
-    if (setCurrent && newsletterCampaignId && newsletterCampaignSignature === values.signature)
+    if (
+      setCurrent &&
+      newsletterCampaignId &&
+      newsletterCampaignSignature === values.signature
+    )
       return newsletterCampaignId;
-    const { data, error } = await client.rpc("admin_create_newsletter_campaign", {
-      p_subject: values.subject,
-      p_content: values.content,
-      p_recipient_mode: values.recipientMode,
-      p_selected_emails: values.selectedEmails,
-    });
+    const { data, error } = await client.rpc(
+      "admin_create_newsletter_campaign",
+      {
+        p_subject: values.subject,
+        p_content: values.content,
+        p_recipient_mode: values.recipientMode,
+        p_selected_emails: values.selectedEmails,
+      },
+    );
     if (error) throw error;
     if (setCurrent) {
       newsletterCampaignId = data;
       newsletterCampaignSignature = values.signature;
-      newsletterCampaignTarget = { mode: values.recipientMode, count: values.recipientCount };
+      newsletterCampaignTarget = {
+        mode: values.recipientMode,
+        count: values.recipientCount,
+      };
     }
     loadNewsletterCampaigns().catch((historyError) =>
-      console.warn("Newsletter draft was created but history could not refresh", {
-        message: historyError?.message || "Unknown error",
-      }),
+      console.warn(
+        "Newsletter draft was created but history could not refresh",
+        {
+          message: historyError?.message || "Unknown error",
+        },
+      ),
     );
     return data;
   }
@@ -2343,10 +2570,9 @@
         return;
       }
     }
-    eventMapPreviewDescription.textContent =
-      usesCanonicalEventRows
-        ? `${venue.name} geometry with ${formatSeatNumber(eventRows.length)} canonical event seats. This preview does not modify seat state.`
-        : `${venue.name} geometry with draft ticket-tier colors. This preview does not create, reserve, or sell seats.`;
+    eventMapPreviewDescription.textContent = usesCanonicalEventRows
+      ? `${venue.name} geometry with ${formatSeatNumber(eventRows.length)} canonical event seats. This preview does not modify seat state.`
+      : `${venue.name} geometry with draft ticket-tier colors. This preview does not create, reserve, or sell seats.`;
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     svg.setAttribute(
       "viewBox",
@@ -2502,51 +2728,417 @@
     eventMapPreviewCanvas.appendChild(svg);
   }
 
-  const formatUserDate = (value) => value ? new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(new Date(value)) : "—";
-  const userLabel = (user) => [user.first_name, user.last_name].filter(Boolean).join(" ") || user.email || "Unnamed user";
-  const userStatusLabel = (status) => ({ active: "Active", temporarily_banned: "Temporarily Banned", permanently_banned: "Permanently Banned" }[status] || "Active");
-  const userStatusClass = (status) => `user-status user-status--${String(status || "active").replaceAll("_", "-")}`;
-  const policyStatusLabel = (points) => points >= 4 ? "Review" : points > 0 ? "Warning" : "Clean";
-  const policyStatusClass = (status) => `policy-status policy-status--${String(status || "clean")}`;
+  const formatUserDate = (value) =>
+    value
+      ? new Intl.DateTimeFormat(undefined, {
+          dateStyle: "medium",
+          timeStyle: "short",
+        }).format(new Date(value))
+      : "—";
+  const userLabel = (user) =>
+    [user.first_name, user.last_name].filter(Boolean).join(" ") ||
+    user.email ||
+    "Unnamed user";
+  const userStatusLabel = (status) =>
+    ({
+      active: "Active",
+      temporarily_banned: "Temporarily Banned",
+      permanently_banned: "Permanently Banned",
+    })[status] || "Active";
+  const userStatusClass = (status) =>
+    `user-status user-status--${String(status || "active").replaceAll("_", "-")}`;
+  const policyStatusLabel = (points) =>
+    points >= 4 ? "Review" : points > 0 ? "Warning" : "Clean";
+  const policyStatusClass = (status) =>
+    `policy-status policy-status--${String(status || "clean")}`;
   function renderUsers() {
     const items = state.userManagement.items;
-    usersStatus.textContent = items.length ? `${state.userManagement.total} user${state.userManagement.total === 1 ? "" : "s"}` : "No users found.";
-    const row = (u) => `<tr><td><strong>${escapeHtml(userLabel(u))}</strong><small>${escapeHtml(u.email || "No email")}</small><small>Joined ${formatUserDate(u.joined_at)}</small></td><td><span class="${userStatusClass(u.account_status)}">${userStatusLabel(u.account_status)}</span></td><td>${escapeHtml(u.profile_status)}</td><td>${escapeHtml(u.newsletter_status === "subscribed" ? "Subscribed" : "Not subscribed")}</td><td><span class="${policyStatusClass(u.policy_status)}">${escapeHtml(u.policy_status)}</span>${u.violation_points ? ` (${u.violation_points})` : ""}</td><td>${escapeHtml(u.top_category || "No data")}</td><td><button class="admin-outline" type="button" data-user-detail="${u.id}">Details</button></td></tr>`;
-    const card = (u) => `<article class="user-card"><div><strong>${escapeHtml(userLabel(u))}</strong><small>${escapeHtml(u.email || "No email")}</small></div><span class="${userStatusClass(u.account_status)}">${userStatusLabel(u.account_status)}</span><dl><div><dt>Profile</dt><dd>${escapeHtml(u.profile_status)}</dd></div><div><dt>Newsletter</dt><dd>${escapeHtml(u.newsletter_status === "subscribed" ? "Subscribed" : "Not subscribed")}</dd></div><div><dt>Policy</dt><dd>${escapeHtml(u.policy_status)}</dd></div></dl><button class="admin-outline" type="button" data-user-detail="${u.id}">Details</button></article>`;
-    usersList.innerHTML = items.map(row).join(""); usersMobileList.innerHTML = items.map(card).join("");
-    const pages = Math.max(1, Math.ceil(state.userManagement.total / state.userManagement.pageSize));
-    usersPagination.innerHTML = pages > 1 ? Array.from({ length: pages }, (_, index) => `<button class="admin-outline${index + 1 === state.userManagement.page ? " is-active" : ""}" type="button" data-users-page="${index + 1}" ${index + 1 === state.userManagement.page ? "aria-current=\"page\"" : ""}>${index + 1}</button>`).join("") : "";
+    usersStatus.textContent = items.length
+      ? `${state.userManagement.total} user${state.userManagement.total === 1 ? "" : "s"}`
+      : "No users found.";
+    const row = (u) =>
+      `<tr><td><strong>${escapeHtml(userLabel(u))}</strong><small>${escapeHtml(u.email || "No email")}</small><small>Joined ${formatUserDate(u.joined_at)}</small></td><td><span class="${userStatusClass(u.account_status)}">${userStatusLabel(u.account_status)}</span></td><td>${escapeHtml(u.profile_status)}</td><td>${escapeHtml(u.newsletter_status === "subscribed" ? "Subscribed" : "Not subscribed")}</td><td><span class="${policyStatusClass(u.policy_status)}">${escapeHtml(u.policy_status)}</span>${u.violation_points ? ` (${u.violation_points})` : ""}</td><td>${escapeHtml(u.top_category || "No data")}</td><td><button class="admin-outline" type="button" data-user-detail="${u.id}">Details</button></td></tr>`;
+    const card = (u) =>
+      `<article class="user-card"><div><strong>${escapeHtml(userLabel(u))}</strong><small>${escapeHtml(u.email || "No email")}</small></div><span class="${userStatusClass(u.account_status)}">${userStatusLabel(u.account_status)}</span><dl><div><dt>Profile</dt><dd>${escapeHtml(u.profile_status)}</dd></div><div><dt>Newsletter</dt><dd>${escapeHtml(u.newsletter_status === "subscribed" ? "Subscribed" : "Not subscribed")}</dd></div><div><dt>Policy</dt><dd>${escapeHtml(u.policy_status)}</dd></div></dl><button class="admin-outline" type="button" data-user-detail="${u.id}">Details</button></article>`;
+    usersList.innerHTML = items.map(row).join("");
+    usersMobileList.innerHTML = items.map(card).join("");
+    const pages = Math.max(
+      1,
+      Math.ceil(state.userManagement.total / state.userManagement.pageSize),
+    );
+    usersPagination.innerHTML =
+      pages > 1
+        ? Array.from(
+            { length: pages },
+            (_, index) =>
+              `<button class="admin-outline${index + 1 === state.userManagement.page ? " is-active" : ""}" type="button" data-users-page="${index + 1}" ${index + 1 === state.userManagement.page ? 'aria-current="page"' : ""}>${index + 1}</button>`,
+          ).join("")
+        : "";
     const summary = state.userManagement.summary || {};
     usersMetrics.innerHTML = `<article class="admin-metric"><strong>${summary.total ?? state.userManagement.total}</strong><span>Total users</span></article><article class="admin-metric"><strong>${summary.active ?? "—"}</strong><span>Active</span></article><article class="admin-metric"><strong>${summary.temporarily_banned ?? "—"}</strong><span>Temporarily Banned</span></article><article class="admin-metric"><strong>${summary.permanently_banned ?? "—"}</strong><span>Permanently Banned</span></article><article class="admin-metric"><strong>${summary.incomplete_profiles ?? "—"}</strong><span>Incomplete profiles</span></article>`;
   }
   async function loadUsers() {
     usersStatus.textContent = "Loading users…";
-    const [usersResult, summaryResult] = await Promise.all([client.rpc("get_admin_users", { p_search: usersSearch.value.trim() || null, p_profile: usersProfileFilter.value || null, p_newsletter: usersNewsletterFilter.value || null, p_policy: usersPolicyFilter.value || null, p_account: usersAccountFilter.value || null, p_sort: usersSort.value, p_page: state.userManagement.page, p_page_size: state.userManagement.pageSize }), client.rpc("get_admin_users_summary")]);
+    const [usersResult, summaryResult] = await Promise.all([
+      client.rpc("get_admin_users", {
+        p_search: usersSearch.value.trim() || null,
+        p_profile: usersProfileFilter.value || null,
+        p_newsletter: usersNewsletterFilter.value || null,
+        p_policy: usersPolicyFilter.value || null,
+        p_account: usersAccountFilter.value || null,
+        p_sort: usersSort.value,
+        p_page: state.userManagement.page,
+        p_page_size: state.userManagement.pageSize,
+      }),
+      client.rpc("get_admin_users_summary"),
+    ]);
     const { data, error } = usersResult;
     if (error) throw error;
     if (summaryResult.error) throw summaryResult.error;
-    state.userManagement.items = data?.items || []; state.userManagement.total = Number(data?.total || 0); state.userManagement.summary = summaryResult.data || null; renderUsers();
+    state.userManagement.items = data?.items || [];
+    state.userManagement.total = Number(data?.total || 0);
+    state.userManagement.summary = summaryResult.data || null;
+    renderUsers();
   }
   async function openUserDetail(userId) {
-    const { data, error } = await client.rpc("get_admin_user_detail", { p_user_id: userId }); if (error) throw error;
-    state.userManagement.selectedId = userId; state.userManagement.detail = data;
-    const user = data.user; userDetailTitle.textContent = userLabel(user);
-    const history = (data.bans || []).map((b) => `<li><strong>${escapeHtml(b.status === "active" ? "Active" : b.status === "expired" ? "Expired" : "Unbanned")}</strong> — ${escapeHtml(b.reason)}<br><small>Duration: ${b.is_permanent ? "Permanent" : `${formatUserDate(b.banned_at)} to ${formatUserDate(b.banned_until)}`} · Banned by ${escapeHtml(b.banned_by || "System")} · Unbanned: ${formatUserDate(b.unbanned_at)}${b.unbanned_by ? ` by ${escapeHtml(b.unbanned_by)}` : ""}</small></li>`).join("") || "<li>No ban history.</li>";
-    const violations = (data.violations || []).map((v) => `<li><strong>${escapeHtml(v.type)}</strong> (${escapeHtml(v.severity)}, ${v.points} points) — ${escapeHtml(v.reason)}<br><small>${formatUserDate(v.created_at)} · ${escapeHtml(v.created_by || "System")}</small></li>`).join("") || "<li>No violations.</li>";
+    const { data, error } = await client.rpc("get_admin_user_detail", {
+      p_user_id: userId,
+    });
+    if (error) throw error;
+    state.userManagement.selectedId = userId;
+    state.userManagement.detail = data;
+    const user = data.user;
+    userDetailTitle.textContent = userLabel(user);
+    const history =
+      (data.bans || [])
+        .map(
+          (b) =>
+            `<li><strong>${escapeHtml(b.status === "active" ? "Active" : b.status === "expired" ? "Expired" : "Unbanned")}</strong> — ${escapeHtml(b.reason)}<br><small>Duration: ${b.is_permanent ? "Permanent" : `${formatUserDate(b.banned_at)} to ${formatUserDate(b.banned_until)}`} · Banned by ${escapeHtml(b.banned_by || "System")} · Unbanned: ${formatUserDate(b.unbanned_at)}${b.unbanned_by ? ` by ${escapeHtml(b.unbanned_by)}` : ""}</small></li>`,
+        )
+        .join("") || "<li>No ban history.</li>";
+    const violations =
+      (data.violations || [])
+        .map(
+          (v) =>
+            `<li><strong>${escapeHtml(v.type)}</strong> (${escapeHtml(v.severity)}, ${v.points} points) — ${escapeHtml(v.reason)}<br><small>${formatUserDate(v.created_at)} · ${escapeHtml(v.created_by || "System")}</small></li>`,
+        )
+        .join("") || "<li>No violations.</li>";
     userDetailContent.innerHTML = `<dl class="user-detail-summary"><div><dt>Email</dt><dd>${escapeHtml(user.email || "—")}</dd></div><div><dt>Phone</dt><dd>${escapeHtml(user.phone || "—")}</dd></div><div><dt>Joined</dt><dd>${formatUserDate(user.joined_at)}</dd></div><div><dt>Activity</dt><dd>${data.activity.orders} orders · ${data.activity.cart_additions} cart additions · ${data.activity.active_reservations} active reservations</dd></div></dl><h3>Violations</h3><ul class="user-history">${violations}</ul><h3>Ban History</h3><ul class="user-history">${history}</ul>`;
-    const activePoints = (data.violations || []).reduce((total, violation) => total + (!violation.expires_at || new Date(violation.expires_at) > new Date() ? Number(violation.points || 0) : 0), 0);
-    const detailedHistory = (data.bans || []).map((b) => `<li><strong>${escapeHtml(b.status === "active" ? "Active" : b.status === "expired" ? "Expired" : "Unbanned")}</strong> — ${escapeHtml(b.reason)}<br><small>Duration: ${b.is_permanent ? "Permanent" : `${Number(b.duration_hours || 0)} hours`} · Banned at ${formatUserDate(b.banned_at)} · Banned until: ${formatUserDate(b.banned_until)} · Banned by ${escapeHtml(b.banned_by || "System")} · Unbanned: ${formatUserDate(b.unbanned_at)}${b.unbanned_by ? ` by ${escapeHtml(b.unbanned_by)}` : ""}</small></li>`).join("") || "<li>No ban history.</li>";
-    const detailedViolations = (data.violations || []).map((v) => `<li><strong>${escapeHtml(v.type)}</strong> (${escapeHtml(v.severity)}, ${v.points} points) — ${escapeHtml(v.reason)}<br><small>${formatUserDate(v.created_at)} · ${escapeHtml(v.created_by || "System")}${v.expires_at ? ` · Expires ${formatUserDate(v.expires_at)}` : ""}</small></li>`).join("") || "<li>No violations.</li>";
+    const activePoints = (data.violations || []).reduce(
+      (total, violation) =>
+        total +
+        (!violation.expires_at || new Date(violation.expires_at) > new Date()
+          ? Number(violation.points || 0)
+          : 0),
+      0,
+    );
+    const detailedHistory =
+      (data.bans || [])
+        .map(
+          (b) =>
+            `<li><strong>${escapeHtml(b.status === "active" ? "Active" : b.status === "expired" ? "Expired" : "Unbanned")}</strong> — ${escapeHtml(b.reason)}<br><small>Duration: ${b.is_permanent ? "Permanent" : `${Number(b.duration_hours || 0)} hours`} · Banned at ${formatUserDate(b.banned_at)} · Banned until: ${formatUserDate(b.banned_until)} · Banned by ${escapeHtml(b.banned_by || "System")} · Unbanned: ${formatUserDate(b.unbanned_at)}${b.unbanned_by ? ` by ${escapeHtml(b.unbanned_by)}` : ""}</small></li>`,
+        )
+        .join("") || "<li>No ban history.</li>";
+    const detailedViolations =
+      (data.violations || [])
+        .map(
+          (v) =>
+            `<li><strong>${escapeHtml(v.type)}</strong> (${escapeHtml(v.severity)}, ${v.points} points) — ${escapeHtml(v.reason)}<br><small>${formatUserDate(v.created_at)} · ${escapeHtml(v.created_by || "System")}${v.expires_at ? ` · Expires ${formatUserDate(v.expires_at)}` : ""}</small></li>`,
+        )
+        .join("") || "<li>No violations.</li>";
     userDetailContent.innerHTML = `<dl class="user-detail-summary"><div><dt>Account</dt><dd>${user.is_admin ? "Administrator" : "Regular user"}</dd></div><div><dt>Email</dt><dd>${escapeHtml(user.email || "—")}</dd></div><div><dt>Profile</dt><dd>${escapeHtml([user.first_name, user.last_name].filter(Boolean).join(" ") || "Incomplete")}</dd></div><div><dt>Phone</dt><dd>${escapeHtml(user.phone || "—")}</dd></div><div><dt>Newsletter</dt><dd>${user.newsletter_subscribed ? "Subscribed" : "Not subscribed"}</dd></div><div><dt>Policy status</dt><dd>${policyStatusLabel(activePoints)} (${activePoints} active points)</dd></div><div><dt>Joined</dt><dd>${formatUserDate(user.joined_at)}</dd></div><div><dt>Demo activity</dt><dd>${data.activity.orders} orders · ${data.activity.cart_additions} cart additions · ${data.activity.active_reservations} active reservations</dd></div></dl><h3>Violations</h3><ul class="user-history">${detailedViolations}</ul><h3>Ban History</h3><ul class="user-history">${detailedHistory}</ul>`;
     const activeBan = (data.bans || []).some((b) => b.status === "active");
-    banUserButton.hidden = activeBan || user.is_admin; unbanUserButton.hidden = !activeBan || user.is_admin; addViolationButton.disabled = user.is_admin;
+    banUserButton.hidden = activeBan || user.is_admin;
+    unbanUserButton.hidden = !activeBan || user.is_admin;
+    addViolationButton.disabled = user.is_admin;
     userDeleteButton.disabled = !canDeleteUser(user);
     userDetailDialog.showModal();
   }
   async function submitEnforcement(action, formData) {
-    const { data, error } = await client.functions.invoke("admin-user-enforcement", { body: { action, userId: state.userManagement.selectedId, reason: formData.get("reason"), durationHours: Number(formData.get("duration")), internalNote: formData.get("note"), unbanNote: formData.get("note") } });
+    const { data, error } = await client.functions.invoke(
+      "admin-user-enforcement",
+      {
+        body: {
+          action,
+          userId: state.userManagement.selectedId,
+          reason: formData.get("reason"),
+          durationHours: Number(formData.get("duration")),
+          internalNote: formData.get("note"),
+          unbanNote: formData.get("note"),
+        },
+      },
+    );
     if (error || data?.error) throw error || new Error(data.error);
-    userBanDialog.close(); await loadUsers(); await openUserDetail(state.userManagement.selectedId); setMessage(action === "ban" ? "User banned." : "User unbanned.", "success");
+    userBanDialog.close();
+    await loadUsers();
+    await openUserDetail(state.userManagement.selectedId);
+    setMessage(action === "ban" ? "User banned." : "User unbanned.", "success");
+  }
+
+  const SUPPORT_MEMBERSHIP_COLUMNS =
+    "id,user_id,user_name,user_email,created_at,granted_by,granted_by_name,granted_by_email,revoked_at,revoked_by,revoked_by_name,revoked_by_email";
+  const supportMembershipLabel = (membership) =>
+    membership.user_name || membership.user_email || "Unnamed user";
+  const supportActorLabel = (name, email) => name || email || "Unknown admin";
+  const supportActorMarkup = (name, email) =>
+    `${escapeHtml(supportActorLabel(name, email))}${email ? `<small>${escapeHtml(email)}</small>` : ""}`;
+  const supportMembershipStatus = (membership) =>
+    membership.revoked_at ? "revoked" : "active";
+  const supportActionError = (action) =>
+    action === "grant"
+      ? "Support access could not be granted. Please try again."
+      : "Support access could not be revoked. Please try again.";
+
+  function renderSupportMetrics() {
+    const memberships = state.supportManagement.memberships;
+    const activeCount = memberships.filter(
+      (membership) => !membership.revoked_at,
+    ).length;
+    const revokedCount = memberships.filter(
+      (membership) => membership.revoked_at,
+    ).length;
+    supportMetrics.innerHTML = `<article class="admin-metric"><strong>${activeCount}</strong><span>Active Support Employees</span></article><article class="admin-metric"><strong>${memberships.length}</strong><span>Membership History</span></article><article class="admin-metric"><strong>${revokedCount}</strong><span>Revoked Memberships</span></article>`;
+  }
+
+  function renderSupportMemberships() {
+    const memberships = state.supportManagement.memberships;
+    const active = memberships.filter((membership) => !membership.revoked_at);
+    supportActiveStatus.textContent = active.length
+      ? `${active.length} active employee${active.length === 1 ? "" : "s"}`
+      : "No active Support employees.";
+    const activeRow = (membership) =>
+      `<tr><td><strong>${escapeHtml(supportMembershipLabel(membership))}</strong></td><td>${escapeHtml(membership.user_email || "—")}</td><td>${formatUserDate(membership.created_at)}</td><td>${supportActorMarkup(membership.granted_by_name, membership.granted_by_email)}</td><td><span class="support-membership-status support-membership-status--active">Active</span></td><td><button class="admin-danger-button support-revoke-button" type="button" data-support-revoke="${escapeHtml(membership.user_id || "")}" ${membership.user_id ? "" : "disabled"}>Revoke Access</button></td></tr>`;
+    const activeCard = (membership) =>
+      `<article class="support-membership-card"><div><strong>${escapeHtml(supportMembershipLabel(membership))}</strong><small>${escapeHtml(membership.user_email || "—")}</small></div><dl><div><dt>Granted</dt><dd>${formatUserDate(membership.created_at)}</dd></div><div><dt>Granted by</dt><dd>${supportActorMarkup(membership.granted_by_name, membership.granted_by_email)}</dd></div><div><dt>Status</dt><dd><span class="support-membership-status support-membership-status--active">Active</span></dd></div></dl><button class="admin-danger-button support-revoke-button" type="button" data-support-revoke="${escapeHtml(membership.user_id || "")}" ${membership.user_id ? "" : "disabled"}>Revoke Access</button></article>`;
+    supportActiveList.innerHTML = active.map(activeRow).join("");
+    supportActiveMobileList.innerHTML = active.map(activeCard).join("");
+
+    const query = state.supportManagement.historySearch.toLocaleLowerCase();
+    const filtered = memberships.filter((membership) => {
+      const statusMatches =
+        state.supportManagement.historyFilter === "all" ||
+        supportMembershipStatus(membership) ===
+          state.supportManagement.historyFilter;
+      const textMatches =
+        !query ||
+        [membership.user_name, membership.user_email]
+          .filter(Boolean)
+          .join(" ")
+          .toLocaleLowerCase()
+          .includes(query);
+      return statusMatches && textMatches;
+    });
+    const pageCount = Math.max(
+      1,
+      Math.ceil(filtered.length / state.supportManagement.historyPageSize),
+    );
+    state.supportManagement.historyPage = Math.min(
+      state.supportManagement.historyPage,
+      pageCount,
+    );
+    const start =
+      (state.supportManagement.historyPage - 1) *
+      state.supportManagement.historyPageSize;
+    const page = filtered.slice(
+      start,
+      start + state.supportManagement.historyPageSize,
+    );
+    supportHistoryStatus.textContent = filtered.length
+      ? `${filtered.length} membership record${filtered.length === 1 ? "" : "s"}`
+      : "No Support membership history yet.";
+    const historyRow = (membership) =>
+      `<tr><td><strong>${escapeHtml(supportMembershipLabel(membership))}</strong></td><td>${escapeHtml(membership.user_email || "—")}</td><td>${formatUserDate(membership.created_at)}</td><td>${supportActorMarkup(membership.granted_by_name, membership.granted_by_email)}</td><td>${formatUserDate(membership.revoked_at)}</td><td>${membership.revoked_at ? supportActorMarkup(membership.revoked_by_name, membership.revoked_by_email) : "—"}</td><td><span class="support-membership-status support-membership-status--${supportMembershipStatus(membership)}">${supportMembershipStatus(membership) === "active" ? "Active" : "Revoked"}</span></td></tr>`;
+    const historyCard = (membership) =>
+      `<article class="support-membership-card"><div><strong>${escapeHtml(supportMembershipLabel(membership))}</strong><small>${escapeHtml(membership.user_email || "—")}</small></div><dl><div><dt>Granted</dt><dd>${formatUserDate(membership.created_at)}</dd></div><div><dt>Granted by</dt><dd>${supportActorMarkup(membership.granted_by_name, membership.granted_by_email)}</dd></div><div><dt>Revoked</dt><dd>${formatUserDate(membership.revoked_at)}</dd></div><div><dt>Revoked by</dt><dd>${membership.revoked_at ? supportActorMarkup(membership.revoked_by_name, membership.revoked_by_email) : "—"}</dd></div><div><dt>Status</dt><dd><span class="support-membership-status support-membership-status--${supportMembershipStatus(membership)}">${supportMembershipStatus(membership) === "active" ? "Active" : "Revoked"}</span></dd></div></dl></article>`;
+    supportMembershipList.innerHTML = page.map(historyRow).join("");
+    supportMembershipMobileList.innerHTML = page.map(historyCard).join("");
+    supportMembershipPagination.innerHTML =
+      pageCount > 1
+        ? Array.from(
+            { length: pageCount },
+            (_, index) =>
+              `<button class="admin-outline${index + 1 === state.supportManagement.historyPage ? " is-active" : ""}" type="button" data-support-history-page="${index + 1}" ${index + 1 === state.supportManagement.historyPage ? 'aria-current="page"' : ""}>${index + 1}</button>`,
+          ).join("")
+        : "";
+  }
+
+  function renderSupportUserResults() {
+    const query = state.supportManagement.userSearch;
+    if (!query) {
+      supportUserSearchStatus.textContent =
+        "Search for an existing user to grant Support access.";
+      supportUserResults.replaceChildren();
+      return;
+    }
+    const activeIds = new Set(
+      state.supportManagement.memberships
+        .filter((membership) => !membership.revoked_at)
+        .map((membership) => membership.user_id),
+    );
+    const items = state.supportManagement.userResults;
+    supportUserSearchStatus.textContent = items.length
+      ? `${items.length} user${items.length === 1 ? "" : "s"} found`
+      : "No users found.";
+    supportUserResults.innerHTML = items
+      .map((user) => {
+        const role = user.is_admin
+          ? "Admin"
+          : activeIds.has(user.id)
+            ? "Support"
+            : "User";
+        const action = user.is_admin
+          ? `<span class="support-user-result__blocked">Admin accounts cannot be assigned Support access.</span>`
+          : activeIds.has(user.id)
+            ? `<span class="support-membership-status support-membership-status--active">Support access active</span>`
+            : `<button class="admin-outline" type="button" data-support-grant="${escapeHtml(user.id)}">Grant Support Access</button>`;
+        return `<article class="support-user-result"><div><strong>${escapeHtml(userLabel(user))}</strong><small>${escapeHtml(user.email || "No email")}</small></div><div class="support-user-result__status"><span class="support-user-role support-user-role--${role.toLocaleLowerCase()}">${role}</span>${action}</div></article>`;
+      })
+      .join("");
+  }
+
+  async function searchSupportUsers() {
+    const query = supportUserSearch.value.trim();
+    state.supportManagement.userSearch = query;
+    if (!query) {
+      state.supportManagement.userResults = [];
+      renderSupportUserResults();
+      return;
+    }
+    supportUserSearchStatus.textContent = "Searching users…";
+    const { data, error } = await client.rpc("get_admin_users", {
+      p_search: query,
+      p_profile: null,
+      p_newsletter: null,
+      p_policy: null,
+      p_account: null,
+      p_sort: "name_asc",
+      p_page: 1,
+      p_page_size: 20,
+    });
+    if (error) throw error;
+    state.supportManagement.userResults = data?.items || [];
+    renderSupportUserResults();
+  }
+
+  async function loadSupportManagement() {
+    supportActiveStatus.textContent = "Loading Support employees…";
+    supportHistoryStatus.textContent = "Loading membership history…";
+    try {
+      const { data, error } = await client
+        .from("support_users")
+        .select(SUPPORT_MEMBERSHIP_COLUMNS)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      state.supportManagement.memberships = data || [];
+      renderSupportMetrics();
+      renderSupportMemberships();
+      await searchSupportUsers();
+    } catch (error) {
+      state.supportManagement.memberships = [];
+      supportActiveStatus.textContent =
+        "Support employees could not be loaded.";
+      supportHistoryStatus.textContent =
+        "Membership history could not be loaded.";
+      supportUserSearchStatus.textContent =
+        "User search is temporarily unavailable.";
+      supportActiveList.replaceChildren();
+      supportActiveMobileList.replaceChildren();
+      supportMembershipList.replaceChildren();
+      supportMembershipMobileList.replaceChildren();
+      setMessage(
+        "Support membership data could not be loaded. Please try again.",
+        "error",
+      );
+    }
+  }
+
+  function openSupportMembershipDialog(action, subject) {
+    state.supportManagement.pendingAction = { action, subject, busy: false };
+    supportMembershipDialogMessage.hidden = true;
+    supportMembershipDialogTitle.textContent =
+      action === "grant" ? "Grant Support access?" : "Revoke Support access?";
+    supportMembershipDialogDescription.textContent =
+      action === "grant"
+        ? `${subject.name} (${subject.email}) will be able to access the Support Workspace, view requests, claim requests, reply to customers, and resolve requests.`
+        : `${subject.name} (${subject.email}) will immediately lose access to the Support Workspace.`;
+    confirmSupportMembership.textContent =
+      action === "grant" ? "Grant Access" : "Revoke Access";
+    confirmSupportMembership.classList.toggle(
+      "admin-danger-button",
+      action === "revoke",
+    );
+    confirmSupportMembership.classList.toggle(
+      "auth-submit",
+      action === "grant",
+    );
+    supportMembershipDialog.showModal();
+  }
+
+  async function confirmSupportMembershipAction() {
+    const pending = state.supportManagement.pendingAction;
+    if (!pending || pending.busy) return;
+    pending.busy = true;
+    confirmSupportMembership.disabled = true;
+    cancelSupportMembership.disabled = true;
+    try {
+      const { error } =
+        pending.action === "grant"
+          ? await client.rpc("admin_grant_support_membership", {
+              p_user_id: pending.subject.id,
+            })
+          : await client.rpc("admin_revoke_support_membership", {
+              p_user_id: pending.subject.id,
+            });
+      if (error) throw error;
+      supportMembershipDialog.close();
+      state.supportManagement.pendingAction = null;
+      setMessage(
+        pending.action === "grant"
+          ? "Support access granted."
+          : "Support access revoked.",
+        "success",
+      );
+      await loadSupportManagement();
+    } catch (error) {
+      supportMembershipDialogMessage.textContent = supportActionError(
+        pending.action,
+      );
+      supportMembershipDialogMessage.hidden = false;
+    } finally {
+      confirmSupportMembership.disabled = false;
+      cancelSupportMembership.disabled = false;
+      if (state.supportManagement.pendingAction)
+        state.supportManagement.pendingAction.busy = false;
+    }
+  }
+
+  function handleSupportRevokeClick(event) {
+    const button = event.target.closest("[data-support-revoke]");
+    if (!button || !button.dataset.supportRevoke) return;
+    const membership = state.supportManagement.memberships.find(
+      (item) =>
+        item.user_id === button.dataset.supportRevoke && !item.revoked_at,
+    );
+    if (membership)
+      openSupportMembershipDialog("revoke", {
+        id: membership.user_id,
+        name: supportMembershipLabel(membership),
+        email: membership.user_email || "No email",
+      });
+  }
+
+  function handleSupportGrantClick(event) {
+    const button = event.target.closest("[data-support-grant]");
+    if (!button) return;
+    const user = state.supportManagement.userResults.find(
+      (item) => item.id === button.dataset.supportGrant,
+    );
+    if (user && !user.is_admin)
+      openSupportMembershipDialog("grant", {
+        id: user.id,
+        name: userLabel(user),
+        email: user.email || "No email",
+      });
   }
 
   function activeDashboardPanel() {
@@ -2632,7 +3224,9 @@
   function enterNewsletterEditor() {
     if (!document.body.classList.contains("newsletter-editor-mode")) {
       const availableViews = new Set(["overview", "subscribers", "campaigns"]);
-      state.newsletter.previousView = availableViews.has(state.newsletter.activeView)
+      state.newsletter.previousView = availableViews.has(
+        state.newsletter.activeView,
+      )
         ? state.newsletter.activeView
         : "campaigns";
       state.newsletter.returnScrollY = window.scrollY;
@@ -2681,26 +3275,170 @@
           setMessage("Campaign overview could not be loaded.", "error"),
         );
       }
-      if (button.dataset.panel === "users") loadUsers().catch((error) => setMessage(error.message || "Users could not be loaded.", "error"));
+      if (button.dataset.panel === "users")
+        loadUsers().catch((error) =>
+          setMessage(error.message || "Users could not be loaded.", "error"),
+        );
+      if (button.dataset.panel === "support") loadSupportManagement();
     }),
   );
   adminMenuToggle?.addEventListener("click", () => {
     setAdminMenuOpen(!adminMenuOpen);
   });
   let usersSearchTimer = null;
-  usersSearch.addEventListener("input", () => { window.clearTimeout(usersSearchTimer); usersSearchTimer = window.setTimeout(() => { state.userManagement.page = 1; loadUsers().catch((error) => setMessage(error.message, "error")); }, 300); });
-  [usersAccountFilter, usersProfileFilter, usersNewsletterFilter, usersPolicyFilter, usersSort].forEach((control) => control.addEventListener("change", () => { state.userManagement.page = 1; loadUsers().catch((error) => setMessage(error.message, "error")); }));
-  usersPagination.addEventListener("click", (event) => { const button = event.target.closest("[data-users-page]"); if (!button) return; state.userManagement.page = Number(button.dataset.usersPage); loadUsers().catch((error) => setMessage(error.message, "error")); });
-  const handleUserDetailClick = (event) => { const button = event.target.closest("[data-user-detail]"); if (button) openUserDetail(button.dataset.userDetail).catch((error) => setMessage(error.message || "User details could not be loaded.", "error")); };
-  usersList.addEventListener("click", handleUserDetailClick); usersMobileList.addEventListener("click", handleUserDetailClick);
-  document.querySelector(".users-dialog-close").addEventListener("click", () => userDetailDialog.close());
-  addViolationButton.addEventListener("click", () => userViolationDialog.showModal());
-  document.querySelector("[data-close-violation]").addEventListener("click", () => userViolationDialog.close());
-  userViolationForm.addEventListener("submit", async (event) => { event.preventDefault(); const values = new FormData(userViolationForm); const expiresAtValue = String(values.get("expiresAt") || ""); const expiresAt = expiresAtValue ? new Date(expiresAtValue) : null; if (expiresAt && Number.isNaN(expiresAt.getTime())) { setMessage("Enter a valid violation expiration.", "error"); return; } try { const { error } = await client.rpc("admin_add_user_policy_violation", { p_user_id: state.userManagement.selectedId, p_violation_type: values.get("type"), p_severity: values.get("severity"), p_reason: values.get("reason"), p_internal_note: values.get("note") || null, p_expires_at: expiresAt?.toISOString() || null }); if (error) throw error; userViolationDialog.close(); userViolationForm.reset(); await openUserDetail(state.userManagement.selectedId); await loadUsers(); setMessage("Violation recorded.", "success"); } catch (error) { setMessage(error.message || "Violation could not be recorded.", "error"); } });
-  const openBanDialog = (action) => { const unban = action === "unban"; document.querySelector("#userBanDialogTitle").textContent = unban ? "Unban user" : "Ban user"; document.querySelector("#userBanReasonLabel").hidden = unban; document.querySelector("#userBanDurationLabel").hidden = unban; document.querySelector("#userBanSubmit").textContent = unban ? "Unban User" : "Ban User"; userBanForm.dataset.action = action; userBanDialog.showModal(); };
-  banUserButton.addEventListener("click", () => openBanDialog("ban")); unbanUserButton.addEventListener("click", () => openBanDialog("unban"));
-  document.querySelector("[data-close-ban]").addEventListener("click", () => userBanDialog.close());
-  userBanForm.addEventListener("submit", async (event) => { event.preventDefault(); const submit = document.querySelector("#userBanSubmit"); submit.disabled = true; try { await submitEnforcement(userBanForm.dataset.action, new FormData(userBanForm)); userBanForm.reset(); } catch (error) { document.querySelector("#userBanMessage").hidden = false; document.querySelector("#userBanMessage").textContent = error.message || "Enforcement could not be completed."; } finally { submit.disabled = false; } });
+  usersSearch.addEventListener("input", () => {
+    window.clearTimeout(usersSearchTimer);
+    usersSearchTimer = window.setTimeout(() => {
+      state.userManagement.page = 1;
+      loadUsers().catch((error) => setMessage(error.message, "error"));
+    }, 300);
+  });
+  [
+    usersAccountFilter,
+    usersProfileFilter,
+    usersNewsletterFilter,
+    usersPolicyFilter,
+    usersSort,
+  ].forEach((control) =>
+    control.addEventListener("change", () => {
+      state.userManagement.page = 1;
+      loadUsers().catch((error) => setMessage(error.message, "error"));
+    }),
+  );
+  usersPagination.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-users-page]");
+    if (!button) return;
+    state.userManagement.page = Number(button.dataset.usersPage);
+    loadUsers().catch((error) => setMessage(error.message, "error"));
+  });
+  let supportUserSearchTimer = null;
+  supportUserSearch.addEventListener("input", () => {
+    window.clearTimeout(supportUserSearchTimer);
+    supportUserSearchTimer = window.setTimeout(() => {
+      searchSupportUsers().catch(() => {
+        supportUserSearchStatus.textContent =
+          "User search is temporarily unavailable.";
+      });
+    }, 300);
+  });
+  supportHistorySearch.addEventListener("input", () => {
+    state.supportManagement.historySearch = supportHistorySearch.value.trim();
+    state.supportManagement.historyPage = 1;
+    renderSupportMemberships();
+  });
+  supportHistoryFilter.addEventListener("change", () => {
+    state.supportManagement.historyFilter = supportHistoryFilter.value;
+    state.supportManagement.historyPage = 1;
+    renderSupportMemberships();
+  });
+  supportMembershipPagination.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-support-history-page]");
+    if (!button) return;
+    state.supportManagement.historyPage = Number(
+      button.dataset.supportHistoryPage,
+    );
+    renderSupportMemberships();
+  });
+  supportActiveList.addEventListener("click", handleSupportRevokeClick);
+  supportActiveMobileList.addEventListener("click", handleSupportRevokeClick);
+  supportUserResults.addEventListener("click", handleSupportGrantClick);
+  cancelSupportMembership.addEventListener("click", () => {
+    if (state.supportManagement.pendingAction?.busy) return;
+    state.supportManagement.pendingAction = null;
+    supportMembershipDialog.close();
+  });
+  confirmSupportMembership.addEventListener("click", () =>
+    confirmSupportMembershipAction(),
+  );
+  supportMembershipDialog.addEventListener("close", () => {
+    if (!state.supportManagement.pendingAction?.busy)
+      state.supportManagement.pendingAction = null;
+  });
+  const handleUserDetailClick = (event) => {
+    const button = event.target.closest("[data-user-detail]");
+    if (button)
+      openUserDetail(button.dataset.userDetail).catch((error) =>
+        setMessage(
+          error.message || "User details could not be loaded.",
+          "error",
+        ),
+      );
+  };
+  usersList.addEventListener("click", handleUserDetailClick);
+  usersMobileList.addEventListener("click", handleUserDetailClick);
+  document
+    .querySelector(".users-dialog-close")
+    .addEventListener("click", () => userDetailDialog.close());
+  addViolationButton.addEventListener("click", () =>
+    userViolationDialog.showModal(),
+  );
+  document
+    .querySelector("[data-close-violation]")
+    .addEventListener("click", () => userViolationDialog.close());
+  userViolationForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const values = new FormData(userViolationForm);
+    const expiresAtValue = String(values.get("expiresAt") || "");
+    const expiresAt = expiresAtValue ? new Date(expiresAtValue) : null;
+    if (expiresAt && Number.isNaN(expiresAt.getTime())) {
+      setMessage("Enter a valid violation expiration.", "error");
+      return;
+    }
+    try {
+      const { error } = await client.rpc("admin_add_user_policy_violation", {
+        p_user_id: state.userManagement.selectedId,
+        p_violation_type: values.get("type"),
+        p_severity: values.get("severity"),
+        p_reason: values.get("reason"),
+        p_internal_note: values.get("note") || null,
+        p_expires_at: expiresAt?.toISOString() || null,
+      });
+      if (error) throw error;
+      userViolationDialog.close();
+      userViolationForm.reset();
+      await openUserDetail(state.userManagement.selectedId);
+      await loadUsers();
+      setMessage("Violation recorded.", "success");
+    } catch (error) {
+      setMessage(error.message || "Violation could not be recorded.", "error");
+    }
+  });
+  const openBanDialog = (action) => {
+    const unban = action === "unban";
+    document.querySelector("#userBanDialogTitle").textContent = unban
+      ? "Unban user"
+      : "Ban user";
+    document.querySelector("#userBanReasonLabel").hidden = unban;
+    document.querySelector("#userBanDurationLabel").hidden = unban;
+    document.querySelector("#userBanSubmit").textContent = unban
+      ? "Unban User"
+      : "Ban User";
+    userBanForm.dataset.action = action;
+    userBanDialog.showModal();
+  };
+  banUserButton.addEventListener("click", () => openBanDialog("ban"));
+  unbanUserButton.addEventListener("click", () => openBanDialog("unban"));
+  document
+    .querySelector("[data-close-ban]")
+    .addEventListener("click", () => userBanDialog.close());
+  userBanForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const submit = document.querySelector("#userBanSubmit");
+    submit.disabled = true;
+    try {
+      await submitEnforcement(
+        userBanForm.dataset.action,
+        new FormData(userBanForm),
+      );
+      userBanForm.reset();
+    } catch (error) {
+      document.querySelector("#userBanMessage").hidden = false;
+      document.querySelector("#userBanMessage").textContent =
+        error.message || "Enforcement could not be completed.";
+    } finally {
+      submit.disabled = false;
+    }
+  });
   userDeleteButton.addEventListener("click", () => {
     if (!canDeleteUser(state.userManagement.detail?.user)) return;
     userDeleteForm.reset();
@@ -2708,26 +3446,40 @@
     userDeleteSubmit.disabled = true;
     userDeleteDialog.showModal();
   });
-  document.querySelector("[data-close-user-delete]").addEventListener("click", () => userDeleteDialog.close());
+  document
+    .querySelector("[data-close-user-delete]")
+    .addEventListener("click", () => userDeleteDialog.close());
   userDeleteConfirmation.addEventListener("input", () => {
     userDeleteSubmit.disabled = userDeleteConfirmation.value !== "DELETE";
   });
   userDeleteForm.addEventListener("submit", async (event) => {
     event.preventDefault();
-    if (!canDeleteUser(state.userManagement.detail?.user) || userDeleteConfirmation.value !== "DELETE" || !state.userManagement.selectedId) return;
+    if (
+      !canDeleteUser(state.userManagement.detail?.user) ||
+      userDeleteConfirmation.value !== "DELETE" ||
+      !state.userManagement.selectedId
+    )
+      return;
     userDeleteSubmit.disabled = true;
     userDeleteMessage.hidden = true;
     try {
-      const { data, error } = await client.functions.invoke("admin-delete-user", {
-        body: { userId: state.userManagement.selectedId, confirmation: "DELETE" },
-      });
+      const { data, error } = await client.functions.invoke(
+        "admin-delete-user",
+        {
+          body: {
+            userId: state.userManagement.selectedId,
+            confirmation: "DELETE",
+          },
+        },
+      );
       if (error || data?.error) throw error || new Error(data.error);
       userDeleteDialog.close();
       userDetailDialog.close();
       await loadUsers();
       setMessage("User deleted.", "success");
     } catch (error) {
-      userDeleteMessage.textContent = error.message || "User deletion could not be completed.";
+      userDeleteMessage.textContent =
+        error.message || "User deletion could not be completed.";
       userDeleteMessage.hidden = false;
     } finally {
       userDeleteSubmit.disabled = userDeleteConfirmation.value !== "DELETE";
@@ -2968,14 +3720,20 @@
     confirmNewsletterStatus.classList.add("is-loading");
     try {
       if (pending.campaignDeletionIds) {
-        const { error } = await client.rpc("admin_delete_newsletter_campaigns", {
-          p_campaign_ids: pending.campaignDeletionIds,
-        });
+        const { error } = await client.rpc(
+          "admin_delete_newsletter_campaigns",
+          {
+            p_campaign_ids: pending.campaignDeletionIds,
+          },
+        );
         if (error) throw error;
         state.newsletter.campaigns.selected.clear();
         newsletterStatusDialog.close();
         state.newsletter.pendingStatusChange = null;
-        await Promise.all([loadNewsletterCampaigns(), loadNewsletterOverviewCampaigns()]);
+        await Promise.all([
+          loadNewsletterCampaigns(),
+          loadNewsletterOverviewCampaigns(),
+        ]);
         setMessage(
           `${pending.campaignDeletionIds.length} campaign${pending.campaignDeletionIds.length === 1 ? "" : "s"} deleted.`,
           "success",
@@ -2990,12 +3748,18 @@
         return;
       }
       if (pending.campaign) {
-        const { data, error } = await client.functions.invoke("newsletter-campaign", { body: { action: "send", campaignId: newsletterCampaignId } });
+        const { data, error } = await client.functions.invoke(
+          "newsletter-campaign",
+          { body: { action: "send", campaignId: newsletterCampaignId } },
+        );
         if (error || data?.error) throw error || new Error(data.error);
         newsletterStatusDialog.close();
         state.newsletter.pendingStatusChange = null;
         resetNewsletterComposerDirty();
-        setMessage(`Newsletter complete. Sent: ${Number(data.successful || 0)}. Failed: ${Number(data.failed || 0)}.`, "success");
+        setMessage(
+          `Newsletter complete. Sent: ${Number(data.successful || 0)}. Failed: ${Number(data.failed || 0)}.`,
+          "success",
+        );
         await loadNewsletterCampaigns();
         return;
       }
@@ -3029,10 +3793,18 @@
       confirmNewsletterStatus.classList.remove("is-loading");
     }
   });
-  document.querySelectorAll("[data-newsletter-view]").forEach((button) => button.addEventListener("click", () => activateNewsletterView(button.dataset.newsletterView)));
-  document.querySelectorAll("[data-open-newsletter-composer]").forEach((button) =>
-    button.addEventListener("click", enterNewsletterEditor),
-  );
+  document
+    .querySelectorAll("[data-newsletter-view]")
+    .forEach((button) =>
+      button.addEventListener("click", () =>
+        activateNewsletterView(button.dataset.newsletterView),
+      ),
+    );
+  document
+    .querySelectorAll("[data-open-newsletter-composer]")
+    .forEach((button) =>
+      button.addEventListener("click", enterNewsletterEditor),
+    );
   newsletterCreateBack.addEventListener("click", () => {
     if (state.newsletter.composerDirty) openDiscardNewsletterDialog();
     else leaveNewsletterComposer();
@@ -3040,7 +3812,7 @@
   newsletterOverviewSummary.addEventListener("click", (event) => {
     const button = event.target.closest('[data-newsletter-view="campaigns"]');
     if (!button) return;
-    document.querySelector('#newsletterCampaignsTab')?.click();
+    document.querySelector("#newsletterCampaignsTab")?.click();
   });
   newsletterCampaignHistory.addEventListener("change", (event) => {
     const input = event.target.closest("[data-campaign-select]");
@@ -3058,8 +3830,12 @@
   newsletterCampaignSelectAll.addEventListener("change", () => {
     const campaigns = state.newsletter.campaigns;
     campaigns.items.forEach((campaign) => {
-      if (String(campaign.status || "draft").toLowerCase() !== "sending" && campaign.id) {
-        if (newsletterCampaignSelectAll.checked) campaigns.selected.add(String(campaign.id));
+      if (
+        String(campaign.status || "draft").toLowerCase() !== "sending" &&
+        campaign.id
+      ) {
+        if (newsletterCampaignSelectAll.checked)
+          campaigns.selected.add(String(campaign.id));
         else campaigns.selected.delete(String(campaign.id));
       }
     });
@@ -3068,35 +3844,52 @@
   selectAllVisibleCampaigns.addEventListener("click", () => {
     const selected = state.newsletter.campaigns.selected;
     state.newsletter.campaigns.items.forEach((campaign) => {
-      if (String(campaign.status || "draft").toLowerCase() !== "sending" && campaign.id) selected.add(String(campaign.id));
+      if (
+        String(campaign.status || "draft").toLowerCase() !== "sending" &&
+        campaign.id
+      )
+        selected.add(String(campaign.id));
     });
     renderNewsletterCampaigns();
   });
-  deleteSelectedCampaigns.addEventListener("click", () => openCampaignDeletionDialog([...state.newsletter.campaigns.selected]));
+  deleteSelectedCampaigns.addEventListener("click", () =>
+    openCampaignDeletionDialog([...state.newsletter.campaigns.selected]),
+  );
   newsletterCampaignPagination.addEventListener("click", (event) => {
     const button = event.target.closest("[data-campaign-page]");
     if (!button || button.disabled) return;
     state.newsletter.campaigns.page = Number(button.dataset.campaignPage);
     state.newsletter.campaigns.selected.clear();
-    loadNewsletterCampaigns().catch(() => setMessage("Campaign history could not be loaded.", "error"));
+    loadNewsletterCampaigns().catch(() =>
+      setMessage("Campaign history could not be loaded.", "error"),
+    );
   });
-  document.querySelector("#previewNewsletter").addEventListener("click", renderNewsletterPreview);
+  document
+    .querySelector("#previewNewsletter")
+    .addEventListener("click", renderNewsletterPreview);
   expandNewsletterPreview.addEventListener("click", () => {
     renderNewsletterPreview();
     newsletterPreviewDialog.showModal();
     closeNewsletterPreview.focus();
   });
-  closeNewsletterPreview.addEventListener("click", () => newsletterPreviewDialog.close());
-  newsletterCampaignForm.elements.subject.addEventListener("input", updateNewsletterComposerDirty);
+  closeNewsletterPreview.addEventListener("click", () =>
+    newsletterPreviewDialog.close(),
+  );
+  newsletterCampaignForm.elements.subject.addEventListener(
+    "input",
+    updateNewsletterComposerDirty,
+  );
   newsletterEditor.addEventListener("input", updateNewsletterComposerDirty);
-  document.querySelectorAll('input[name="recipientMode"]').forEach((input) => input.addEventListener("change", () => {
-    if (!input.checked) return;
-    state.newsletter.recipients.mode = input.value;
-    invalidateNewsletterDraft();
-    renderRecipientSelection();
-    updateNewsletterComposerDirty();
-    if (input.value === "selected") loadRecipientSubscribers();
-  }));
+  document.querySelectorAll('input[name="recipientMode"]').forEach((input) =>
+    input.addEventListener("change", () => {
+      if (!input.checked) return;
+      state.newsletter.recipients.mode = input.value;
+      invalidateNewsletterDraft();
+      renderRecipientSelection();
+      updateNewsletterComposerDirty();
+      if (input.value === "selected") loadRecipientSubscribers();
+    }),
+  );
   function setRecipientDropdownOpen(open, { focusSearch = false } = {}) {
     const recipients = state.newsletter.recipients;
     if (recipients.mode !== "selected") return;
@@ -3104,11 +3897,14 @@
     renderRecipientSelection();
     if (open) {
       loadRecipientSubscribers();
-      if (focusSearch) window.requestAnimationFrame(() => newsletterRecipientSearch.focus());
+      if (focusSearch)
+        window.requestAnimationFrame(() => newsletterRecipientSearch.focus());
     }
   }
   newsletterRecipientTrigger.addEventListener("click", () => {
-    setRecipientDropdownOpen(!state.newsletter.recipients.dropdownOpen, { focusSearch: true });
+    setRecipientDropdownOpen(!state.newsletter.recipients.dropdownOpen, {
+      focusSearch: true,
+    });
   });
   newsletterRecipientTrigger.addEventListener("keydown", (event) => {
     if (event.key !== "ArrowDown") return;
@@ -3119,7 +3915,8 @@
   newsletterRecipientSearch.addEventListener("input", () => {
     window.clearTimeout(newsletterRecipientSearchTimeout);
     newsletterRecipientSearchTimeout = window.setTimeout(() => {
-      state.newsletter.recipients.search = newsletterRecipientSearch.value.trim();
+      state.newsletter.recipients.search =
+        newsletterRecipientSearch.value.trim();
       state.newsletter.recipients.page = 1;
       loadRecipientSubscribers();
     }, 300);
@@ -3128,7 +3925,8 @@
     const option = event.target.closest("[data-recipient-email]");
     if (!option) return;
     const email = option.dataset.recipientEmail;
-    if (state.newsletter.recipients.selected.has(email)) state.newsletter.recipients.selected.delete(email);
+    if (state.newsletter.recipients.selected.has(email))
+      state.newsletter.recipients.selected.delete(email);
     else state.newsletter.recipients.selected.add(email);
     invalidateNewsletterDraft();
     renderRecipientList();
@@ -3138,7 +3936,9 @@
   newsletterRecipientChips.addEventListener("click", (event) => {
     const removeButton = event.target.closest("[data-remove-recipient]");
     if (!removeButton) return;
-    state.newsletter.recipients.selected.delete(removeButton.dataset.removeRecipient);
+    state.newsletter.recipients.selected.delete(
+      removeButton.dataset.removeRecipient,
+    );
     invalidateNewsletterDraft();
     renderRecipientList();
     renderRecipientSelection();
@@ -3151,69 +3951,117 @@
     loadRecipientSubscribers();
   });
   document.addEventListener("pointerdown", (event) => {
-    if (!state.newsletter.recipients.dropdownOpen || newsletterRecipientSelector.contains(event.target)) return;
+    if (
+      !state.newsletter.recipients.dropdownOpen ||
+      newsletterRecipientSelector.contains(event.target)
+    )
+      return;
     setRecipientDropdownOpen(false);
   });
   document.addEventListener("keydown", (event) => {
-    if (event.key !== "Escape" || !state.newsletter.recipients.dropdownOpen) return;
+    if (event.key !== "Escape" || !state.newsletter.recipients.dropdownOpen)
+      return;
     event.preventDefault();
     setRecipientDropdownOpen(false);
     newsletterRecipientTrigger.focus();
   });
   resetNewsletterComposerDirty();
   newsletterCampaignForm.addEventListener("submit", async (event) => {
-    event.preventDefault(); const values = newsletterDraftValues(); if (!values) return;
-    try { await ensureNewsletterDraft(values); resetNewsletterComposerDirty(); setMessage("Newsletter draft created.", "success"); }
-    catch (error) { console.error("Newsletter draft could not be created", error); setMessage("Newsletter draft could not be created. Please try again.", "error"); }
-  });
-  document.querySelector("#testNewsletter").addEventListener("click", async () => {
-    const testButton = document.querySelector("#testNewsletter");
-    const values = newsletterDraftValues({ forTest: true }); if (!values) return;
-    const originalText = testButton.textContent;
-    testButton.disabled = true; testButton.textContent = "Sending test...";
+    event.preventDefault();
+    const values = newsletterDraftValues();
+    if (!values) return;
     try {
-      console.info("Newsletter test email handler started");
-      const campaignId = await ensureNewsletterDraft(values, { setCurrent: false });
-      console.info("Newsletter draft ready", { campaignId });
-      const { data: sessionData, error: sessionError } = await client.auth.getSession();
-      if (sessionError || !sessionData.session?.access_token)
-        throw new Error("Your session has expired. Please sign in again.");
-      console.info("Invoking newsletter-campaign test action", { campaignId });
-      const { data, error } = await client.functions.invoke("newsletter-campaign", {
-        body: { action: "test", campaignId },
-        headers: { Authorization: `Bearer ${sessionData.session.access_token}` },
-      });
-      if (error || data?.error) throw error || new Error(data.error);
-      if (Number(data?.successful) !== 1 || Number(data?.failed) > 0)
-        throw new Error("The test email was not accepted by the email provider.");
+      await ensureNewsletterDraft(values);
       resetNewsletterComposerDirty();
-      setMessage("Test email sent to your signed-in admin address.", "success");
+      setMessage("Newsletter draft created.", "success");
     } catch (error) {
-      const response = error?.context;
-      console.error("Newsletter test email could not be sent", {
-        message: error?.message || "Unknown error",
-        status: response?.status || null,
-      });
-      setMessage(error?.message || "Test email could not be sent. Please try again.", "error");
-    } finally { testButton.disabled = false; testButton.textContent = originalText; }
-  });
-  document.querySelector("#sendNewsletter").addEventListener("click", async () => {
-    if (!newsletterCampaignId) { setMessage("Create the newsletter draft before sending it.", "error"); return; }
-    if (newsletterCampaignTarget?.mode === "selected" && !newsletterCampaignTarget.count) {
-      setMessage("Select at least one recipient.", "error");
-      return;
+      console.error("Newsletter draft could not be created", error);
+      setMessage(
+        "Newsletter draft could not be created. Please try again.",
+        "error",
+      );
     }
-    const target = newsletterCampaignTarget || { mode: "all_active", count: activeSubscriberCount() };
-    const recipientDescription = target.mode === "selected"
-      ? `${target.count} selected subscriber${target.count === 1 ? "" : "s"}`
-      : `all ${target.count} active subscriber${target.count === 1 ? "" : "s"}`;
-    newsletterStatusDialogTitle.textContent = "Send newsletter?";
-    newsletterStatusDialogDescription.textContent = `Send this newsletter to ${recipientDescription}? Subscribers who unsubscribe before delivery will be skipped.`;
-    confirmNewsletterStatus.textContent = "Send Newsletter";
-    cancelNewsletterStatus.textContent = "Cancel";
-    state.newsletter.pendingStatusChange = { campaign: true };
-    newsletterStatusDialog.showModal();
   });
+  document
+    .querySelector("#testNewsletter")
+    .addEventListener("click", async () => {
+      const testButton = document.querySelector("#testNewsletter");
+      const values = newsletterDraftValues({ forTest: true });
+      if (!values) return;
+      const originalText = testButton.textContent;
+      testButton.disabled = true;
+      testButton.textContent = "Sending test...";
+      try {
+        const campaignId = await ensureNewsletterDraft(values, {
+          setCurrent: false,
+        });
+        const { data: sessionData, error: sessionError } =
+          await client.auth.getSession();
+        if (sessionError || !sessionData.session?.access_token)
+          throw new Error("Your session has expired. Please sign in again.");
+        const { data, error } = await client.functions.invoke(
+          "newsletter-campaign",
+          {
+            body: { action: "test", campaignId },
+            headers: {
+              Authorization: `Bearer ${sessionData.session.access_token}`,
+            },
+          },
+        );
+        if (error || data?.error) throw error || new Error(data.error);
+        if (Number(data?.successful) !== 1 || Number(data?.failed) > 0)
+          throw new Error(
+            "The test email was not accepted by the email provider.",
+          );
+        resetNewsletterComposerDirty();
+        setMessage(
+          "Test email sent to your signed-in admin address.",
+          "success",
+        );
+      } catch (error) {
+        const response = error?.context;
+        console.error("Newsletter test email could not be sent", {
+          message: error?.message || "Unknown error",
+          status: response?.status || null,
+        });
+        setMessage(
+          error?.message || "Test email could not be sent. Please try again.",
+          "error",
+        );
+      } finally {
+        testButton.disabled = false;
+        testButton.textContent = originalText;
+      }
+    });
+  document
+    .querySelector("#sendNewsletter")
+    .addEventListener("click", async () => {
+      if (!newsletterCampaignId) {
+        setMessage("Create the newsletter draft before sending it.", "error");
+        return;
+      }
+      if (
+        newsletterCampaignTarget?.mode === "selected" &&
+        !newsletterCampaignTarget.count
+      ) {
+        setMessage("Select at least one recipient.", "error");
+        return;
+      }
+      const target = newsletterCampaignTarget || {
+        mode: "all_active",
+        count: activeSubscriberCount(),
+      };
+      const recipientDescription =
+        target.mode === "selected"
+          ? `${target.count} selected subscriber${target.count === 1 ? "" : "s"}`
+          : `all ${target.count} active subscriber${target.count === 1 ? "" : "s"}`;
+      newsletterStatusDialogTitle.textContent = "Send newsletter?";
+      newsletterStatusDialogDescription.textContent = `Send this newsletter to ${recipientDescription}? Subscribers who unsubscribe before delivery will be skipped.`;
+      confirmNewsletterStatus.textContent = "Send Newsletter";
+      cancelNewsletterStatus.textContent = "Cancel";
+      state.newsletter.pendingStatusChange = { campaign: true };
+      newsletterStatusDialog.showModal();
+    });
   analyticsPeriod.addEventListener("change", () =>
     loadAnalytics().catch((error) => setMessage(error.message, "error")),
   );
@@ -3286,17 +4134,19 @@
     )
       updatePlacementControls();
   });
-  document.querySelector("#eventImageFile")?.addEventListener("change", (event) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    try {
-      const objectUrl = window.iVenueImageUpload.preview(file);
-      eventImagePreviewImage.src = objectUrl;
-    } catch (error) {
-      event.target.value = "";
-      setWizardMessage(error.message || "Image could not be selected.");
-    }
-  });
+  document
+    .querySelector("#eventImageFile")
+    ?.addEventListener("change", (event) => {
+      const file = event.target.files?.[0];
+      if (!file) return;
+      try {
+        const objectUrl = window.iVenueImageUpload.preview(file);
+        eventImagePreviewImage.src = objectUrl;
+      } catch (error) {
+        event.target.value = "";
+        setWizardMessage(error.message || "Image could not be selected.");
+      }
+    });
   catalogForm.elements.image_file?.addEventListener("change", (event) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -3305,10 +4155,12 @@
       catalogForm.elements.image_url.value = "";
       setMessage("Catalog image selected and ready to upload.");
       catalogDialog.querySelector(".catalog-upload-preview")?.remove();
-      catalogDialog.querySelector("h2").insertAdjacentHTML(
-        "afterend",
-        `<img class="catalog-upload-preview" src="${objectUrl}" alt="Selected catalog preview" />`,
-      );
+      catalogDialog
+        .querySelector("h2")
+        .insertAdjacentHTML(
+          "afterend",
+          `<img class="catalog-upload-preview" src="${objectUrl}" alt="Selected catalog preview" />`,
+        );
     } catch (error) {
       event.target.value = "";
       setMessage(error.message || "Image could not be selected.", "error");
@@ -3352,7 +4204,8 @@
     .addEventListener("click", resetCatalogForm);
   addCatalogImage.addEventListener("click", () => {
     resetCatalogForm();
-    if (typeof catalogDialog.showModal === "function") catalogDialog.showModal();
+    if (typeof catalogDialog.showModal === "function")
+      catalogDialog.showModal();
   });
   document.querySelectorAll("[data-homepage-tab]").forEach((tab) => {
     tab.addEventListener("click", () => {
@@ -3392,7 +4245,10 @@
     if (imageFile) {
       try {
         submitButton.disabled = true;
-        const { publicUrl } = await window.iVenueImageUpload.upload(imageFile, "catalog");
+        const { publicUrl } = await window.iVenueImageUpload.upload(
+          imageFile,
+          "catalog",
+        );
         catalogForm.elements.image_url.value = publicUrl;
       } catch (error) {
         setMessage(error.message || "Catalog image upload failed.", "error");
@@ -3456,7 +4312,10 @@
     const item = catalogPendingDeletion;
     if (!item) return;
     try {
-      const result = await client.from("venue_catalog").delete().eq("id", item.id);
+      const result = await client
+        .from("venue_catalog")
+        .delete()
+        .eq("id", item.id);
       if (result.error) throw result.error;
       setMessage("Catalog image deleted.", "success");
       catalogDeleteDialog.close();
@@ -3464,7 +4323,10 @@
       await loadData();
     } catch (error) {
       console.error(error);
-      setMessage(error.message || "Catalog image could not be deleted.", "error");
+      setMessage(
+        error.message || "Catalog image could not be deleted.",
+        "error",
+      );
     }
   });
   eventList.addEventListener("click", async (event) => {

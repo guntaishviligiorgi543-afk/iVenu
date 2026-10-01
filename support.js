@@ -18,6 +18,7 @@
     isLoadingQueue: false,
     isLoadingDetail: false,
     isActionPending: false,
+    unread: new Map(),
   };
 
   const $ = (selector) => document.querySelector(selector);
@@ -247,6 +248,18 @@
 
       top.append(subject, statusBadge(request.status));
 
+      const unreadCount = state.unread.get(request.id) || 0;
+      if (unreadCount > 0) {
+        const unread = document.createElement("span");
+        unread.className = "support-unread-indicator";
+        unread.textContent = "New";
+        unread.setAttribute(
+          "aria-label",
+          `${unreadCount} new customer message${unreadCount === 1 ? "" : "s"}`,
+        );
+        top.append(unread);
+      }
+
       /* IDENTITY */
 
       const identity = document.createElement("span");
@@ -447,6 +460,29 @@
     }
   }
 
+  async function loadUnreadState() {
+    const { data, error } = await client.rpc("get_support_unread_state");
+    if (error) throw error;
+    state.unread = new Map(
+      (data || []).map((item) => [
+        item.request_id,
+        Number(item.unread_count || 0),
+      ]),
+    );
+  }
+
+  async function markRequestRead(requestId) {
+    try {
+      await client.rpc("mark_support_request_read", {
+        p_support_request_id: requestId,
+      });
+      state.unread.set(requestId, 0);
+      renderQueue();
+    } catch (error) {
+      console.error("Unable to mark Support request as read", error);
+    }
+  }
+
   /* =========================================================
      SELECT REQUEST
      ========================================================= */
@@ -488,6 +524,7 @@
 
     try {
       await loadMessages(requestId);
+      await markRequestRead(requestId);
     } catch (error) {
       console.error("Unable to load Support messages", error);
 
@@ -518,6 +555,13 @@
       if (error) throw error;
 
       state.requests = data || [];
+
+      try {
+        await loadUnreadState();
+      } catch (error) {
+        console.error("Unable to load Support unread state", error);
+        state.unread = new Map();
+      }
 
       if (!preserveSelection || !selectedRequest()) {
         state.selectedId = state.requests[0]?.id || null;

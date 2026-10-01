@@ -48,7 +48,9 @@
                 type="button"
               >
                 <svg viewBox="0 0 24 24" aria-hidden="true">
-                  <path d="M12 12a4 4 0 1 0-4-4a4 4 0 0 0 4 4zm0 2c-4.42 0-8 2.24-8 5v1h16v-1c0-2.76-3.58-5-8-5z" />
+                  <path
+                    d="M12 12a4 4 0 1 0-4-4a4 4 0 0 0 4 4zm0 2c-4.42 0-8 2.24-8 5v1h16v-1c0-2.76-3.58-5-8-5z"
+                  />
                 </svg>
                 <span>Profile</span>
               </button>
@@ -96,6 +98,24 @@
 
                 <span>Cart</span>
               </button>
+              <button
+                class="account-sidebar-item"
+                data-section="support"
+                type="button"
+              >
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path
+                    d="M4 4h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-5l-3 3-3-3H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zm2 4v2h12V8zm0 4v2h8v-2z"
+                  />
+                </svg>
+                <span>Support Requests</span>
+                <span
+                  class="support-unread-nav-badge"
+                  id="supportUnreadNavBadge"
+                  hidden
+                  aria-label="Unread Support replies"
+                ></span>
+              </button>
             </nav>
             <div class="account-sidebar-divider"></div>
             <button
@@ -133,13 +153,57 @@
                   <h2 id="overview-title">Overview</h2>
                 </div>
               </div>
-              <div class="overview-tabs" role="tablist" aria-label="Overview sections">
-                <button type="button" role="tab" id="overview-tab-summary" aria-controls="overview-panel-summary" aria-selected="true" data-overview-tab="summary">Summary</button>
-                <button type="button" role="tab" id="overview-tab-reservations" aria-controls="overview-panel-reservations" aria-selected="false" data-overview-tab="reservations">Reservations</button>
-                <button type="button" role="tab" id="overview-tab-activity" aria-controls="overview-panel-activity" aria-selected="false" data-overview-tab="activity">Activity</button>
-                <button type="button" role="tab" id="overview-tab-purchases" aria-controls="overview-panel-purchases" aria-selected="false" data-overview-tab="purchases">Purchases</button>
+              <div
+                class="overview-tabs"
+                role="tablist"
+                aria-label="Overview sections"
+              >
+                <button
+                  type="button"
+                  role="tab"
+                  id="overview-tab-summary"
+                  aria-controls="overview-panel-summary"
+                  aria-selected="true"
+                  data-overview-tab="summary"
+                >
+                  Summary
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  id="overview-tab-reservations"
+                  aria-controls="overview-panel-reservations"
+                  aria-selected="false"
+                  data-overview-tab="reservations"
+                >
+                  Reservations
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  id="overview-tab-activity"
+                  aria-controls="overview-panel-activity"
+                  aria-selected="false"
+                  data-overview-tab="activity"
+                >
+                  Activity
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  id="overview-tab-purchases"
+                  aria-controls="overview-panel-purchases"
+                  aria-selected="false"
+                  data-overview-tab="purchases"
+                >
+                  Purchases
+                </button>
               </div>
-              <div id="overviewDashboard" class="overview-dashboard" aria-busy="true">
+              <div
+                id="overviewDashboard"
+                class="overview-dashboard"
+                aria-busy="true"
+              >
                 <div class="overview-skeleton overview-skeleton--wide"></div>
                 <div class="overview-skeleton"></div>
                 <div class="overview-skeleton"></div>
@@ -188,7 +252,13 @@
                 /></label>
                 <label>Phone <input name="phone" type="tel" /></label>
                 <label>Avatar URL <input name="avatarUrl" type="url" /></label>
-                <label>Upload avatar <input name="avatarFile" type="file" accept="image/jpeg,image/png,image/webp" /></label>
+                <label
+                  >Upload avatar
+                  <input
+                    name="avatarFile"
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                /></label>
                 <div class="form-actions">
                   <button class="auth-submit" type="submit">Save changes</button
                   ><button
@@ -227,7 +297,9 @@
                   <div data-delete-account-warning>
                     <p class="account-eyebrow">Account security</p>
                     <h3 id="deleteAccountDialogTitle">Delete account?</h3>
-                    <p>Are you sure you want to permanently delete your account?</p>
+                    <p>
+                      Are you sure you want to permanently delete your account?
+                    </p>
                     <p class="account-delete-dialog__warning">
                       Once you confirm the deletion with your password, this
                       action cannot be undone.
@@ -256,9 +328,7 @@
                       For security, enter your current password to permanently
                       delete your account.
                     </p>
-                    <label for="deleteAccountPassword"
-                      >Current password</label
-                    >
+                    <label for="deleteAccountPassword">Current password</label>
                     <input
                       id="deleteAccountPassword"
                       name="currentPassword"
@@ -418,7 +488,9 @@
                           address.
                         </p>
                         <div class="email-change-current-email">
-                          <span class="email-change-field-label">Current email</span>
+                          <span class="email-change-field-label"
+                            >Current email</span
+                          >
                           <strong data-current-auth-email>Loading...</strong>
                         </div>
                         <label
@@ -590,6 +662,126 @@
                 <strong>Your cart is empty.</strong
                 ><span>Find your next live show and make it yours.</span
                 ><a class="auth-submit" href="shows.html">Browse events</a>
+              </div>
+            </section>
+
+            <section
+              class="account-section support-dashboard-section"
+              data-section="support"
+              aria-labelledby="support-requests-title"
+            >
+              <div class="account-section-header">
+                <div>
+                  <p class="account-eyebrow">Customer support</p>
+                  <h2 id="support-requests-title">Support Requests</h2>
+                </div>
+                <span class="section-count" id="supportRequestsCount"
+                  >0 requests</span
+                >
+              </div>
+
+              <div class="support-request-toolbar">
+                <div
+                  class="support-request-filters"
+                  role="group"
+                  aria-label="Support request filters"
+                >
+                  <button
+                    class="is-active"
+                    type="button"
+                    data-support-filter="all"
+                  >
+                    All
+                  </button>
+                  <button type="button" data-support-filter="open">Open</button>
+                  <button type="button" data-support-filter="resolved">
+                    Resolved
+                  </button>
+                </div>
+                <a class="auth-submit support-contact-link" href="contact.html"
+                  >Contact Support</a
+                >
+              </div>
+
+              <div id="supportRequestsList" class="dashboard-list">
+                <div class="dashboard-loading">Loading Support requests...</div>
+              </div>
+              <div class="empty-state" id="supportRequestsEmpty" hidden>
+                <strong>You don't have any Support requests yet.</strong>
+                <span>Need help? Send us a Support request.</span>
+                <a class="auth-submit" href="contact.html">Contact Support</a>
+              </div>
+              <div
+                class="support-requests-pagination"
+                id="supportRequestsPagination"
+                aria-label="Support request pagination"
+              ></div>
+
+              <div
+                class="support-request-conversation"
+                id="supportRequestConversation"
+                hidden
+              >
+                <button
+                  class="account-text-button support-conversation-back"
+                  id="supportConversationBack"
+                  type="button"
+                >
+                  ← All Support Requests
+                </button>
+                <header class="support-conversation-header">
+                  <div>
+                    <p
+                      class="account-eyebrow"
+                      id="supportConversationCategory"
+                    ></p>
+                    <h3 id="supportConversationSubject"></h3>
+                    <p id="supportConversationMeta"></p>
+                  </div>
+                  <span
+                    class="support-request-status"
+                    id="supportConversationStatus"
+                  ></span>
+                </header>
+                <div
+                  class="support-customer-message-list"
+                  id="supportCustomerMessageList"
+                  aria-live="polite"
+                ></div>
+                <p
+                  class="support-resolved-message"
+                  id="supportResolvedMessage"
+                  hidden
+                >
+                  This request has been resolved.
+                </p>
+                <form
+                  class="support-customer-reply"
+                  id="supportCustomerReplyForm"
+                  hidden
+                >
+                  <label for="supportCustomerReply">Reply to Support</label>
+                  <textarea
+                    id="supportCustomerReply"
+                    rows="4"
+                    maxlength="10000"
+                    placeholder="Write a reply..."
+                    required
+                  ></textarea>
+                  <div>
+                    <span id="supportCustomerReplyStatus" role="status"></span>
+                    <button
+                      class="auth-submit"
+                      id="supportCustomerReplySubmit"
+                      type="submit"
+                    >
+                      Send reply
+                    </button>
+                  </div>
+                </form>
+                <a class="auth-submit support-contact-link" href="contact.html"
+                  >Contact Support</a
+                >
               </div>
             </section>
           </div>

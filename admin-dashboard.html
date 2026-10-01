@@ -56,6 +56,7 @@
           Homepage Content
         </button>
         <button data-panel="users" type="button">Users</button>
+        <button data-panel="support" type="button">Support Management</button>
         <button data-panel="newsletter" type="button">Newsletter</button>
         <button data-panel="add-event" type="button">Add Event</button>
         <button data-panel="stats" type="button">Ticket statistics</button>
@@ -110,22 +111,48 @@
           <h2 id="newsletterStatusDialogTitle">Update subscriber status?</h2>
           <p id="newsletterStatusDialogDescription"></p>
           <div class="admin-delete-dialog__actions">
-            <button class="admin-outline" id="cancelNewsletterStatus" type="button">
+            <button
+              class="admin-outline"
+              id="cancelNewsletterStatus"
+              type="button"
+            >
               Cancel
             </button>
-            <button class="auth-submit" id="confirmNewsletterStatus" type="button">
+            <button
+              class="auth-submit"
+              id="confirmNewsletterStatus"
+              type="button"
+            >
               Update status
             </button>
           </div>
         </form>
       </dialog>
-      <dialog class="newsletter-preview-dialog" id="newsletterPreviewDialog" aria-labelledby="newsletterPreviewDialogTitle">
+      <dialog
+        class="newsletter-preview-dialog"
+        id="newsletterPreviewDialog"
+        aria-labelledby="newsletterPreviewDialogTitle"
+      >
         <section class="newsletter-preview-dialog__panel">
           <header class="newsletter-preview-dialog__header">
-            <div><p class="admin-eyebrow">Newsletter preview</p><h2 id="newsletterPreviewDialogTitle">Email preview</h2></div>
-            <button class="newsletter-preview-dialog__close" id="closeNewsletterPreview" type="button" aria-label="Close preview" title="Close preview">&times;</button>
+            <div>
+              <p class="admin-eyebrow">Newsletter preview</p>
+              <h2 id="newsletterPreviewDialogTitle">Email preview</h2>
+            </div>
+            <button
+              class="newsletter-preview-dialog__close"
+              id="closeNewsletterPreview"
+              type="button"
+              aria-label="Close preview"
+              title="Close preview"
+            >
+              &times;
+            </button>
           </header>
-          <div class="newsletter-preview-dialog__canvas" id="newsletterExpandedPreview"></div>
+          <div
+            class="newsletter-preview-dialog__canvas"
+            id="newsletterExpandedPreview"
+          ></div>
         </section>
       </dialog>
 
@@ -255,16 +282,60 @@
           </div>
         </div>
         <div class="homepage-summary" aria-label="Homepage content summary">
-          <article class="homepage-summary-card"><span>Hero Slider</span><strong id="homepageHeroSummaryCount">0 events</strong><small id="homepageHeroSummaryMode">Latest Added</small></article>
-          <article class="homepage-summary-card"><span>Upcoming Shows</span><strong id="homepageUpcomingSummaryCount">0 events</strong><small>Nearest-date ordering</small></article>
-          <article class="homepage-summary-card"><span>Venue Catalog</span><strong id="homepageCatalogSummaryCount">0 images</strong><small>Homepage gallery</small></article>
+          <article class="homepage-summary-card">
+            <span>Hero Slider</span
+            ><strong id="homepageHeroSummaryCount">0 events</strong
+            ><small id="homepageHeroSummaryMode">Latest Added</small>
+          </article>
+          <article class="homepage-summary-card">
+            <span>Upcoming Shows</span
+            ><strong id="homepageUpcomingSummaryCount">0 events</strong
+            ><small>Nearest-date ordering</small>
+          </article>
+          <article class="homepage-summary-card">
+            <span>Venue Catalog</span
+            ><strong id="homepageCatalogSummaryCount">0 images</strong
+            ><small>Homepage gallery</small>
+          </article>
         </div>
-        <div class="homepage-tabs" role="tablist" aria-label="Homepage management sections">
-          <button class="is-active" type="button" role="tab" aria-selected="true" aria-controls="homepageHeroTab" data-homepage-tab="hero">Hero Slider</button>
-          <button type="button" role="tab" aria-selected="false" aria-controls="homepageUpcomingTab" data-homepage-tab="upcoming">Upcoming Shows</button>
-          <button type="button" role="tab" aria-selected="false" aria-controls="homepageCatalogTab" data-homepage-tab="catalog">Venue Catalog</button>
+        <div
+          class="homepage-tabs"
+          role="tablist"
+          aria-label="Homepage management sections"
+        >
+          <button
+            class="is-active"
+            type="button"
+            role="tab"
+            aria-selected="true"
+            aria-controls="homepageHeroTab"
+            data-homepage-tab="hero"
+          >
+            Hero Slider
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected="false"
+            aria-controls="homepageUpcomingTab"
+            data-homepage-tab="upcoming"
+          >
+            Upcoming Shows
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected="false"
+            aria-controls="homepageCatalogTab"
+            data-homepage-tab="catalog"
+          >
+            Venue Catalog
+          </button>
         </div>
-        <section id="homepageHeroTab" class="admin-content-block homepage-tab is-active" role="tabpanel"
+        <section
+          id="homepageHeroTab"
+          class="admin-content-block homepage-tab is-active"
+          role="tabpanel"
           aria-labelledby="heroContentHeading"
         >
           <div class="admin-content-block__heading">
@@ -302,7 +373,11 @@
           </form>
         </section>
 
-        <section id="homepageUpcomingTab" class="admin-content-block homepage-tab" role="tabpanel" hidden
+        <section
+          id="homepageUpcomingTab"
+          class="admin-content-block homepage-tab"
+          role="tabpanel"
+          hidden
           aria-labelledby="upcomingShowsHeading"
         >
           <div class="admin-content-block__heading">
@@ -330,7 +405,11 @@
           </form>
         </section>
 
-        <section id="homepageCatalogTab" class="admin-content-block homepage-tab" role="tabpanel" hidden
+        <section
+          id="homepageCatalogTab"
+          class="admin-content-block homepage-tab"
+          role="tabpanel"
+          hidden
           aria-labelledby="venueCatalogHeading"
         >
           <div class="admin-content-block__heading">
@@ -339,7 +418,9 @@
           </div>
           <div class="homepage-catalog-heading">
             <p>Manage the images displayed in the venue gallery.</p>
-            <button class="auth-submit" id="addCatalogImage" type="button">+ Add Image</button>
+            <button class="auth-submit" id="addCatalogImage" type="button">
+              + Add Image
+            </button>
           </div>
           <div class="admin-catalog-grid" id="catalogList"></div>
           <div class="admin-catalog-more" id="catalogMore" hidden>
@@ -352,87 +433,563 @@
             </button>
           </div>
         </section>
-        <dialog class="admin-delete-dialog homepage-catalog-dialog" id="catalogDialog" aria-labelledby="catalogDialogTitle">
+        <dialog
+          class="admin-delete-dialog homepage-catalog-dialog"
+          id="catalogDialog"
+          aria-labelledby="catalogDialogTitle"
+        >
           <form class="admin-delete-dialog__panel admin-form" id="catalogForm">
             <input type="hidden" name="id" />
             <p class="admin-eyebrow">Venue catalog</p>
             <h2 id="catalogDialogTitle">Add Venue Image</h2>
             <label>Image URL<input name="image_url" type="url" /></label>
-            <label>Upload from device<input name="image_file" type="file" accept="image/jpeg,image/png,image/webp" /></label>
-            <label>Display order<input name="display_order" type="number" min="1" required /></label>
+            <label
+              >Upload from device<input
+                name="image_file"
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+            /></label>
+            <label
+              >Display order<input
+                name="display_order"
+                type="number"
+                min="1"
+                required
+            /></label>
             <div class="admin-delete-dialog__actions">
-              <button class="admin-outline" id="cancelCatalogEdit" type="button">Cancel</button>
+              <button
+                class="admin-outline"
+                id="cancelCatalogEdit"
+                type="button"
+              >
+                Cancel
+              </button>
               <button class="auth-submit" type="submit">Save Image</button>
             </div>
           </form>
         </dialog>
-        <dialog class="admin-delete-dialog" id="catalogDeleteDialog" aria-labelledby="catalogDeleteDialogTitle">
+        <dialog
+          class="admin-delete-dialog"
+          id="catalogDeleteDialog"
+          aria-labelledby="catalogDeleteDialogTitle"
+        >
           <form class="admin-delete-dialog__panel" method="dialog">
             <p class="admin-eyebrow">Venue catalog</p>
             <h2 id="catalogDeleteDialogTitle">Delete image?</h2>
-            <p>This will permanently delete this catalog image. This action cannot be undone.</p>
+            <p>
+              This will permanently delete this catalog image. This action
+              cannot be undone.
+            </p>
             <div class="admin-delete-dialog__actions">
-              <button class="admin-outline" id="cancelCatalogDelete" type="button">Cancel</button>
-              <button class="admin-danger-button" id="confirmCatalogDelete" type="button">Delete Image</button>
+              <button
+                class="admin-outline"
+                id="cancelCatalogDelete"
+                type="button"
+              >
+                Cancel
+              </button>
+              <button
+                class="admin-danger-button"
+                id="confirmCatalogDelete"
+                type="button"
+              >
+                Delete Image
+              </button>
             </div>
           </form>
         </dialog>
       </section>
 
       <section class="admin-panel" data-panel="users">
-        <div class="admin-panel-heading"><div><p class="admin-eyebrow">Account oversight</p><h2>Users Management</h2><p>Review user accounts, recorded violations, and enforcement history.</p></div></div>
+        <div class="admin-panel-heading">
+          <div>
+            <p class="admin-eyebrow">Account oversight</p>
+            <h2>Users Management</h2>
+            <p>
+              Review user accounts, recorded violations, and enforcement
+              history.
+            </p>
+          </div>
+        </div>
         <div class="admin-metrics" id="usersMetrics" aria-live="polite"></div>
         <div class="users-controls">
-          <label>Search<input id="usersSearch" type="search" placeholder="Name or email" autocomplete="off" /></label>
-          <label>Account<select id="usersAccountFilter"><option value="">All account states</option><option value="active">Active</option><option value="temporarily_banned">Temporarily Banned</option><option value="permanently_banned">Permanently Banned</option></select></label>
-          <label>Profile<select id="usersProfileFilter"><option value="">All profiles</option><option value="complete">Complete</option><option value="incomplete">Incomplete</option></select></label>
-          <label>Newsletter<select id="usersNewsletterFilter"><option value="">All</option><option value="subscribed">Subscribed</option><option value="not_subscribed">Not subscribed</option></select></label>
-          <label>Policy<select id="usersPolicyFilter"><option value="">All</option><option value="clean">Clean</option><option value="warning">Warning</option><option value="review">Review</option></select></label>
-          <label>Sort<select id="usersSort"><option value="recent">Newest</option><option value="oldest">Oldest</option><option value="name_asc">Name A–Z</option><option value="name_desc">Name Z–A</option></select></label>
+          <label
+            >Search<input
+              id="usersSearch"
+              type="search"
+              placeholder="Name or email"
+              autocomplete="off"
+          /></label>
+          <label
+            >Account<select id="usersAccountFilter">
+              <option value="">All account states</option>
+              <option value="active">Active</option>
+              <option value="temporarily_banned">Temporarily Banned</option>
+              <option value="permanently_banned">Permanently Banned</option>
+            </select></label
+          >
+          <label
+            >Profile<select id="usersProfileFilter">
+              <option value="">All profiles</option>
+              <option value="complete">Complete</option>
+              <option value="incomplete">Incomplete</option>
+            </select></label
+          >
+          <label
+            >Newsletter<select id="usersNewsletterFilter">
+              <option value="">All</option>
+              <option value="subscribed">Subscribed</option>
+              <option value="not_subscribed">Not subscribed</option>
+            </select></label
+          >
+          <label
+            >Policy<select id="usersPolicyFilter">
+              <option value="">All</option>
+              <option value="clean">Clean</option>
+              <option value="warning">Warning</option>
+              <option value="review">Review</option>
+            </select></label
+          >
+          <label
+            >Sort<select id="usersSort">
+              <option value="recent">Newest</option>
+              <option value="oldest">Oldest</option>
+              <option value="name_asc">Name A–Z</option>
+              <option value="name_desc">Name Z–A</option>
+            </select></label
+          >
         </div>
         <p class="newsletter-table-status" id="usersStatus" role="status"></p>
-        <div class="newsletter-table-wrap users-table-wrap"><table class="newsletter-table users-table"><thead><tr><th>User</th><th>Account status</th><th>Profile</th><th>Newsletter</th><th>Policy</th><th>Top category</th><th>Actions</th></tr></thead><tbody id="usersList"></tbody></table></div>
+        <div class="newsletter-table-wrap users-table-wrap">
+          <table class="newsletter-table users-table">
+            <thead>
+              <tr>
+                <th>User</th>
+                <th>Account status</th>
+                <th>Profile</th>
+                <th>Newsletter</th>
+                <th>Policy</th>
+                <th>Top category</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="usersList"></tbody>
+          </table>
+        </div>
         <div class="users-mobile-list" id="usersMobileList"></div>
-        <div class="admin-pagination" id="usersPagination" aria-label="Users pagination"></div>
+        <div
+          class="admin-pagination"
+          id="usersPagination"
+          aria-label="Users pagination"
+        ></div>
       </section>
 
-      <dialog class="admin-delete-dialog users-dialog" id="userDetailDialog"><section class="admin-delete-dialog__panel"><button class="newsletter-preview-dialog__close users-dialog-close" type="button" aria-label="Close user details">&times;</button><p class="admin-eyebrow">User details</p><h2 id="userDetailTitle">User</h2><div id="userDetailContent"></div><div class="admin-delete-dialog__actions"><button class="admin-outline" id="addViolationButton" type="button">Add Violation</button><button class="admin-outline" id="banUserButton" type="button">Ban User</button><button class="admin-outline" id="unbanUserButton" type="button" hidden>Unban User</button><button class="admin-danger-button" id="userDeleteButton" type="button" disabled title="Disabled until production deletion backend verification">Delete User (disabled)</button></div></section></dialog>
-      <dialog class="admin-delete-dialog users-dialog" id="userViolationDialog"><form class="admin-delete-dialog__panel" id="userViolationForm"><p class="admin-eyebrow">Policy violation</p><h2>Add Violation</h2><label>Type<input name="type" maxlength="120" required /></label><label>Severity<select name="severity"><option value="low">Low — 1 point</option><option value="medium">Medium — 2 points</option><option value="severe">Severe — 4 points</option></select></label><label>Reason<textarea name="reason" maxlength="2000" required></textarea></label><label>Internal note (optional)<textarea name="note"></textarea></label><label>Expires at (optional)<input name="expiresAt" type="datetime-local" /></label><div class="admin-delete-dialog__actions"><button class="admin-outline" type="button" data-close-violation>Cancel</button><button class="auth-submit" type="submit">Add Violation</button></div></form></dialog>
-      <dialog class="admin-delete-dialog users-dialog" id="userBanDialog"><form class="admin-delete-dialog__panel" id="userBanForm"><p class="admin-eyebrow">Account enforcement</p><h2 id="userBanDialogTitle">Ban user</h2><label id="userBanReasonLabel">Reason<textarea name="reason" maxlength="2000"></textarea></label><label id="userBanDurationLabel">Duration<select name="duration"><option value="24">24 hours</option><option value="168">7 days</option><option value="720">30 days</option><option value="-1">Permanent</option></select></label><label>Internal note (optional)<textarea name="note"></textarea></label><p class="admin-delete-dialog__message" id="userBanMessage" hidden></p><div class="admin-delete-dialog__actions"><button class="admin-outline" type="button" data-close-ban>Cancel</button><button class="admin-danger-button" type="submit" id="userBanSubmit">Ban User</button></div></form></dialog>
+      <section class="admin-panel" data-panel="support">
+        <div class="admin-panel-heading">
+          <div>
+            <p class="admin-eyebrow">Access oversight</p>
+            <h2>Support Management</h2>
+            <p>Manage Support employee access and review membership history.</p>
+          </div>
+        </div>
 
-      <dialog class="admin-delete-dialog users-dialog" id="userDeleteDialog"><form class="admin-delete-dialog__panel" id="userDeleteForm"><p class="admin-eyebrow">Permanent deletion</p><h2>Delete User?</h2><p>This permanently deletes the user's Authentication account and related account data. Type <strong>DELETE</strong> to confirm.</p><label>Confirmation<input id="userDeleteConfirmation" name="confirmation" autocomplete="off" required /></label><p class="admin-delete-dialog__message" id="userDeleteMessage" role="alert" hidden></p><div class="admin-delete-dialog__actions"><button class="admin-outline" type="button" data-close-user-delete>Cancel</button><button class="admin-danger-button" type="submit" id="userDeleteSubmit" disabled>Delete User</button></div></form></dialog>
+        <div
+          class="admin-metrics support-metrics"
+          id="supportMetrics"
+          aria-live="polite"
+        ></div>
+
+        <section class="admin-content-block support-management-block">
+          <div class="admin-content-block__heading">
+            <p class="admin-eyebrow">Current access</p>
+            <h3>Active Support Employees</h3>
+          </div>
+          <p
+            class="newsletter-table-status"
+            id="supportActiveStatus"
+            role="status"
+          ></p>
+          <div class="newsletter-table-wrap support-table-wrap">
+            <table class="newsletter-table support-table">
+              <thead>
+                <tr>
+                  <th>Employee</th>
+                  <th>Email</th>
+                  <th>Granted</th>
+                  <th>Granted by</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="supportActiveList"></tbody>
+            </table>
+          </div>
+          <div class="support-mobile-list" id="supportActiveMobileList"></div>
+        </section>
+
+        <section
+          class="admin-content-block support-management-block support-add-block"
+        >
+          <div class="admin-content-block__heading">
+            <p class="admin-eyebrow">Access provisioning</p>
+            <h3>Add Support Employee</h3>
+            <p>
+              Search an existing iVenue user. Support identity and audit data
+              are resolved server-side.
+            </p>
+          </div>
+          <label class="support-user-search"
+            >Search users by name or email<input
+              id="supportUserSearch"
+              type="search"
+              placeholder="Search users by name or email..."
+              autocomplete="off"
+          /></label>
+          <p
+            class="newsletter-table-status"
+            id="supportUserSearchStatus"
+            role="status"
+          >
+            Search for an existing user to grant Support access.
+          </p>
+          <div class="support-user-results" id="supportUserResults"></div>
+        </section>
+
+        <section class="admin-content-block support-management-block">
+          <div class="admin-content-block__heading">
+            <p class="admin-eyebrow">Audit trail</p>
+            <h3>Membership History</h3>
+          </div>
+          <div class="support-history-controls">
+            <label
+              >Search memberships<input
+                id="supportHistorySearch"
+                type="search"
+                placeholder="Name or email"
+                autocomplete="off"
+            /></label>
+            <label
+              >Status<select id="supportHistoryFilter">
+                <option value="all">All</option>
+                <option value="active">Active</option>
+                <option value="revoked">Revoked</option>
+              </select></label
+            >
+          </div>
+          <p
+            class="newsletter-table-status"
+            id="supportHistoryStatus"
+            role="status"
+          ></p>
+          <div class="newsletter-table-wrap support-table-wrap">
+            <table class="newsletter-table support-table">
+              <thead>
+                <tr>
+                  <th>Employee</th>
+                  <th>Email</th>
+                  <th>Granted</th>
+                  <th>Granted by</th>
+                  <th>Revoked</th>
+                  <th>Revoked by</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="supportMembershipList"></tbody>
+            </table>
+          </div>
+          <div
+            class="support-mobile-list"
+            id="supportMembershipMobileList"
+          ></div>
+          <div
+            class="admin-pagination"
+            id="supportMembershipPagination"
+            aria-label="Support membership pagination"
+          ></div>
+        </section>
+      </section>
+
+      <dialog class="admin-delete-dialog users-dialog" id="userDetailDialog">
+        <section class="admin-delete-dialog__panel">
+          <button
+            class="newsletter-preview-dialog__close users-dialog-close"
+            type="button"
+            aria-label="Close user details"
+          >
+            &times;
+          </button>
+          <p class="admin-eyebrow">User details</p>
+          <h2 id="userDetailTitle">User</h2>
+          <div id="userDetailContent"></div>
+          <div class="admin-delete-dialog__actions">
+            <button class="admin-outline" id="addViolationButton" type="button">
+              Add Violation</button
+            ><button class="admin-outline" id="banUserButton" type="button">
+              Ban User</button
+            ><button
+              class="admin-outline"
+              id="unbanUserButton"
+              type="button"
+              hidden
+            >
+              Unban User</button
+            ><button
+              class="admin-danger-button"
+              id="userDeleteButton"
+              type="button"
+              disabled
+              title="Disabled until production deletion backend verification"
+            >
+              Delete User (disabled)
+            </button>
+          </div>
+        </section>
+      </dialog>
+      <dialog class="admin-delete-dialog users-dialog" id="userViolationDialog">
+        <form class="admin-delete-dialog__panel" id="userViolationForm">
+          <p class="admin-eyebrow">Policy violation</p>
+          <h2>Add Violation</h2>
+          <label>Type<input name="type" maxlength="120" required /></label
+          ><label
+            >Severity<select name="severity">
+              <option value="low">Low — 1 point</option>
+              <option value="medium">Medium — 2 points</option>
+              <option value="severe">Severe — 4 points</option>
+            </select></label
+          ><label
+            >Reason<textarea
+              name="reason"
+              maxlength="2000"
+              required
+            ></textarea></label
+          ><label
+            >Internal note (optional)<textarea name="note"></textarea></label
+          ><label
+            >Expires at (optional)<input name="expiresAt" type="datetime-local"
+          /></label>
+          <div class="admin-delete-dialog__actions">
+            <button class="admin-outline" type="button" data-close-violation>
+              Cancel</button
+            ><button class="auth-submit" type="submit">Add Violation</button>
+          </div>
+        </form>
+      </dialog>
+      <dialog class="admin-delete-dialog users-dialog" id="userBanDialog">
+        <form class="admin-delete-dialog__panel" id="userBanForm">
+          <p class="admin-eyebrow">Account enforcement</p>
+          <h2 id="userBanDialogTitle">Ban user</h2>
+          <label id="userBanReasonLabel"
+            >Reason<textarea name="reason" maxlength="2000"></textarea></label
+          ><label id="userBanDurationLabel"
+            >Duration<select name="duration">
+              <option value="24">24 hours</option>
+              <option value="168">7 days</option>
+              <option value="720">30 days</option>
+              <option value="-1">Permanent</option>
+            </select></label
+          ><label
+            >Internal note (optional)<textarea name="note"></textarea>
+          </label>
+          <p
+            class="admin-delete-dialog__message"
+            id="userBanMessage"
+            hidden
+          ></p>
+          <div class="admin-delete-dialog__actions">
+            <button class="admin-outline" type="button" data-close-ban>
+              Cancel</button
+            ><button
+              class="admin-danger-button"
+              type="submit"
+              id="userBanSubmit"
+            >
+              Ban User
+            </button>
+          </div>
+        </form>
+      </dialog>
+
+      <dialog class="admin-delete-dialog users-dialog" id="userDeleteDialog">
+        <form class="admin-delete-dialog__panel" id="userDeleteForm">
+          <p class="admin-eyebrow">Permanent deletion</p>
+          <h2>Delete User?</h2>
+          <p>
+            This permanently deletes the user's Authentication account and
+            related account data. Type <strong>DELETE</strong> to confirm.
+          </p>
+          <label
+            >Confirmation<input
+              id="userDeleteConfirmation"
+              name="confirmation"
+              autocomplete="off"
+              required
+          /></label>
+          <p
+            class="admin-delete-dialog__message"
+            id="userDeleteMessage"
+            role="alert"
+            hidden
+          ></p>
+          <div class="admin-delete-dialog__actions">
+            <button class="admin-outline" type="button" data-close-user-delete>
+              Cancel</button
+            ><button
+              class="admin-danger-button"
+              type="submit"
+              id="userDeleteSubmit"
+              disabled
+            >
+              Delete User
+            </button>
+          </div>
+        </form>
+      </dialog>
+
+      <dialog
+        class="admin-delete-dialog users-dialog support-membership-dialog"
+        id="supportMembershipDialog"
+        aria-labelledby="supportMembershipDialogTitle"
+      >
+        <section class="admin-delete-dialog__panel">
+          <p class="admin-eyebrow" id="supportMembershipDialogEyebrow">
+            Support access
+          </p>
+          <h2 id="supportMembershipDialogTitle">Update Support access?</h2>
+          <p id="supportMembershipDialogDescription"></p>
+          <p
+            class="admin-delete-dialog__message"
+            id="supportMembershipDialogMessage"
+            role="alert"
+            hidden
+          ></p>
+          <div class="admin-delete-dialog__actions">
+            <button
+              class="admin-outline"
+              id="cancelSupportMembership"
+              type="button"
+            >
+              Cancel
+            </button>
+            <button
+              class="auth-submit"
+              id="confirmSupportMembership"
+              type="button"
+            >
+              Confirm
+            </button>
+          </div>
+        </section>
+      </dialog>
 
       <section class="admin-panel" data-panel="newsletter">
         <div class="admin-panel-heading">
           <div>
             <p class="admin-eyebrow">Audience</p>
             <h2>Newsletter</h2>
-            <p>Manage your audience, campaigns, and newsletter drafts in one focused workspace.</p>
+            <p>
+              Manage your audience, campaigns, and newsletter drafts in one
+              focused workspace.
+            </p>
           </div>
         </div>
-        <nav class="newsletter-tabs" aria-label="Newsletter sections" role="tablist">
-          <button class="is-active" id="newsletterOverviewTab" type="button" data-newsletter-view="overview" role="tab" aria-selected="true" aria-controls="newsletterOverviewPanel">Overview</button>
-          <button id="newsletterSubscribersTab" type="button" data-newsletter-view="subscribers" role="tab" aria-selected="false" aria-controls="newsletterSubscribersPanel" tabindex="-1">Subscribers</button>
-          <button id="newsletterCampaignsTab" type="button" data-newsletter-view="campaigns" role="tab" aria-selected="false" aria-controls="newsletterCampaignsPanel" tabindex="-1">Campaigns</button>
+        <nav
+          class="newsletter-tabs"
+          aria-label="Newsletter sections"
+          role="tablist"
+        >
+          <button
+            class="is-active"
+            id="newsletterOverviewTab"
+            type="button"
+            data-newsletter-view="overview"
+            role="tab"
+            aria-selected="true"
+            aria-controls="newsletterOverviewPanel"
+          >
+            Overview
+          </button>
+          <button
+            id="newsletterSubscribersTab"
+            type="button"
+            data-newsletter-view="subscribers"
+            role="tab"
+            aria-selected="false"
+            aria-controls="newsletterSubscribersPanel"
+            tabindex="-1"
+          >
+            Subscribers
+          </button>
+          <button
+            id="newsletterCampaignsTab"
+            type="button"
+            data-newsletter-view="campaigns"
+            role="tab"
+            aria-selected="false"
+            aria-controls="newsletterCampaignsPanel"
+            tabindex="-1"
+          >
+            Campaigns
+          </button>
         </nav>
 
-        <section class="admin-content-block newsletter-view is-active newsletter-overview" id="newsletterOverviewPanel" data-newsletter-view-panel="overview" role="tabpanel" aria-labelledby="newsletterOverviewTab">
+        <section
+          class="admin-content-block newsletter-view is-active newsletter-overview"
+          id="newsletterOverviewPanel"
+          data-newsletter-view-panel="overview"
+          role="tabpanel"
+          aria-labelledby="newsletterOverviewTab"
+        >
           <div class="admin-content-block__heading newsletter-view-heading">
-            <div><h3>Newsletter Overview</h3><p>Monitor audience growth and move quickly into your next campaign.</p></div>
-            <button class="auth-submit" type="button" data-open-newsletter-composer>Create Newsletter</button>
+            <div>
+              <h3>Newsletter Overview</h3>
+              <p>
+                Monitor audience growth and move quickly into your next
+                campaign.
+              </p>
+            </div>
+            <button
+              class="auth-submit"
+              type="button"
+              data-open-newsletter-composer
+            >
+              Create Newsletter
+            </button>
           </div>
-          <div class="admin-metrics newsletter-metrics" id="newsletterMetrics" aria-live="polite"></div>
-          <div class="newsletter-overview-grid" id="newsletterOverviewSummary" aria-live="polite"></div>
+          <div
+            class="admin-metrics newsletter-metrics"
+            id="newsletterMetrics"
+            aria-live="polite"
+          ></div>
+          <div
+            class="newsletter-overview-grid"
+            id="newsletterOverviewSummary"
+            aria-live="polite"
+          ></div>
         </section>
 
-        <section class="admin-content-block newsletter-view" id="newsletterSubscribersPanel" data-newsletter-view-panel="subscribers" role="tabpanel" aria-labelledby="newsletterSubscribersTab" hidden>
+        <section
+          class="admin-content-block newsletter-view"
+          id="newsletterSubscribersPanel"
+          data-newsletter-view-panel="subscribers"
+          role="tabpanel"
+          aria-labelledby="newsletterSubscribersTab"
+          hidden
+        >
           <div class="admin-content-block__heading newsletter-view-heading">
-            <div><h3>Subscribers</h3><p>Search, filter, and manage subscriber status.</p></div>
+            <div>
+              <h3>Subscribers</h3>
+              <p>Search, filter, and manage subscriber status.</p>
+            </div>
           </div>
           <div class="newsletter-controls">
             <label>
               Search subscribers
-              <input id="newsletterSearch" type="search" placeholder="Search subscribers..." autocomplete="off" />
+              <input
+                id="newsletterSearch"
+                type="search"
+                placeholder="Search subscribers..."
+                autocomplete="off"
+              />
             </label>
             <label>
               Status
@@ -443,7 +1000,12 @@
               </select>
             </label>
           </div>
-          <p class="newsletter-table-status" id="newsletterTableStatus" role="status" aria-live="polite"></p>
+          <p
+            class="newsletter-table-status"
+            id="newsletterTableStatus"
+            role="status"
+            aria-live="polite"
+          ></p>
           <div class="newsletter-table-wrap">
             <table class="newsletter-table">
               <thead>
@@ -457,81 +1019,317 @@
               <tbody id="newsletterSubscriberList"></tbody>
             </table>
           </div>
-          <div class="admin-pagination newsletter-pagination" id="newsletterPagination" aria-label="Subscribers pagination"></div>
+          <div
+            class="admin-pagination newsletter-pagination"
+            id="newsletterPagination"
+            aria-label="Subscribers pagination"
+          ></div>
         </section>
 
-        <section class="admin-content-block newsletter-view" id="newsletterCampaignsPanel" data-newsletter-view-panel="campaigns" role="tabpanel" aria-labelledby="newsletterCampaignsTab" hidden>
+        <section
+          class="admin-content-block newsletter-view"
+          id="newsletterCampaignsPanel"
+          data-newsletter-view-panel="campaigns"
+          role="tabpanel"
+          aria-labelledby="newsletterCampaignsTab"
+          hidden
+        >
           <div class="admin-content-block__heading newsletter-view-heading">
-            <div><h3>Campaigns</h3><p>Review drafts and delivery outcomes for recent newsletter campaigns.</p></div>
-            <button class="auth-submit" type="button" data-open-newsletter-composer>Create Newsletter</button>
+            <div>
+              <h3>Campaigns</h3>
+              <p>
+                Review drafts and delivery outcomes for recent newsletter
+                campaigns.
+              </p>
+            </div>
+            <button
+              class="auth-submit"
+              type="button"
+              data-open-newsletter-composer
+            >
+              Create Newsletter
+            </button>
           </div>
           <div class="newsletter-campaign-controls">
-            <button class="admin-outline newsletter-action" id="selectAllVisibleCampaigns" type="button">Select All Visible</button>
+            <button
+              class="admin-outline newsletter-action"
+              id="selectAllVisibleCampaigns"
+              type="button"
+            >
+              Select All Visible
+            </button>
           </div>
-          <div class="newsletter-campaign-bulk-actions" id="newsletterCampaignBulkActions" hidden>
-            <span id="newsletterCampaignSelectionCount">0 campaigns selected</span>
-            <button class="newsletter-delete-button" id="deleteSelectedCampaigns" type="button">Delete Selected</button>
+          <div
+            class="newsletter-campaign-bulk-actions"
+            id="newsletterCampaignBulkActions"
+            hidden
+          >
+            <span id="newsletterCampaignSelectionCount"
+              >0 campaigns selected</span
+            >
+            <button
+              class="newsletter-delete-button"
+              id="deleteSelectedCampaigns"
+              type="button"
+            >
+              Delete Selected
+            </button>
           </div>
-          <p class="newsletter-table-status" id="newsletterCampaignStatus" role="status" aria-live="polite"></p>
+          <p
+            class="newsletter-table-status"
+            id="newsletterCampaignStatus"
+            role="status"
+            aria-live="polite"
+          ></p>
           <div class="newsletter-table-wrap newsletter-campaign-table-wrap">
             <table class="newsletter-table newsletter-campaign-table">
-              <thead><tr><th class="newsletter-campaign-select-column"><input id="newsletterCampaignSelectAll" type="checkbox" aria-label="Select all visible deletable campaigns" /></th><th>Subject</th><th>Status</th><th>Created</th><th>Sent</th><th>Recipients</th><th>Successful</th><th>Failed</th><th>Actions</th></tr></thead>
+              <thead>
+                <tr>
+                  <th class="newsletter-campaign-select-column">
+                    <input
+                      id="newsletterCampaignSelectAll"
+                      type="checkbox"
+                      aria-label="Select all visible deletable campaigns"
+                    />
+                  </th>
+                  <th>Subject</th>
+                  <th>Status</th>
+                  <th>Created</th>
+                  <th>Sent</th>
+                  <th>Recipients</th>
+                  <th>Successful</th>
+                  <th>Failed</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
               <tbody id="newsletterCampaignHistory"></tbody>
             </table>
           </div>
-          <div class="admin-pagination newsletter-pagination" id="newsletterCampaignPagination" aria-label="Campaigns pagination"></div>
+          <div
+            class="admin-pagination newsletter-pagination"
+            id="newsletterCampaignPagination"
+            aria-label="Campaigns pagination"
+          ></div>
         </section>
-
       </section>
 
-      <section class="admin-panel newsletter-editor-panel" data-panel="create-newsletter">
+      <section
+        class="admin-panel newsletter-editor-panel"
+        data-panel="create-newsletter"
+      >
         <div class="newsletter-editor-shell" id="newsletterEditorShell">
           <div class="newsletter-editor-stage">
             <div class="newsletter-composer-workspace">
-          <div class="newsletter-create-header">
-            <button class="newsletter-create-back" id="newsletterCreateBack" type="button" aria-label="Back to newsletter management">&#8592;<span>Back</span></button>
-            <div><p class="admin-eyebrow">Newsletter campaign</p><h3>Create Newsletter</h3><p>Build a draft, review the complete email, then choose how to test or send it.</p></div>
-          </div>
-          <form class="admin-form newsletter-composer" id="newsletterCampaignForm">
-            <section class="newsletter-composer-card newsletter-composer-card--details">
-              <p class="admin-eyebrow">Newsletter details</p>
-              <label>Subject<input name="subject" maxlength="200" required /></label>
-            </section>
-            <section class="newsletter-composer-card newsletter-recipients" aria-labelledby="newsletterRecipientsTitle">
-              <p class="admin-eyebrow">Recipients</p>
-              <h4 id="newsletterRecipientsTitle">Choose who receives this newsletter</h4>
-              <div class="newsletter-recipient-modes" role="radiogroup" aria-label="Recipient mode">
-                <label class="newsletter-recipient-mode is-active"><input type="radio" name="recipientMode" value="all_active" checked /><span><strong>All Active Subscribers</strong><small id="newsletterAllActiveCount">Loading active subscribers…</small></span></label>
-                <label class="newsletter-recipient-mode"><input type="radio" name="recipientMode" value="selected" /><span><strong>Selected Subscribers</strong><small>Choose specific active newsletter subscribers.</small></span></label>
-              </div>
-              <div class="newsletter-recipient-selector" id="newsletterRecipientSelector" hidden>
-                <button class="newsletter-recipient-trigger" id="newsletterRecipientTrigger" type="button" aria-haspopup="listbox" aria-expanded="false" aria-controls="newsletterRecipientDropdown">Select recipients</button>
-                <div class="newsletter-recipient-dropdown" id="newsletterRecipientDropdown" hidden>
-                  <label class="newsletter-recipient-search-label">Search active subscribers<input id="newsletterRecipientSearch" type="search" placeholder="Search active subscribers..." autocomplete="off" /></label>
-                  <div class="newsletter-recipient-list" id="newsletterRecipientList" role="listbox" aria-label="Active newsletter subscribers" aria-multiselectable="true" aria-live="polite"></div>
-                  <div class="admin-pagination newsletter-pagination" id="newsletterRecipientPagination" aria-label="Recipient selector pagination"></div>
+              <div class="newsletter-create-header">
+                <button
+                  class="newsletter-create-back"
+                  id="newsletterCreateBack"
+                  type="button"
+                  aria-label="Back to newsletter management"
+                >
+                  &#8592;<span>Back</span>
+                </button>
+                <div>
+                  <p class="admin-eyebrow">Newsletter campaign</p>
+                  <h3>Create Newsletter</h3>
+                  <p>
+                    Build a draft, review the complete email, then choose how to
+                    test or send it.
+                  </p>
                 </div>
-                <div class="newsletter-recipient-chips" id="newsletterRecipientChips" aria-live="polite" aria-label="Selected recipients"></div>
               </div>
-            </section>
-            <div class="newsletter-composer-grid">
-              <section class="newsletter-composer-card">
-                <p class="admin-eyebrow">Content</p>
-                <div class="newsletter-editor-toolbar" aria-label="Editor tools"><span>Plain-text email content</span><span>Line breaks are preserved in the preview.</span></div>
-                <label>Newsletter content<textarea class="newsletter-editor" id="newsletterEditor" rows="12" required></textarea></label>
-              </section>
-              <section class="newsletter-composer-card newsletter-composer-card--preview">
-                <div class="newsletter-preview-heading"><p class="admin-eyebrow">Preview</p><button class="admin-outline newsletter-action" id="expandNewsletterPreview" type="button">Expand Preview</button></div>
-                <div class="newsletter-preview" id="newsletterPreview" hidden></div>
-                <p class="newsletter-preview-empty" id="newsletterPreviewEmpty">Select Preview to review the email layout before saving a draft.</p>
-              </section>
-            </div>
-            <section class="newsletter-action-groups" aria-label="Newsletter actions">
-              <div class="newsletter-action-group"><p>Editing</p><div><button class="admin-outline" id="previewNewsletter" type="button">Preview</button><button class="auth-submit" type="submit">Save Draft</button></div></div>
-              <div class="newsletter-action-group"><p>Testing</p><div><button class="admin-outline" id="testNewsletter" type="button">Send Test Email</button></div></div>
-              <div class="newsletter-action-group newsletter-action-group--production"><p>Production</p><div><button class="admin-danger-button" id="sendNewsletter" type="button">Send Newsletter</button></div></div>
-            </section>
-          </form>
+              <form
+                class="admin-form newsletter-composer"
+                id="newsletterCampaignForm"
+              >
+                <section
+                  class="newsletter-composer-card newsletter-composer-card--details"
+                >
+                  <p class="admin-eyebrow">Newsletter details</p>
+                  <label
+                    >Subject<input name="subject" maxlength="200" required
+                  /></label>
+                </section>
+                <section
+                  class="newsletter-composer-card newsletter-recipients"
+                  aria-labelledby="newsletterRecipientsTitle"
+                >
+                  <p class="admin-eyebrow">Recipients</p>
+                  <h4 id="newsletterRecipientsTitle">
+                    Choose who receives this newsletter
+                  </h4>
+                  <div
+                    class="newsletter-recipient-modes"
+                    role="radiogroup"
+                    aria-label="Recipient mode"
+                  >
+                    <label class="newsletter-recipient-mode is-active"
+                      ><input
+                        type="radio"
+                        name="recipientMode"
+                        value="all_active"
+                        checked
+                      /><span
+                        ><strong>All Active Subscribers</strong
+                        ><small id="newsletterAllActiveCount"
+                          >Loading active subscribers…</small
+                        ></span
+                      ></label
+                    >
+                    <label class="newsletter-recipient-mode"
+                      ><input
+                        type="radio"
+                        name="recipientMode"
+                        value="selected"
+                      /><span
+                        ><strong>Selected Subscribers</strong
+                        ><small
+                          >Choose specific active newsletter subscribers.</small
+                        ></span
+                      ></label
+                    >
+                  </div>
+                  <div
+                    class="newsletter-recipient-selector"
+                    id="newsletterRecipientSelector"
+                    hidden
+                  >
+                    <button
+                      class="newsletter-recipient-trigger"
+                      id="newsletterRecipientTrigger"
+                      type="button"
+                      aria-haspopup="listbox"
+                      aria-expanded="false"
+                      aria-controls="newsletterRecipientDropdown"
+                    >
+                      Select recipients
+                    </button>
+                    <div
+                      class="newsletter-recipient-dropdown"
+                      id="newsletterRecipientDropdown"
+                      hidden
+                    >
+                      <label class="newsletter-recipient-search-label"
+                        >Search active subscribers<input
+                          id="newsletterRecipientSearch"
+                          type="search"
+                          placeholder="Search active subscribers..."
+                          autocomplete="off"
+                      /></label>
+                      <div
+                        class="newsletter-recipient-list"
+                        id="newsletterRecipientList"
+                        role="listbox"
+                        aria-label="Active newsletter subscribers"
+                        aria-multiselectable="true"
+                        aria-live="polite"
+                      ></div>
+                      <div
+                        class="admin-pagination newsletter-pagination"
+                        id="newsletterRecipientPagination"
+                        aria-label="Recipient selector pagination"
+                      ></div>
+                    </div>
+                    <div
+                      class="newsletter-recipient-chips"
+                      id="newsletterRecipientChips"
+                      aria-live="polite"
+                      aria-label="Selected recipients"
+                    ></div>
+                  </div>
+                </section>
+                <div class="newsletter-composer-grid">
+                  <section class="newsletter-composer-card">
+                    <p class="admin-eyebrow">Content</p>
+                    <div
+                      class="newsletter-editor-toolbar"
+                      aria-label="Editor tools"
+                    >
+                      <span>Plain-text email content</span
+                      ><span>Line breaks are preserved in the preview.</span>
+                    </div>
+                    <label
+                      >Newsletter content<textarea
+                        class="newsletter-editor"
+                        id="newsletterEditor"
+                        rows="12"
+                        required
+                      ></textarea>
+                    </label>
+                  </section>
+                  <section
+                    class="newsletter-composer-card newsletter-composer-card--preview"
+                  >
+                    <div class="newsletter-preview-heading">
+                      <p class="admin-eyebrow">Preview</p>
+                      <button
+                        class="admin-outline newsletter-action"
+                        id="expandNewsletterPreview"
+                        type="button"
+                      >
+                        Expand Preview
+                      </button>
+                    </div>
+                    <div
+                      class="newsletter-preview"
+                      id="newsletterPreview"
+                      hidden
+                    ></div>
+                    <p
+                      class="newsletter-preview-empty"
+                      id="newsletterPreviewEmpty"
+                    >
+                      Select Preview to review the email layout before saving a
+                      draft.
+                    </p>
+                  </section>
+                </div>
+                <section
+                  class="newsletter-action-groups"
+                  aria-label="Newsletter actions"
+                >
+                  <div class="newsletter-action-group">
+                    <p>Editing</p>
+                    <div>
+                      <button
+                        class="admin-outline"
+                        id="previewNewsletter"
+                        type="button"
+                      >
+                        Preview</button
+                      ><button class="auth-submit" type="submit">
+                        Save Draft
+                      </button>
+                    </div>
+                  </div>
+                  <div class="newsletter-action-group">
+                    <p>Testing</p>
+                    <div>
+                      <button
+                        class="admin-outline"
+                        id="testNewsletter"
+                        type="button"
+                      >
+                        Send Test Email
+                      </button>
+                    </div>
+                  </div>
+                  <div
+                    class="newsletter-action-group newsletter-action-group--production"
+                  >
+                    <p>Production</p>
+                    <div>
+                      <button
+                        class="admin-danger-button"
+                        id="sendNewsletter"
+                        type="button"
+                      >
+                        Send Newsletter
+                      </button>
+                    </div>
+                  </div>
+                </section>
+              </form>
             </div>
           </div>
         </div>
@@ -788,7 +1586,12 @@
                         inputmode="url"
                         placeholder="https://…"
                     /></label>
-                    <label class="admin-event-field--wide">Upload from device<input id="eventImageFile" type="file" accept="image/jpeg,image/png,image/webp" /></label>
+                    <label class="admin-event-field--wide"
+                      >Upload from device<input
+                        id="eventImageFile"
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp"
+                    /></label>
                   </div>
                   <figure
                     class="admin-event-image-preview"

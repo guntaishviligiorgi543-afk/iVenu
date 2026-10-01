@@ -15,11 +15,17 @@
   const deleteDialog = document.querySelector("#deleteAccountDialog");
   const closeDeleteDialog = document.querySelector("#closeDeleteAccountDialog");
   const cancelDeleteAccount = document.querySelector("#cancelDeleteAccount");
-  const continueDeleteAccount = document.querySelector("#continueDeleteAccount");
+  const continueDeleteAccount = document.querySelector(
+    "#continueDeleteAccount",
+  );
   const backDeleteAccount = document.querySelector("#backDeleteAccount");
   const deleteWarning = document.querySelector("[data-delete-account-warning]");
-  const deleteConfirmForm = document.querySelector("[data-delete-account-confirm]");
-  const deleteDialogMessage = document.querySelector("#deleteAccountDialogMessage");
+  const deleteConfirmForm = document.querySelector(
+    "[data-delete-account-confirm]",
+  );
+  const deleteDialogMessage = document.querySelector(
+    "#deleteAccountDialogMessage",
+  );
   const securityMessage = document.querySelector("#securityMessage");
   const passwordResultDialog = document.querySelector("#passwordResultDialog");
   const passwordResultTitle = document.querySelector("#passwordResultTitle");
@@ -38,6 +44,61 @@
   const cartCount = document.querySelector("#cartCount");
   const logoutButton = document.querySelector("#dashboardLogout");
   const overviewDashboard = document.querySelector("#overviewDashboard");
+  const supportRequestsList = document.querySelector("#supportRequestsList");
+  const supportRequestsEmpty = document.querySelector("#supportRequestsEmpty");
+  const supportRequestsCount = document.querySelector("#supportRequestsCount");
+  const supportRequestsPagination = document.querySelector(
+    "#supportRequestsPagination",
+  );
+  const supportRequestConversation = document.querySelector(
+    "#supportRequestConversation",
+  );
+  const supportConversationBack = document.querySelector(
+    "#supportConversationBack",
+  );
+  const supportConversationCategory = document.querySelector(
+    "#supportConversationCategory",
+  );
+  const supportConversationSubject = document.querySelector(
+    "#supportConversationSubject",
+  );
+  const supportConversationMeta = document.querySelector(
+    "#supportConversationMeta",
+  );
+  const supportConversationStatus = document.querySelector(
+    "#supportConversationStatus",
+  );
+  const supportCustomerMessageList = document.querySelector(
+    "#supportCustomerMessageList",
+  );
+  const supportResolvedMessage = document.querySelector(
+    "#supportResolvedMessage",
+  );
+  const supportCustomerReplyForm = document.querySelector(
+    "#supportCustomerReplyForm",
+  );
+  const supportCustomerReply = document.querySelector("#supportCustomerReply");
+  const supportCustomerReplyStatus = document.querySelector(
+    "#supportCustomerReplyStatus",
+  );
+  const supportCustomerReplySubmit = document.querySelector(
+    "#supportCustomerReplySubmit",
+  );
+  const supportUnreadNavBadge = document.querySelector(
+    "#supportUnreadNavBadge",
+  );
+  const supportState = {
+    requests: [],
+    selectedId: null,
+    filter: "all",
+    page: 1,
+    pageSize: 6,
+    total: 0,
+    loading: false,
+    sending: false,
+    unread: new Map(),
+    unreadTotal: 0,
+  };
   let avatarPreviewUrl = "";
 
   function setMessage(text, type = "", target = message) {
@@ -140,16 +201,19 @@
     cartList.innerHTML = [...eventGroups.values()]
       .map(({ event, items: eventItems }) => {
         const primaryTicket = eventItems[0].ticket;
-        const title = event?.title || event?.performer || primaryTicket?.name || "Event";
+        const title =
+          event?.title || event?.performer || primaryTicket?.name || "Event";
         const image = event?.image_url || event?.bands?.image_url || "";
-        const venue = event?.venues?.name || event?.venue || "Venue to be announced";
+        const venue =
+          event?.venues?.name || event?.venue || "Venue to be announced";
         const dateTime = [event?.event_date, event?.event_time?.slice(0, 5)]
           .filter(Boolean)
           .join(" — ");
         const ticketDetails = eventItems
           .map(({ item, ticket }) => {
             const ticketName = ticket?.name || "Ticket";
-            const total = Number(ticket?.price || 0) * Number(item.quantity || 0);
+            const total =
+              Number(ticket?.price || 0) * Number(item.quantity || 0);
             return `<div class="cart-event-ticket"><span><strong>${escapeHtml(ticketName)}</strong><small>Quantity ${Number(item.quantity || 0)}</small></span><strong>${total.toFixed(2)}₾</strong></div>`;
           })
           .join("");
@@ -217,27 +281,79 @@
 
   function updateReservationCountdown() {
     document.querySelectorAll("[data-reservation-until]").forEach((element) => {
-      const seconds = Math.max(0, Math.ceil((new Date(element.dataset.reservationUntil) - Date.now()) / 1000));
-      element.textContent = seconds ? `${Math.floor(seconds / 60)}m ${seconds % 60}s remaining` : "Reservation has expired";
+      const seconds = Math.max(
+        0,
+        Math.ceil(
+          (new Date(element.dataset.reservationUntil) - Date.now()) / 1000,
+        ),
+      );
+      element.textContent = seconds
+        ? `${Math.floor(seconds / 60)}m ${seconds % 60}s remaining`
+        : "Reservation has expired";
     });
   }
 
-  function renderOverview(data, profile, user, cartItems = [], ticketTypes = [], events = []) {
-    const name = profile?.first_name || user?.user_metadata?.first_name || "there";
-    const avatar = profile?.avatar_url ? `<img src="${escapeHtml(profile.avatar_url)}" alt="" />` : `<span>${escapeHtml(String(name).charAt(0).toUpperCase())}</span>`;
+  function renderOverview(
+    data,
+    profile,
+    user,
+    cartItems = [],
+    ticketTypes = [],
+    events = [],
+  ) {
+    const name =
+      profile?.first_name || user?.user_metadata?.first_name || "there";
+    const avatar = profile?.avatar_url
+      ? `<img src="${escapeHtml(profile.avatar_url)}" alt="" />`
+      : `<span>${escapeHtml(String(name).charAt(0).toUpperCase())}</span>`;
     const next = data.next_event;
     const reservation = data.reservation;
     const activity = data.activity || {};
-    const ticketsById = new Map(ticketTypes.map((ticket) => [String(ticket.id), ticket]));
-    const eventsById = new Map(events.map((event) => [String(event.id), event]));
-    const cartCount = cartItems.reduce((sum, item) => sum + Number(item.quantity || 0), 0);
-    const cartTotal = cartItems.reduce((sum, item) => sum + Number(item.quantity || 0) * Number(ticketsById.get(String(item.ticket_type_id))?.price || 0), 0);
-    const firstCartEvent = eventsById.get(String(ticketsById.get(String(cartItems[0]?.ticket_type_id))?.event_id));
-    const stat = (title, value, description) => `<article class="overview-card overview-stat"><p>${title}</p><strong>${value}</strong><span>${description}</span></article>`;
-    const reservationCard = reservation ? `<h3>${escapeHtml(reservation.title || reservation.performer || "Event")}</h3><strong>${reservation.seat_count} ${reservation.seat_count === 1 ? "seat" : "seats"} reserved</strong><span>${escapeHtml(reservation.venue || "Venue to be announced")}</span><em data-reservation-until="${escapeHtml(reservation.reserved_until)}">Calculating time remaining…</em>` : overviewEmpty("No active reservation", "Seats held for you will appear here.");
+    const ticketsById = new Map(
+      ticketTypes.map((ticket) => [String(ticket.id), ticket]),
+    );
+    const eventsById = new Map(
+      events.map((event) => [String(event.id), event]),
+    );
+    const cartCount = cartItems.reduce(
+      (sum, item) => sum + Number(item.quantity || 0),
+      0,
+    );
+    const cartTotal = cartItems.reduce(
+      (sum, item) =>
+        sum +
+        Number(item.quantity || 0) *
+          Number(ticketsById.get(String(item.ticket_type_id))?.price || 0),
+      0,
+    );
+    const firstCartEvent = eventsById.get(
+      String(ticketsById.get(String(cartItems[0]?.ticket_type_id))?.event_id),
+    );
+    const stat = (title, value, description) =>
+      `<article class="overview-card overview-stat"><p>${title}</p><strong>${value}</strong><span>${description}</span></article>`;
+    const reservationCard = reservation
+      ? `<h3>${escapeHtml(reservation.title || reservation.performer || "Event")}</h3><strong>${reservation.seat_count} ${reservation.seat_count === 1 ? "seat" : "seats"} reserved</strong><span>${escapeHtml(reservation.venue || "Venue to be announced")}</span><em data-reservation-until="${escapeHtml(reservation.reserved_until)}">Calculating time remaining…</em>`
+      : overviewEmpty(
+          "No active reservation",
+          "Seats held for you will appear here.",
+        );
     const purchases = Number(data.total_orders || 0);
-    const activityBars = [["7 days", activity.last_7_days || 0], ["30 days", activity.last_30_days || 0], ["This year", activity.this_year || 0]].map(([label, value]) => `<div class="activity-metric"><b>${value}</b><span>${label}</span></div>`).join("");
-    const recent = data.recent_orders?.map((order) => `<div><span><strong>${escapeHtml(order.event_name)}</strong><small>${escapeHtml(new Date(order.created_at).toLocaleDateString())} · ${order.ticket_count} tickets</small></span><b>${formatMoney(order.total_price)}</b></div>`).join("");
+    const activityBars = [
+      ["7 days", activity.last_7_days || 0],
+      ["30 days", activity.last_30_days || 0],
+      ["This year", activity.this_year || 0],
+    ]
+      .map(
+        ([label, value]) =>
+          `<div class="activity-metric"><b>${value}</b><span>${label}</span></div>`,
+      )
+      .join("");
+    const recent = data.recent_orders
+      ?.map(
+        (order) =>
+          `<div><span><strong>${escapeHtml(order.event_name)}</strong><small>${escapeHtml(new Date(order.created_at).toLocaleDateString())} · ${order.ticket_count} tickets</small></span><b>${formatMoney(order.total_price)}</b></div>`,
+      )
+      .join("");
     const reservationGrid = reservation
       ? `<article class="overview-card reservation-event"><p>Active Reservation</p><h3>${escapeHtml(reservation.title || reservation.performer || "Event")}</h3><span>Your seats are temporarily held for this event.</span></article><article class="overview-card reservation-timer"><p>Time Remaining</p><strong data-reservation-until="${escapeHtml(reservation.reserved_until)}">Calculating time remaining…</strong><span>Reservation expiration countdown.</span></article><article class="overview-card reservation-venue"><p>Venue</p><h3>${escapeHtml(reservation.venue || "Venue to be announced")}</h3><span>Where your reservation is held.</span></article><article class="overview-card reservation-seats"><p>Seat Count</p><strong>${reservation.seat_count}</strong><span>${reservation.seat_count === 1 ? "Seat" : "Seats"} currently reserved for you.</span></article><article class="overview-card reservation-details"><p>Reserved Seats</p><h3>${escapeHtml(reservation.seats || "Seat details available at checkout")}</h3><span>Section, row, and seat information from your active reservation.</span></article>`
       : `<article class="overview-card reservation-event">${overviewEmpty("No active reservation", "Your next seat reservation will appear here.")}</article><article class="overview-card reservation-timer">${overviewEmpty("Timer unavailable", "A countdown appears when seats are held.")}</article><article class="overview-card reservation-venue">${overviewEmpty("Venue details", "Available with an active reservation.")}</article><article class="overview-card reservation-seats">${overviewEmpty("Reserved seats", "Available with an active reservation.")}</article><article class="overview-card reservation-details">${overviewEmpty("Seat details", "Available with an active reservation.")}</article>`;
@@ -261,17 +377,23 @@
       <section class="overview-panel" id="overview-panel-purchases" role="tabpanel" aria-labelledby="overview-tab-purchases" data-overview-panel="purchases" hidden><div class="overview-grid overview-purchases-grid">${purchaseGrid}</div></section>`;
     overviewDashboard.setAttribute("aria-busy", "false");
     updateReservationCountdown();
-    activateOverviewTab(sessionStorage.getItem("iVenueOverviewTab") || "summary");
+    activateOverviewTab(
+      sessionStorage.getItem("iVenueOverviewTab") || "summary",
+    );
   }
 
   function showOverviewError() {
-    overviewDashboard.innerHTML = overviewEmpty("Overview unavailable", "Your dashboard data could not be loaded. Please try again.");
+    overviewDashboard.innerHTML = overviewEmpty(
+      "Overview unavailable",
+      "Your dashboard data could not be loaded. Please try again.",
+    );
     overviewDashboard.setAttribute("aria-busy", "false");
   }
 
   function activateOverviewTab(name) {
-    const tab = document.querySelector(`[data-overview-tab="${name}"]`)
-      || document.querySelector('[data-overview-tab="summary"]');
+    const tab =
+      document.querySelector(`[data-overview-tab="${name}"]`) ||
+      document.querySelector('[data-overview-tab="summary"]');
     if (!tab) return;
     const activeName = tab.dataset.overviewTab;
     document.querySelectorAll("[data-overview-tab]").forEach((item) => {
@@ -285,6 +407,263 @@
       panel.hidden = !active;
     });
     sessionStorage.setItem("iVenueOverviewTab", activeName);
+  }
+
+  const formatSupportDate = (value) =>
+    value
+      ? new Intl.DateTimeFormat(undefined, {
+          dateStyle: "medium",
+          timeStyle: "short",
+        }).format(new Date(value))
+      : "—";
+  const supportCategoryLabel = (value) =>
+    String(value || "general")
+      .replaceAll("_", " ")
+      .replace(/\b\w/g, (letter) => letter.toUpperCase());
+  const supportStatusLabel = (status) =>
+    status === "resolved" ? "Resolved" : "Open";
+
+  function renderSupportPagination() {
+    const pageCount = Math.max(
+      1,
+      Math.ceil(supportState.total / supportState.pageSize),
+    );
+    supportState.page = Math.min(supportState.page, pageCount);
+    supportRequestsPagination.innerHTML =
+      pageCount > 1
+        ? Array.from(
+            { length: pageCount },
+            (_, index) =>
+              `<button class="account-outline-button${index + 1 === supportState.page ? " is-active" : ""}" type="button" data-support-page="${index + 1}" ${index + 1 === supportState.page ? 'aria-current="page"' : ""}>${index + 1}</button>`,
+          ).join("")
+        : "";
+  }
+
+  function renderSupportRequestList() {
+    const requests = supportState.requests;
+    supportRequestsList.replaceChildren();
+    supportRequestsCount.textContent = `${supportState.total} ${supportState.total === 1 ? "request" : "requests"}`;
+    if (!requests.length) {
+      supportRequestsEmpty.hidden = false;
+      supportRequestsEmpty.querySelector("strong").textContent =
+        supportState.filter === "all"
+          ? "You don't have any Support requests yet."
+          : "No Support requests match this filter.";
+      supportRequestsEmpty.querySelector("span").textContent =
+        supportState.filter === "all"
+          ? "Need help? Send us a Support request."
+          : "Try another filter or contact Support.";
+      renderSupportPagination();
+      return;
+    }
+    supportRequestsEmpty.hidden = true;
+    requests.forEach((request) => {
+      const item = document.createElement("button");
+      item.type = "button";
+      item.className = "dashboard-row support-request-row";
+      item.dataset.supportRequestId = request.id;
+      const unread = supportState.unread.get(request.id) || 0;
+      item.innerHTML = `<div><strong>${escapeHtml(request.subject)}</strong><span>${escapeHtml(supportCategoryLabel(request.category))}</span></div><div><strong class="support-request-status support-request-status--${request.status === "resolved" ? "resolved" : "open"}">${supportStatusLabel(request.status)}</strong>${unread > 0 ? '<span class="support-request-new">New reply</span>' : ""}<span>Updated ${escapeHtml(formatSupportDate(request.updated_at))}</span></div><span class="support-request-dates">Created ${escapeHtml(formatSupportDate(request.created_at))}</span>`;
+      supportRequestsList.append(item);
+    });
+    renderSupportPagination();
+  }
+
+  function renderSupportMessages(messages) {
+    supportCustomerMessageList.replaceChildren();
+    if (!messages.length) {
+      const empty = document.createElement("p");
+      empty.className = "support-customer-message-empty";
+      empty.textContent = "No messages in this conversation yet.";
+      supportCustomerMessageList.append(empty);
+      return;
+    }
+    messages.forEach((message) => {
+      const card = document.createElement("article");
+      card.className = `support-customer-message support-customer-message--${message.sender_type === "customer" ? "customer" : "support"}`;
+      const header = document.createElement("header");
+      const sender = document.createElement("strong");
+      const timestamp = document.createElement("time");
+      const body = document.createElement("p");
+      sender.textContent =
+        message.sender_type === "customer" ? "You" : "iVenue Support";
+      timestamp.textContent = formatSupportDate(message.created_at);
+      body.textContent = message.body;
+      header.append(sender, timestamp);
+      card.append(header, body);
+      supportCustomerMessageList.append(card);
+    });
+    supportCustomerMessageList.scrollTop =
+      supportCustomerMessageList.scrollHeight;
+  }
+
+  async function openSupportRequest(requestId) {
+    supportState.selectedId = requestId;
+    supportRequestsList.hidden = true;
+    supportRequestsEmpty.hidden = true;
+    supportRequestsPagination.hidden = true;
+    supportRequestConversation.hidden = false;
+    supportCustomerMessageList.replaceChildren();
+    const loading = document.createElement("p");
+    loading.className = "dashboard-loading";
+    loading.textContent = "Loading conversation...";
+    supportCustomerMessageList.append(loading);
+    try {
+      const [
+        { data: request, error: requestError },
+        { data: messages, error: messagesError },
+      ] = await Promise.all([
+        client
+          .from("support_requests")
+          .select("id,subject,category,status,created_at,updated_at")
+          .eq("id", requestId)
+          .maybeSingle(),
+        client
+          .from("support_messages")
+          .select("sender_type,body,created_at")
+          .eq("support_request_id", requestId)
+          .order("created_at", { ascending: true })
+          .order("id", { ascending: true }),
+      ]);
+      if (requestError || messagesError || !request)
+        throw (
+          requestError ||
+          messagesError ||
+          new Error("Support request unavailable.")
+        );
+      supportConversationCategory.textContent = supportCategoryLabel(
+        request.category,
+      );
+      supportConversationSubject.textContent = request.subject;
+      supportConversationMeta.textContent = `Created ${formatSupportDate(request.created_at)} · Last updated ${formatSupportDate(request.updated_at)}`;
+      supportConversationStatus.textContent = supportStatusLabel(
+        request.status,
+      );
+      supportConversationStatus.className = `support-request-status support-request-status--${request.status === "resolved" ? "resolved" : "open"}`;
+      renderSupportMessages(messages || []);
+      const resolved = request.status === "resolved";
+      supportCustomerReplyForm.hidden = resolved;
+      supportResolvedMessage.hidden = !resolved;
+      await markCustomerRequestRead(requestId);
+    } catch (error) {
+      supportCustomerMessageList.replaceChildren();
+      const failure = document.createElement("p");
+      failure.className = "auth-message error";
+      failure.textContent =
+        "This Support conversation could not be loaded. Please try again.";
+      supportCustomerMessageList.append(failure);
+      supportCustomerReplyForm.hidden = true;
+      supportResolvedMessage.hidden = true;
+    }
+  }
+
+  async function loadSupportRequests() {
+    supportRequestsList.hidden = false;
+    supportRequestsEmpty.hidden = true;
+    supportRequestsPagination.hidden = false;
+    supportRequestsList.innerHTML =
+      '<div class="dashboard-loading">Loading Support requests...</div>';
+    let query = client
+      .from("support_requests")
+      .select("id,subject,category,status,created_at,updated_at", {
+        count: "exact",
+      })
+      .order("updated_at", { ascending: false })
+      .range(
+        (supportState.page - 1) * supportState.pageSize,
+        supportState.page * supportState.pageSize - 1,
+      );
+    if (supportState.filter === "resolved")
+      query = query.eq("status", "resolved");
+    if (supportState.filter === "open")
+      query = query.in("status", ["open", "waiting_for_user"]);
+    const { data, error, count } = await query;
+    if (error) throw error;
+    supportState.requests = data || [];
+    supportState.total = count || 0;
+    try {
+      await loadCustomerUnreadState();
+    } catch (error) {
+      console.error("Unable to load customer Support unread state", error);
+      supportState.unread = new Map();
+      supportState.unreadTotal = 0;
+      updateSupportUnreadBadge();
+    }
+    renderSupportRequestList();
+  }
+
+  function updateSupportUnreadBadge() {
+    supportUnreadNavBadge.textContent =
+      supportState.unreadTotal > 99 ? "99+" : String(supportState.unreadTotal);
+    supportUnreadNavBadge.hidden = supportState.unreadTotal === 0;
+  }
+
+  async function loadCustomerUnreadState() {
+    const { data, error } = await client.rpc("get_support_unread_state");
+    if (error) throw error;
+    supportState.unread = new Map(
+      (data || []).map((item) => [
+        item.request_id,
+        Number(item.unread_count || 0),
+      ]),
+    );
+    supportState.unreadTotal = [...supportState.unread.values()].reduce(
+      (total, count) => total + count,
+      0,
+    );
+    updateSupportUnreadBadge();
+  }
+
+  async function markCustomerRequestRead(requestId) {
+    try {
+      await client.rpc("mark_support_request_read", {
+        p_support_request_id: requestId,
+      });
+      supportState.unread.set(requestId, 0);
+      supportState.unreadTotal = [...supportState.unread.values()].reduce(
+        (total, count) => total + count,
+        0,
+      );
+      updateSupportUnreadBadge();
+      renderSupportRequestList();
+    } catch (error) {
+      console.error("Unable to mark customer Support request as read", error);
+    }
+  }
+
+  function showSupportRequestList() {
+    supportState.selectedId = null;
+    supportRequestConversation.hidden = true;
+    supportRequestsList.hidden = false;
+    supportRequestsEmpty.hidden = true;
+    supportRequestsPagination.hidden = false;
+  }
+
+  async function submitSupportCustomerReply(event) {
+    event.preventDefault();
+    const body = supportCustomerReply.value.trim();
+    if (!supportState.selectedId || !body || supportState.sending) return;
+    supportState.sending = true;
+    supportCustomerReplySubmit.disabled = true;
+    supportCustomerReplyStatus.textContent = "Sending...";
+    try {
+      const { error } = await client.rpc("add_customer_support_message", {
+        p_support_request_id: supportState.selectedId,
+        p_body: body,
+      });
+      if (error) throw error;
+      supportCustomerReply.value = "";
+      supportCustomerReplyStatus.textContent = "Reply sent.";
+      supportState.page = 1;
+      await loadSupportRequests();
+      await openSupportRequest(supportState.selectedId);
+    } catch (error) {
+      supportCustomerReplyStatus.textContent =
+        "Your reply could not be sent. Please try again.";
+    } finally {
+      supportState.sending = false;
+      supportCustomerReplySubmit.disabled = false;
+    }
   }
 
   async function loadAccount() {
@@ -318,22 +697,29 @@
       return;
     }
 
-    const [profileResult, ordersResult, cartResult, overviewResult] = await Promise.all([
-      client
-        .from("profiles")
-        .select("id, first_name, last_name, email, phone, avatar_url")
-        .eq("id", session.user.id)
-        .maybeSingle(),
-      client
-        .from("orders")
-        .select(
-          "id, total_price, status, created_at, order_items(quantity, unit_price, subtotal, ticket_types(name))",
-        )
-        .eq("user_id", session.user.id)
-        .order("created_at", { ascending: false }),
-      window.cartSync.getOwnCart(),
-      client.rpc("get_user_dashboard_overview"),
-    ]);
+    loadSupportRequests().catch((error) => {
+      console.error("Unable to load Support requests", error);
+      supportRequestsList.innerHTML =
+        '<div class="auth-message error">Support requests could not be loaded. Please try again.</div>';
+    });
+
+    const [profileResult, ordersResult, cartResult, overviewResult] =
+      await Promise.all([
+        client
+          .from("profiles")
+          .select("id, first_name, last_name, email, phone, avatar_url")
+          .eq("id", session.user.id)
+          .maybeSingle(),
+        client
+          .from("orders")
+          .select(
+            "id, total_price, status, created_at, order_items(quantity, unit_price, subtotal, ticket_types(name))",
+          )
+          .eq("user_id", session.user.id)
+          .order("created_at", { ascending: false }),
+        window.cartSync.getOwnCart(),
+        client.rpc("get_user_dashboard_overview"),
+      ]);
 
     if (profileResult.error) throw profileResult.error;
     if (ordersResult.error) throw ordersResult.error;
@@ -411,25 +797,70 @@
     }
   }
 
-  document.querySelector(".overview-tabs")?.addEventListener("click", (event) => {
-    const tab = event.target.closest("[data-overview-tab]");
-    if (tab) activateOverviewTab(tab.dataset.overviewTab);
-  });
+  document
+    .querySelector(".overview-tabs")
+    ?.addEventListener("click", (event) => {
+      const tab = event.target.closest("[data-overview-tab]");
+      if (tab) activateOverviewTab(tab.dataset.overviewTab);
+    });
 
-  document.querySelector(".overview-tabs")?.addEventListener("keydown", (event) => {
-    if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
-    const tabs = [...document.querySelectorAll("[data-overview-tab]")];
-    const current = tabs.indexOf(document.activeElement);
-    if (current < 0) return;
-    event.preventDefault();
-    const next = event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1 : (current + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
-    tabs[next].focus();
-    activateOverviewTab(tabs[next].dataset.overviewTab);
+  document
+    .querySelector(".overview-tabs")
+    ?.addEventListener("keydown", (event) => {
+      if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key))
+        return;
+      const tabs = [...document.querySelectorAll("[data-overview-tab]")];
+      const current = tabs.indexOf(document.activeElement);
+      if (current < 0) return;
+      event.preventDefault();
+      const next =
+        event.key === "Home"
+          ? 0
+          : event.key === "End"
+            ? tabs.length - 1
+            : (current + (event.key === "ArrowRight" ? 1 : -1) + tabs.length) %
+              tabs.length;
+      tabs[next].focus();
+      activateOverviewTab(tabs[next].dataset.overviewTab);
+    });
+
+  document.querySelectorAll("[data-support-filter]").forEach((button) => {
+    button.addEventListener("click", () => {
+      supportState.filter = button.dataset.supportFilter;
+      supportState.page = 1;
+      document
+        .querySelectorAll("[data-support-filter]")
+        .forEach((item) => item.classList.toggle("is-active", item === button));
+      loadSupportRequests().catch(() => {
+        supportRequestsList.innerHTML =
+          '<div class="auth-message error">Support requests could not be loaded. Please try again.</div>';
+      });
+    });
   });
+  supportRequestsList.addEventListener("click", (event) => {
+    const item = event.target.closest("[data-support-request-id]");
+    if (item) openSupportRequest(item.dataset.supportRequestId);
+  });
+  supportRequestsPagination.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-support-page]");
+    if (!button) return;
+    supportState.page = Number(button.dataset.supportPage);
+    loadSupportRequests().catch(() => {
+      supportRequestsList.innerHTML =
+        '<div class="auth-message error">Support requests could not be loaded. Please try again.</div>';
+    });
+  });
+  supportConversationBack.addEventListener("click", showSupportRequestList);
+  supportCustomerReplyForm.addEventListener(
+    "submit",
+    submitSupportCustomerReply,
+  );
 
   overviewDashboard?.addEventListener("click", (event) => {
     if (!event.target.closest('a[href="#cart"]')) return;
-    document.querySelector('.account-sidebar-item[data-section="cart"]')?.click();
+    document
+      .querySelector('.account-sidebar-item[data-section="cart"]')
+      ?.click();
   });
 
   window.addEventListener("eventCartChanged", () => {
@@ -462,7 +893,9 @@
 
   if (["#cart", "#profile"].includes(window.location.hash.toLowerCase())) {
     document
-      .querySelector(`.account-sidebar-item[data-section="${window.location.hash.slice(1).toLowerCase()}"]`)
+      .querySelector(
+        `.account-sidebar-item[data-section="${window.location.hash.slice(1).toLowerCase()}"]`,
+      )
       ?.click();
   }
 
@@ -479,7 +912,10 @@
       });
     } catch (error) {
       console.error("Unable to remove cart item", error);
-      setMessage(error.message || "This cart item could not be removed.", "error");
+      setMessage(
+        error.message || "This cart item could not be removed.",
+        "error",
+      );
     } finally {
       button.disabled = false;
       button.classList.remove("cart-action-pending");
@@ -567,7 +1003,8 @@
     const userMetadata = session.user.user_metadata || {};
     const nameMetadata = { first_name: firstName, last_name: lastName };
     const fullName = [firstName, lastName].filter(Boolean).join(" ");
-    if (Object.hasOwn(userMetadata, "full_name")) nameMetadata.full_name = fullName;
+    if (Object.hasOwn(userMetadata, "full_name"))
+      nameMetadata.full_name = fullName;
     if (Object.hasOwn(userMetadata, "name")) nameMetadata.name = fullName;
     const { error: authMetadataError } = await client.auth.updateUser({
       data: nameMetadata,
@@ -703,9 +1140,12 @@
     );
     if (!currentPassword) return;
 
-    const submitButton = deleteConfirmForm.querySelector('button[type="submit"]');
+    const submitButton = deleteConfirmForm.querySelector(
+      'button[type="submit"]',
+    );
     submitButton.disabled = true;
-    deleteDialogMessage.className = "auth-message account-delete-dialog__message";
+    deleteDialogMessage.className =
+      "auth-message account-delete-dialog__message";
     deleteDialogMessage.textContent = "Verifying password...";
 
     try {
@@ -729,10 +1169,12 @@
       const message = String(error?.message || "");
       deleteDialogMessage.className =
         "auth-message account-delete-dialog__message error";
-      deleteDialogMessage.textContent =
-        message.toLowerCase().includes("incorrect password")
-          ? "Incorrect password."
-          : message || "Account deletion failed. No account changes were confirmed.";
+      deleteDialogMessage.textContent = message
+        .toLowerCase()
+        .includes("incorrect password")
+        ? "Incorrect password."
+        : message ||
+          "Account deletion failed. No account changes were confirmed.";
       submitButton.disabled = false;
     }
   });
