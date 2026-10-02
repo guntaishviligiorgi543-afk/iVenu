@@ -2,6 +2,7 @@
   const form = document.querySelector("#oauthPasswordSetupForm");
   const message = document.querySelector("#oauthPasswordSetupMessage");
   const logout = document.querySelector("#oauthPasswordSetupLogout");
+  const logo = document.querySelector("#oauthPasswordSetupLogo");
   const submit = form.querySelector('button[type="submit"]');
 
   const redirect = (path) => window.location.replace(path);
@@ -10,6 +11,11 @@
     message.className = `auth-message${type ? ` ${type}` : ""}`;
     message.textContent = text;
   };
+
+  logo.addEventListener("click", (event) => {
+    event.preventDefault();
+    window.alert("You must create a password before continuing to iVenue.");
+  });
 
   const requireSetupSession = async () => {
     const session = await window.authApi.getSession();

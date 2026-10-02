@@ -5,6 +5,8 @@
   const isAuthPage =
     document.body.className.includes("auth") ||
     /login|register|verify|reset|forgot/.test(location.pathname);
+  const isOAuthPasswordSetupPage =
+    /(?:^|\/)oauth-password-setup\.html$/.test(location.pathname);
   const supportNavigationExcludedPages = new Set([
     "support.html",
     "gettickets.html",
@@ -39,6 +41,7 @@
     }
   }
   const headerContent = authHeaderContent || header;
+  if (isOAuthPasswordSetupPage) return;
   const isAuthMenuLayerPage =
     /(?:^|\/)(?:login|register|reset-password|oauth-password-setup)\.html$/.test(location.pathname);
   let toggle = header.querySelector(".mobileMenuToggle");

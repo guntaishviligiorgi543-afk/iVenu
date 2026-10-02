@@ -397,6 +397,13 @@ body.auth-verification-page > header .auth-page-logo img {
   height: auto;
 }
 
+body.auth-password-setup-page > header .auth-page-logo {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
 @media (max-width: 1290px) {
   body.auth-login-page > header > .authHeaderContent,
   body.auth-register-page > header > .authHeaderContent,
