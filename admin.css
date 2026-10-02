@@ -3052,6 +3052,14 @@ body.newsletter-editor-mode .newsletter-composer {
   stroke: none;
 }
 
+.support-metric-icon .support-icon--revoked {
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2.5;
+}
+
 .admin-panel[data-panel="support"] .support-metrics .admin-metric > div {
   min-width: 0;
 }
@@ -3103,8 +3111,13 @@ body.newsletter-editor-mode .newsletter-composer {
 .admin-panel[data-panel="support"] .support-table-wrap {
   min-height: 150px;
   max-height: none;
-  overflow-x: auto;
+  overflow: visible;
   overflow-y: visible;
+}
+
+.admin-panel[data-panel="support"] .support-table {
+  width: 100%;
+  min-width: 0;
 }
 
 .support-table th,
