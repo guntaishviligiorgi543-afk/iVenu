@@ -1,5 +1,5 @@
 @import url("https://fonts.googleapis.com/css2?family=Fjalla+One&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Cabin:ital,wght@0,400..700;1,400..700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Cabin:ital,wght@0,400..700;1,400..700&family=Cormorant+SC:wght@300;400;500;600;700&display=swap");
 
 .policy-consent-open {
   overflow: hidden;
@@ -750,6 +750,7 @@ body.ticket-open .event-cart-anchor {
 
   font-size: 18px;
   font-weight: 700;
+  font-family: "Cormorant SC", serif;
 
   text-transform: uppercase;
 
@@ -763,7 +764,8 @@ body.ticket-open .event-cart-anchor {
   padding: 6px;
   color: #000;
   background: #fff;
-  font-family: "Fjalla One", sans-serif;
+  font-family: "Cormorant SC", serif;
+  font-weight: 600;
   white-space: nowrap;
   transition:
     color 0.3s ease,
@@ -1238,7 +1240,8 @@ body.ticket-open .event-cart-anchor {
 .getTicketBtn {
   flex: 0 0 auto;
 
-  font-family: "Fjalla One", sans-serif;
+  font-family: "Cormorant SC", serif;
+  font-weight: 600;
 
   padding: 10px 30px;
 

@@ -3815,9 +3815,9 @@ body.auth-gate-open {
   padding: 11px 16px;
   border: 1px solid #ff9475;
   color: #ff9475;
-  font-family: "Cabin", sans-serif;
+  font-family: "Cormorant SC", serif;
   font-size: 0.78rem;
-  font-weight: 700;
+  font-weight: 600;
   text-transform: uppercase;
   text-align: center;
 }

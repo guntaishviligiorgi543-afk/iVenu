@@ -179,6 +179,11 @@ section {
     color 0.2s ease;
 }
 
+.tittle-date-dcrp-btn .selectTktBtn {
+  font-family: "Cormorant SC", serif;
+  font-weight: 600;
+}
+
 .selectTktBtn:hover {
   background-color: var(--accent);
   color: #000;
