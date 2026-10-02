@@ -376,8 +376,80 @@
   }
 
   const isPolicyPage = () =>
-    /(?:^|\/)(?:privacy-policy|terms-of-use|data-deletion|login|register|verify-email|forgot-password|reset-password)\.html$/
+    /(?:^|\/)(?:privacy-policy|terms-of-use|data-deletion|login|register|verify-email|forgot-password|reset-password|oauth-password-setup)\.html$/
       .test(window.location.pathname);
+
+  const isOAuthPasswordSetupPage = () =>
+    /(?:^|\/)oauth-password-setup\.html$/.test(window.location.pathname);
+
+  const googleAuthState = (user) => {
+    const identities = Array.isArray(user?.identities) ? user.identities : [];
+    const identityProviders = identities
+      .map((identity) => identity?.provider)
+      .filter(Boolean);
+    const appMetadataProviders = Array.isArray(user?.app_metadata?.providers)
+      ? user.app_metadata.providers.filter(Boolean)
+      : [];
+    const appMetadataProvider = user?.app_metadata?.provider;
+    const providers = new Set([
+      ...identityProviders,
+      ...appMetadataProviders,
+      ...(appMetadataProvider ? [appMetadataProvider] : []),
+    ]);
+    return {
+      isGoogleAccount: providers.has("google"),
+      identityProviders,
+      appMetadataProvider: appMetadataProvider || null,
+      appMetadataProviders,
+    };
+  };
+
+  async function isCurrentUserPasswordConfigured() {
+    const { data, error } = await client.rpc(
+      "is_current_user_password_configured",
+    );
+    if (error) throw error;
+    return data === true;
+  }
+
+  async function requiresGooglePasswordSetup(user) {
+    const authState = googleAuthState(user);
+    if (!authState.isGoogleAccount) return false;
+    return !(await isCurrentUserPasswordConfigured());
+  };
+
+  let oauthPasswordSetupRedirecting = false;
+
+  async function enforceGooglePasswordSetup(session) {
+    if (
+      !session?.user ||
+      isOAuthPasswordSetupPage() ||
+      oauthPasswordSetupRedirecting
+    )
+      return false;
+
+    try {
+      const user = await getUser();
+      const authState = googleAuthState(user);
+      const requiresSetup =
+        authState.isGoogleAccount &&
+        !(await isCurrentUserPasswordConfigured());
+      console.debug("[auth] Google password setup check", {
+        pathname: window.location.pathname,
+        appMetadataProvider: authState.appMetadataProvider,
+        appMetadataProviders: authState.appMetadataProviders,
+        identityProviders: authState.identityProviders,
+        requiresSetup,
+      });
+      if (!requiresSetup) return false;
+      oauthPasswordSetupRedirecting = true;
+      window.location.replace("oauth-password-setup.html");
+      return true;
+    } catch (error) {
+      console.error("Unable to determine whether password setup is required", error);
+      return false;
+    }
+  }
 
   const policyRecordsAreCurrent = (records) => {
     const accepted = new Set(
@@ -432,6 +504,8 @@
     currentPolicyVersions: CURRENT_POLICY_VERSIONS,
     hasAcceptedCurrentPolicies,
     acceptCurrentPolicies,
+    isCurrentUserPasswordConfigured,
+    requiresGooglePasswordSetup,
   };
   let policyConsentUserId = null;
   let policyConsentCheckInFlight = false;
@@ -608,6 +682,7 @@
 
   getSession()
     .then(async (session) => {
+      if (await enforceGooglePasswordSetup(session)) return;
       if ((await enforcePolicyAcceptance(session)) && !isPolicyPage())
         await remindIncompleteProfile(session);
     })
@@ -620,7 +695,11 @@
       clearPolicyConsentDialog();
       return;
     }
-    enforcePolicyAcceptance(session)
+    enforceGooglePasswordSetup(session)
+      .then((redirected) => {
+        if (redirected) return false;
+        return enforcePolicyAcceptance(session);
+      })
       .then((accepted) => accepted && !isPolicyPage() && remindIncompleteProfile(session))
       .catch((error) => console.error("Unable to check policy acceptance", error));
   });

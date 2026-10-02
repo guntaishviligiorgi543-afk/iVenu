@@ -28,7 +28,7 @@
   }
   const headerContent = authHeaderContent || header;
   const isAuthMenuLayerPage =
-    /(?:^|\/)(?:login|register|reset-password)\.html$/.test(location.pathname);
+    /(?:^|\/)(?:login|register|reset-password|oauth-password-setup)\.html$/.test(location.pathname);
   let toggle = header.querySelector(".mobileMenuToggle");
   if (!toggle) {
     toggle = document.createElement("button");
