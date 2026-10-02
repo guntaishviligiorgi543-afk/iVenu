@@ -4339,7 +4339,7 @@ body.auth-gate-open {
     font-size: 0.76rem;
   }
 
-#eventCartPanel .event-cart-go {
+  #eventCartPanel .event-cart-go {
     width: calc(100% - 40px);
     margin: 46px 20px 24px;
   }
@@ -4348,14 +4348,19 @@ body.auth-gate-open {
 /* User dashboard refresh: a focused customer workspace, scoped to profile.html. */
 .account-page .account-page-main {
   min-height: 100dvh;
-  padding: 18px;
+  padding: 24px;
   background:
-    radial-gradient(circle at 82% 0%, rgba(255, 148, 117, 0.11), transparent 28rem),
+    radial-gradient(
+      circle at 82% 0%,
+      rgba(255, 148, 117, 0.11),
+      transparent 28rem
+    ),
     #080b0d;
 }
 
 .account-page .account-dashboard {
-  width: min(1500px, 100%);
+  width: min(1000px, 100%);
+  margin-inline: auto;
 }
 
 .account-page .account-home-link {
@@ -4371,7 +4376,12 @@ body.auth-gate-open {
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   background:
-    linear-gradient(90deg, rgba(7, 11, 14, 0.98) 0%, rgba(7, 11, 14, 0.78) 52%, rgba(255, 148, 117, 0.1) 100%),
+    linear-gradient(
+      90deg,
+      rgba(7, 11, 14, 0.98) 0%,
+      rgba(7, 11, 14, 0.78) 52%,
+      rgba(255, 148, 117, 0.1) 100%
+    ),
     linear-gradient(125deg, #10181c, #090b0d 62%);
 }
 
@@ -4431,7 +4441,11 @@ body.auth-gate-open {
 .account-page .account-sidebar-item.is-active {
   border-color: rgba(255, 148, 117, 0.32);
   color: #fff;
-  background: linear-gradient(90deg, rgba(255, 148, 117, 0.22), rgba(255, 148, 117, 0.08));
+  background: linear-gradient(
+    90deg,
+    rgba(255, 148, 117, 0.22),
+    rgba(255, 148, 117, 0.08)
+  );
 }
 
 .account-page .account-sidebar-item.is-active::before {
@@ -4489,7 +4503,11 @@ body.auth-gate-open {
   min-height: 152px;
   padding: 18px;
   border-color: rgba(255, 255, 255, 0.1);
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.018));
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.045),
+    rgba(255, 255, 255, 0.018)
+  );
 }
 
 .account-page .overview-summary-grid .overview-welcome {
@@ -4498,7 +4516,12 @@ body.auth-gate-open {
   align-content: center;
   padding: 26px;
   background:
-    linear-gradient(115deg, rgba(255, 148, 117, 0.2), rgba(255, 148, 117, 0.035) 58%, rgba(255, 255, 255, 0.025)),
+    linear-gradient(
+      115deg,
+      rgba(255, 148, 117, 0.2),
+      rgba(255, 148, 117, 0.035) 58%,
+      rgba(255, 255, 255, 0.025)
+    ),
     #111619;
 }
 
@@ -4544,7 +4567,11 @@ body.auth-gate-open {
   align-items: center;
   padding: 24px;
   border-radius: 10px;
-  background: linear-gradient(135deg, rgba(255, 148, 117, 0.1), rgba(255, 255, 255, 0.025));
+  background: linear-gradient(
+    135deg,
+    rgba(255, 148, 117, 0.1),
+    rgba(255, 255, 255, 0.025)
+  );
 }
 
 .account-page .profile-avatar {
@@ -4565,7 +4592,9 @@ body.auth-gate-open {
   border: 1px solid rgba(255, 148, 117, 0.42);
   border-radius: 12px;
   background: #14191c;
-  box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.66), 0 22px 60px rgba(0, 0, 0, 0.58);
+  box-shadow:
+    0 0 0 100vmax rgba(0, 0, 0, 0.66),
+    0 22px 60px rgba(0, 0, 0, 0.58);
   transform: translate(-50%, -50%);
 }
 
@@ -4576,10 +4605,14 @@ body.auth-gate-open {
   align-content: start;
 }
 
-.account-page .account-section[data-section="security"] > .account-section-header,
+.account-page
+  .account-section[data-section="security"]
+  > .account-section-header,
 .account-page .account-section[data-section="security"] > .security-status,
 .account-page .account-section[data-section="security"] > #securityMessage,
-.account-page .account-section[data-section="security"] > .account-result-dialog {
+.account-page
+  .account-section[data-section="security"]
+  > .account-result-dialog {
   grid-column: 1 / -1;
 }
 
@@ -4588,7 +4621,9 @@ body.auth-gate-open {
 }
 
 .account-page .account-section[data-section="security"] > .dashboard-form,
-.account-page .account-section[data-section="security"] > .email-change-launcher {
+.account-page
+  .account-section[data-section="security"]
+  > .email-change-launcher {
   min-height: 100%;
   margin: 0;
   padding: 22px;
@@ -4672,7 +4707,9 @@ body.auth-gate-open {
   font-weight: 400;
 }
 
-.account-page .support-dashboard-section:has(#supportRequestConversation:not([hidden])) .support-conversation-empty {
+.account-page
+  .support-dashboard-section:has(#supportRequestConversation:not([hidden]))
+  .support-conversation-empty {
   display: none;
 }
 
@@ -4687,7 +4724,9 @@ body.auth-gate-open {
   background: rgba(0, 0, 0, 0.18);
 }
 
-.account-page .support-dashboard-section #supportRequestConversation:not([hidden]) {
+.account-page
+  .support-dashboard-section
+  #supportRequestConversation:not([hidden]) {
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto auto;
 }
@@ -4727,7 +4766,9 @@ body.auth-gate-open {
 }
 
 .account-page .support-dashboard-section .support-conversation-back:hover,
-.account-page .support-dashboard-section .support-conversation-back:focus-visible {
+.account-page
+  .support-dashboard-section
+  .support-conversation-back:focus-visible {
   color: #ff9475;
   background: transparent;
 }
@@ -4780,7 +4821,7 @@ body.auth-gate-open {
 
 @media (max-width: 820px) {
   .account-page .account-page-main {
-    padding: 14px;
+    padding: 18px;
   }
 
   .account-page .account-layout {
@@ -4805,7 +4846,9 @@ body.auth-gate-open {
   }
 
   .account-page .account-section[data-section="security"] > .dashboard-form,
-  .account-page .account-section[data-section="security"] > .email-change-launcher {
+  .account-page
+    .account-section[data-section="security"]
+    > .email-change-launcher {
     grid-column: 1;
   }
 }
@@ -4845,7 +4888,7 @@ body.auth-gate-open {
 
 @media (max-width: 560px) {
   .account-page .account-page-main {
-    padding: 10px;
+    padding: 14px;
   }
 
   .account-page .account-home-link {

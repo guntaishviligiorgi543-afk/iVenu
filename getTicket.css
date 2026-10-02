@@ -341,7 +341,7 @@ section {
   box-shadow: 0 20px 54px rgba(0, 0, 0, 0.42);
   text-align: center;
   min-height: fit-content;
- }
+}
 
 .reservationConflictDialogPanel h2 {
   margin: 0 0 10px;
@@ -1574,7 +1574,9 @@ body.ticket-open .socIcons {
   place-items: center;
   background: rgb(245 244 241 / 0.9);
   color: #111;
-  font: 700 14px/1 Arial, sans-serif;
+  font:
+    700 14px/1 Arial,
+    sans-serif;
   pointer-events: all;
 }
 

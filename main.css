@@ -91,7 +91,10 @@
   border: 1px solid #ff9475;
   color: #000;
   background: #ff9475;
-  font: 700 0.92rem "Cabin", Arial, sans-serif;
+  font:
+    700 0.92rem "Cabin",
+    Arial,
+    sans-serif;
   cursor: pointer;
 }
 
@@ -113,9 +116,15 @@
 }
 
 @media (max-width: 500px) {
-  .policy-consent { padding: 16px; }
-  .policy-consent__dialog { box-shadow: 6px 6px 0 rgba(255, 148, 117, 0.5); }
-  .policy-consent__actions button { width: 100%; }
+  .policy-consent {
+    padding: 16px;
+  }
+  .policy-consent__dialog {
+    box-shadow: 6px 6px 0 rgba(255, 148, 117, 0.5);
+  }
+  .policy-consent__actions button {
+    width: 100%;
+  }
 }
 
 * {
@@ -1872,7 +1881,9 @@ body.ticket-open .event-cart-anchor {
 .newsletter-message {
   margin: 0;
   color: #000;
-  font: 18px/1.5 "Cabin", sans-serif;
+  font:
+    18px/1.5 "Cabin",
+    sans-serif;
 }
 
 .newsletter-message.error {
