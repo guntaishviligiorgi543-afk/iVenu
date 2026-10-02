@@ -337,6 +337,24 @@
   const supportMembershipPagination = document.querySelector(
     "#supportMembershipPagination",
   );
+  const openSupportEmployeeDialog = document.querySelector(
+    "#openSupportEmployeeDialog",
+  );
+  const supportEmployeeDialog = document.querySelector(
+    "#supportEmployeeDialog",
+  );
+  const closeSupportEmployeeDialog = document.querySelector(
+    "#closeSupportEmployeeDialog",
+  );
+  const supportMembershipDetailsDialog = document.querySelector(
+    "#supportMembershipDetailsDialog",
+  );
+  const closeSupportMembershipDetails = document.querySelector(
+    "#closeSupportMembershipDetails",
+  );
+  const supportMembershipDetailsList = document.querySelector(
+    "#supportMembershipDetailsList",
+  );
   const supportMembershipDialog = document.querySelector(
     "#supportMembershipDialog",
   );
@@ -2882,6 +2900,24 @@
   const supportActorLabel = (name, email) => name || email || "Unknown admin";
   const supportActorMarkup = (name, email) =>
     `${escapeHtml(supportActorLabel(name, email))}${email ? `<small>${escapeHtml(email)}</small>` : ""}`;
+  const supportInitials = (membership) => {
+    const label = supportMembershipLabel(membership).trim();
+    const parts = label.split(/\s+/).filter(Boolean);
+    return escapeHtml(
+      (parts.length > 1
+        ? `${parts[0][0]}${parts[parts.length - 1][0]}`
+        : label.slice(0, 2)
+      ).toUpperCase(),
+    );
+  };
+  const supportIdentityMarkup = (membership) =>
+    `<span class="support-identity"><span class="support-avatar" aria-hidden="true">${supportInitials(membership)}</span><strong>${escapeHtml(supportMembershipLabel(membership))}</strong></span>`;
+  const supportStatusMarkup = (membership) => {
+    const active = !membership.revoked_at;
+    return `<span class="support-membership-status support-membership-status--${active ? "active" : "revoked"}"><span class="support-status-dot" aria-hidden="true"></span>${active ? "Active" : "Revoked"}</span>`;
+  };
+  const supportActionsMarkup = (membership) =>
+    `<div class="support-actions"><button class="support-actions-toggle" type="button" aria-label="Actions for ${escapeHtml(supportMembershipLabel(membership))}" aria-expanded="false" data-support-actions-toggle>…</button><div class="support-actions-menu" hidden><button type="button" data-support-details="${escapeHtml(membership.id || "")}">View details</button>${!membership.revoked_at && membership.user_id ? `<button class="is-destructive" type="button" data-support-revoke="${escapeHtml(membership.user_id)}">Revoke access</button>` : ""}</div></div>`;
   const supportMembershipStatus = (membership) =>
     membership.revoked_at ? "revoked" : "active";
   const supportActionError = (action) =>
@@ -2897,7 +2933,7 @@
     const revokedCount = memberships.filter(
       (membership) => membership.revoked_at,
     ).length;
-    supportMetrics.innerHTML = `<article class="admin-metric"><strong>${activeCount}</strong><span>Active Support Employees</span></article><article class="admin-metric"><strong>${memberships.length}</strong><span>Membership History</span></article><article class="admin-metric"><strong>${revokedCount}</strong><span>Revoked Memberships</span></article>`;
+    supportMetrics.innerHTML = `<article class="admin-metric"><span class="support-metric-icon" aria-hidden="true">👥</span><div><strong>${activeCount}</strong><span>Active Support Employees</span></div></article><article class="admin-metric"><span class="support-metric-icon" aria-hidden="true">↺</span><div><strong>${memberships.length}</strong><span>Membership History</span></div></article><article class="admin-metric"><span class="support-metric-icon" aria-hidden="true">⊘</span><div><strong>${revokedCount}</strong><span>Revoked Memberships</span></div></article>`;
   }
 
   function renderSupportMemberships() {
@@ -2907,9 +2943,9 @@
       ? `${active.length} active employee${active.length === 1 ? "" : "s"}`
       : "No active Support employees.";
     const activeRow = (membership) =>
-      `<tr><td><strong>${escapeHtml(supportMembershipLabel(membership))}</strong></td><td>${escapeHtml(membership.user_email || "—")}</td><td>${formatUserDate(membership.created_at)}</td><td>${supportActorMarkup(membership.granted_by_name, membership.granted_by_email)}</td><td><span class="support-membership-status support-membership-status--active">Active</span></td><td><button class="admin-danger-button support-revoke-button" type="button" data-support-revoke="${escapeHtml(membership.user_id || "")}" ${membership.user_id ? "" : "disabled"}>Revoke Access</button></td></tr>`;
+      `<tr><td>${supportIdentityMarkup(membership)}</td><td>${escapeHtml(membership.user_email || "—")}</td><td>${formatUserDate(membership.created_at)}</td><td>${supportStatusMarkup(membership)}</td><td>${supportActionsMarkup(membership)}</td></tr>`;
     const activeCard = (membership) =>
-      `<article class="support-membership-card"><div><strong>${escapeHtml(supportMembershipLabel(membership))}</strong><small>${escapeHtml(membership.user_email || "—")}</small></div><dl><div><dt>Granted</dt><dd>${formatUserDate(membership.created_at)}</dd></div><div><dt>Granted by</dt><dd>${supportActorMarkup(membership.granted_by_name, membership.granted_by_email)}</dd></div><div><dt>Status</dt><dd><span class="support-membership-status support-membership-status--active">Active</span></dd></div></dl><button class="admin-danger-button support-revoke-button" type="button" data-support-revoke="${escapeHtml(membership.user_id || "")}" ${membership.user_id ? "" : "disabled"}>Revoke Access</button></article>`;
+      `<article class="support-membership-card"><div>${supportIdentityMarkup(membership)}<small>${escapeHtml(membership.user_email || "—")}</small></div><dl><div><dt>Granted</dt><dd>${formatUserDate(membership.created_at)}</dd></div><div><dt>Status</dt><dd>${supportStatusMarkup(membership)}</dd></div></dl>${supportActionsMarkup(membership)}</article>`;
     supportActiveList.innerHTML = active.map(activeRow).join("");
     supportActiveMobileList.innerHTML = active.map(activeCard).join("");
 
@@ -2945,11 +2981,13 @@
     );
     supportHistoryStatus.textContent = filtered.length
       ? `${filtered.length} membership record${filtered.length === 1 ? "" : "s"}`
-      : "No Support membership history yet.";
+      : memberships.length
+        ? "No memberships found."
+        : "No membership history yet.";
     const historyRow = (membership) =>
-      `<tr><td><strong>${escapeHtml(supportMembershipLabel(membership))}</strong></td><td>${escapeHtml(membership.user_email || "—")}</td><td>${formatUserDate(membership.created_at)}</td><td>${supportActorMarkup(membership.granted_by_name, membership.granted_by_email)}</td><td>${formatUserDate(membership.revoked_at)}</td><td>${membership.revoked_at ? supportActorMarkup(membership.revoked_by_name, membership.revoked_by_email) : "—"}</td><td><span class="support-membership-status support-membership-status--${supportMembershipStatus(membership)}">${supportMembershipStatus(membership) === "active" ? "Active" : "Revoked"}</span></td></tr>`;
+      `<tr><td>${supportIdentityMarkup(membership)}</td><td>${escapeHtml(membership.user_email || "—")}</td><td>${formatUserDate(membership.created_at)}</td><td>${formatUserDate(membership.revoked_at)}</td><td>${supportStatusMarkup(membership)}</td><td>${supportActionsMarkup(membership)}</td></tr>`;
     const historyCard = (membership) =>
-      `<article class="support-membership-card"><div><strong>${escapeHtml(supportMembershipLabel(membership))}</strong><small>${escapeHtml(membership.user_email || "—")}</small></div><dl><div><dt>Granted</dt><dd>${formatUserDate(membership.created_at)}</dd></div><div><dt>Granted by</dt><dd>${supportActorMarkup(membership.granted_by_name, membership.granted_by_email)}</dd></div><div><dt>Revoked</dt><dd>${formatUserDate(membership.revoked_at)}</dd></div><div><dt>Revoked by</dt><dd>${membership.revoked_at ? supportActorMarkup(membership.revoked_by_name, membership.revoked_by_email) : "—"}</dd></div><div><dt>Status</dt><dd><span class="support-membership-status support-membership-status--${supportMembershipStatus(membership)}">${supportMembershipStatus(membership) === "active" ? "Active" : "Revoked"}</span></dd></div></dl></article>`;
+      `<article class="support-membership-card"><div>${supportIdentityMarkup(membership)}<small>${escapeHtml(membership.user_email || "—")}</small></div><dl><div><dt>Granted</dt><dd>${formatUserDate(membership.created_at)}</dd></div><div><dt>Revoked</dt><dd>${formatUserDate(membership.revoked_at)}</dd></div><div><dt>Status</dt><dd>${supportStatusMarkup(membership)}</dd></div></dl>${supportActionsMarkup(membership)}</article>`;
     supportMembershipList.innerHTML = page.map(historyRow).join("");
     supportMembershipMobileList.innerHTML = page.map(historyCard).join("");
     supportMembershipPagination.innerHTML =
@@ -3110,6 +3148,60 @@
       if (state.supportManagement.pendingAction)
         state.supportManagement.pendingAction.busy = false;
     }
+  }
+
+  function openSupportMembershipDetails(membership) {
+    const detail = (label, value) =>
+      `<div><dt>${label}</dt><dd>${value || "—"}</dd></div>`;
+    supportMembershipDetailsList.innerHTML = [
+      detail("Employee", escapeHtml(supportMembershipLabel(membership))),
+      detail("Email", escapeHtml(membership.user_email || "")),
+      detail("Granted", formatUserDate(membership.created_at)),
+      detail(
+        "Granted by",
+        supportActorMarkup(membership.granted_by_name, membership.granted_by_email),
+      ),
+      membership.revoked_at
+        ? detail("Revoked", formatUserDate(membership.revoked_at))
+        : "",
+      membership.revoked_at
+        ? detail(
+            "Revoked by",
+            supportActorMarkup(
+              membership.revoked_by_name,
+              membership.revoked_by_email,
+            ),
+          )
+        : "",
+      detail("Status", supportStatusMarkup(membership)),
+    ].join("");
+    supportMembershipDetailsDialog.showModal();
+  }
+
+  function handleSupportActionClick(event) {
+    const toggle = event.target.closest("[data-support-actions-toggle]");
+    if (toggle) {
+      const menu = toggle.parentElement.querySelector(".support-actions-menu");
+      const expanded = toggle.getAttribute("aria-expanded") === "true";
+      document.querySelectorAll(".support-actions-menu").forEach((item) => {
+        item.hidden = true;
+      });
+      document
+        .querySelectorAll("[data-support-actions-toggle]")
+        .forEach((item) => item.setAttribute("aria-expanded", "false"));
+      menu.hidden = expanded;
+      toggle.setAttribute("aria-expanded", String(!expanded));
+      return;
+    }
+    const detailsButton = event.target.closest("[data-support-details]");
+    if (detailsButton) {
+      const membership = state.supportManagement.memberships.find(
+        (item) => item.id === detailsButton.dataset.supportDetails,
+      );
+      if (membership) openSupportMembershipDetails(membership);
+      return;
+    }
+    handleSupportRevokeClick(event);
   }
 
   function handleSupportRevokeClick(event) {
@@ -3339,9 +3431,24 @@
     );
     renderSupportMemberships();
   });
-  supportActiveList.addEventListener("click", handleSupportRevokeClick);
-  supportActiveMobileList.addEventListener("click", handleSupportRevokeClick);
+  supportActiveList.addEventListener("click", handleSupportActionClick);
+  supportActiveMobileList.addEventListener("click", handleSupportActionClick);
+  supportMembershipList.addEventListener("click", handleSupportActionClick);
+  supportMembershipMobileList.addEventListener(
+    "click",
+    handleSupportActionClick,
+  );
   supportUserResults.addEventListener("click", handleSupportGrantClick);
+  openSupportEmployeeDialog.addEventListener("click", () => {
+    supportEmployeeDialog.showModal();
+    supportUserSearch.focus();
+  });
+  closeSupportEmployeeDialog.addEventListener("click", () =>
+    supportEmployeeDialog.close(),
+  );
+  closeSupportMembershipDetails.addEventListener("click", () =>
+    supportMembershipDetailsDialog.close(),
+  );
   cancelSupportMembership.addEventListener("click", () => {
     if (state.supportManagement.pendingAction?.busy) return;
     state.supportManagement.pendingAction = null;

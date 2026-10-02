@@ -587,9 +587,9 @@
       <section class="admin-panel" data-panel="support">
         <div class="admin-panel-heading">
           <div>
-            <p class="admin-eyebrow">Access oversight</p>
+            <p class="admin-eyebrow">Support Management</p>
             <h2>Support Management</h2>
-            <p>Manage Support employee access and review membership history.</p>
+            <p>Manage support employee access and review membership history.</p>
           </div>
         </div>
 
@@ -600,15 +600,19 @@
         ></div>
 
         <section class="admin-content-block support-management-block">
-          <div class="admin-content-block__heading">
-            <p class="admin-eyebrow">Current access</p>
-            <h3>Active Support Employees</h3>
+          <div class="admin-content-block__heading support-section-heading">
+            <div>
+              <h3>Active Support Employees</h3>
+              <p
+                class="newsletter-table-status"
+                id="supportActiveStatus"
+                role="status"
+              ></p>
+            </div>
+            <button class="auth-submit" id="openSupportEmployeeDialog" type="button">
+              + Add employee
+            </button>
           </div>
-          <p
-            class="newsletter-table-status"
-            id="supportActiveStatus"
-            role="status"
-          ></p>
           <div class="newsletter-table-wrap support-table-wrap">
             <table class="newsletter-table support-table">
               <thead>
@@ -616,7 +620,6 @@
                   <th>Employee</th>
                   <th>Email</th>
                   <th>Granted</th>
-                  <th>Granted by</th>
                   <th>Status</th>
                   <th>Actions</th>
                 </tr>
@@ -627,60 +630,33 @@
           <div class="support-mobile-list" id="supportActiveMobileList"></div>
         </section>
 
-        <section
-          class="admin-content-block support-management-block support-add-block"
-        >
-          <div class="admin-content-block__heading">
-            <p class="admin-eyebrow">Access provisioning</p>
-            <h3>Add Support Employee</h3>
-            <p>
-              Search an existing iVenue user. Support identity and audit data
-              are resolved server-side.
-            </p>
-          </div>
-          <label class="support-user-search"
-            >Search users by name or email<input
-              id="supportUserSearch"
-              type="search"
-              placeholder="Search users by name or email..."
-              autocomplete="off"
-          /></label>
-          <p
-            class="newsletter-table-status"
-            id="supportUserSearchStatus"
-            role="status"
-          >
-            Search for an existing user to grant Support access.
-          </p>
-          <div class="support-user-results" id="supportUserResults"></div>
-        </section>
-
         <section class="admin-content-block support-management-block">
-          <div class="admin-content-block__heading">
-            <p class="admin-eyebrow">Audit trail</p>
-            <h3>Membership History</h3>
+          <div class="admin-content-block__heading support-section-heading">
+            <div>
+              <h3>Membership History</h3>
+              <p
+                class="newsletter-table-status"
+                id="supportHistoryStatus"
+                role="status"
+              ></p>
+            </div>
+            <div class="support-history-controls">
+              <label class="support-history-search"
+                ><span class="sr-only">Search members</span><input
+                  id="supportHistorySearch"
+                  type="search"
+                  placeholder="Search members..."
+                  autocomplete="off"
+              /></label>
+              <label
+                ><span class="sr-only">Filter membership status</span><select id="supportHistoryFilter">
+                  <option value="all">All</option>
+                  <option value="active">Active</option>
+                  <option value="revoked">Revoked</option>
+                </select></label
+              >
+            </div>
           </div>
-          <div class="support-history-controls">
-            <label
-              >Search memberships<input
-                id="supportHistorySearch"
-                type="search"
-                placeholder="Name or email"
-                autocomplete="off"
-            /></label>
-            <label
-              >Status<select id="supportHistoryFilter">
-                <option value="all">All</option>
-                <option value="active">Active</option>
-                <option value="revoked">Revoked</option>
-              </select></label
-            >
-          </div>
-          <p
-            class="newsletter-table-status"
-            id="supportHistoryStatus"
-            role="status"
-          ></p>
           <div class="newsletter-table-wrap support-table-wrap">
             <table class="newsletter-table support-table">
               <thead>
@@ -688,10 +664,9 @@
                   <th>Employee</th>
                   <th>Email</th>
                   <th>Granted</th>
-                  <th>Granted by</th>
                   <th>Revoked</th>
-                  <th>Revoked by</th>
                   <th>Status</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody id="supportMembershipList"></tbody>
@@ -707,6 +682,51 @@
             aria-label="Support membership pagination"
           ></div>
         </section>
+
+        <dialog
+          class="admin-delete-dialog support-add-dialog"
+          id="supportEmployeeDialog"
+          aria-labelledby="supportEmployeeDialogTitle"
+        >
+          <section class="admin-delete-dialog__panel">
+            <div class="support-dialog-heading">
+              <div>
+                <p class="admin-eyebrow">Support access</p>
+                <h2 id="supportEmployeeDialogTitle">Add Support Employee</h2>
+                <p>Search an existing iVenue user.</p>
+              </div>
+              <button class="newsletter-preview-dialog__close" id="closeSupportEmployeeDialog" type="button" aria-label="Close add employee dialog">&times;</button>
+            </div>
+            <label class="support-user-search"
+              >Search by name or email<input
+                id="supportUserSearch"
+                type="search"
+                placeholder="Search by name or email..."
+                autocomplete="off"
+            /></label>
+            <p class="newsletter-table-status" id="supportUserSearchStatus" role="status">
+              Search for an existing user to grant Support access.
+            </p>
+            <div class="support-user-results" id="supportUserResults"></div>
+          </section>
+        </dialog>
+
+        <dialog
+          class="admin-delete-dialog support-details-dialog"
+          id="supportMembershipDetailsDialog"
+          aria-labelledby="supportMembershipDetailsTitle"
+        >
+          <section class="admin-delete-dialog__panel">
+            <div class="support-dialog-heading">
+              <div>
+                <p class="admin-eyebrow">Membership details</p>
+                <h2 id="supportMembershipDetailsTitle">Membership Details</h2>
+              </div>
+              <button class="newsletter-preview-dialog__close" id="closeSupportMembershipDetails" type="button" aria-label="Close membership details">&times;</button>
+            </div>
+            <dl class="support-details-list" id="supportMembershipDetailsList"></dl>
+          </section>
+        </dialog>
       </section>
 
       <dialog class="admin-delete-dialog users-dialog" id="userDetailDialog">
