@@ -672,12 +672,20 @@
             >
               <div class="account-section-header">
                 <div>
-                  <p class="account-eyebrow">Customer support</p>
+                  <p class="account-eyebrow">CUSTOMER SUPPORT</p>
                   <h2 id="support-requests-title">Support Requests</h2>
+                  <p class="support-section-description">
+                    View and continue your conversations with iVenue Support.
+                  </p>
                 </div>
-                <span class="section-count" id="supportRequestsCount"
-                  >0 requests</span
-                >
+                <div class="support-section-header__actions">
+                  <span class="section-count" id="supportRequestsCount"
+                    >0 requests</span
+                  >
+                  <a class="auth-submit support-contact-link" href="contact.html"
+                    >+ New Request</a
+                  >
+                </div>
               </div>
 
               <div class="support-inbox">
@@ -699,18 +707,15 @@
                     Resolved
                   </button>
                 </div>
-                <a class="auth-submit support-contact-link" href="contact.html"
-                  >Contact Support</a
-                >
               </div>
 
                 <div id="supportRequestsList" class="dashboard-list">
                   <div class="dashboard-loading">Loading Support requests...</div>
                 </div>
                 <div class="empty-state" id="supportRequestsEmpty" hidden>
-                  <strong>You don't have any Support requests yet.</strong>
-                  <span>Need help? Send us a Support request.</span>
-                  <a class="auth-submit" href="contact.html">Contact Support</a>
+                  <strong>No Support requests yet</strong>
+                  <span>Need help? Start a new request and our Support team will get back to you.</span>
+                  <a class="auth-submit" href="contact.html">New Request</a>
                 </div>
                 <div
                   class="support-requests-pagination"
@@ -736,7 +741,7 @@
                       id="supportConversationBack"
                       type="button"
                     >
-                      ← All Support Requests
+                      ← Requests
                     </button>
                     <span
                       class="support-request-status"
@@ -786,9 +791,6 @@
                     </button>
                   </div>
                 </form>
-                <a class="auth-submit support-contact-link" href="contact.html"
-                  >Contact Support</a
-                >
               </div>
             </section>
           </div>

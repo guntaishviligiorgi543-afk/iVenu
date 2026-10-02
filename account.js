@@ -462,10 +462,10 @@
     requests.forEach((request) => {
       const item = document.createElement("button");
       item.type = "button";
-      item.className = "dashboard-row support-request-row";
+      item.className = `dashboard-row support-request-row${request.id === supportState.selectedId ? " is-selected" : ""}`;
       item.dataset.supportRequestId = request.id;
       const unread = supportState.unread.get(request.id) || 0;
-      item.innerHTML = `<div><strong>${escapeHtml(request.subject)}</strong><span>${escapeHtml(supportCategoryLabel(request.category))}</span></div><div><strong class="support-request-status support-request-status--${request.status === "resolved" ? "resolved" : "open"}">${supportStatusLabel(request.status)}</strong>${unread > 0 ? '<span class="support-request-new">New reply</span>' : ""}<span>Updated ${escapeHtml(formatSupportDate(request.updated_at))}</span></div><span class="support-request-dates">Created ${escapeHtml(formatSupportDate(request.created_at))}</span>`;
+      item.innerHTML = `<div><strong>${escapeHtml(request.subject)}</strong><span>${escapeHtml(supportCategoryLabel(request.category))}</span><span class="support-request-updated">Updated ${escapeHtml(formatSupportDate(request.updated_at))}</span></div><div><strong class="support-request-status support-request-status--${request.status === "resolved" ? "resolved" : "open"}">${supportStatusLabel(request.status)}</strong>${unread > 0 ? '<span class="support-request-new">New reply</span>' : ""}</div>`;
       supportRequestsList.append(item);
     });
     renderSupportPagination();

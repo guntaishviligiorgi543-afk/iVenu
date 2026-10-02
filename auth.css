@@ -4949,3 +4949,341 @@ body.auth-gate-open {
     padding: 10px;
   }
 }
+
+/* Customer support inbox */
+.account-page .support-dashboard-section.is-visible {
+  grid-template-columns: minmax(320px, 350px) minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 0;
+  min-height: min(720px, calc(100dvh - 170px));
+  overflow: hidden;
+}
+
+.account-page .support-dashboard-section > .account-section-header {
+  align-items: center;
+  padding-bottom: 22px;
+}
+
+.support-section-description {
+  margin: 7px 0 0;
+  color: rgba(255, 255, 255, 0.56);
+  font-size: 0.84rem;
+}
+
+.support-section-header__actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.account-page .support-dashboard-section .support-contact-link {
+  width: auto;
+  min-height: 38px;
+  padding: 0 16px;
+  border-radius: 7px;
+  font-size: 0.76rem;
+  text-decoration: none;
+  text-transform: none;
+}
+
+.account-page .support-inbox {
+  border: 0;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0;
+  padding: 0 20px 0 0;
+  background: transparent;
+}
+
+.account-page .support-inbox .support-request-toolbar {
+  margin-bottom: 14px;
+}
+
+.account-page .support-inbox .support-request-filters {
+  gap: 3px;
+  padding: 3px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.account-page .support-inbox .support-request-filters button {
+  min-height: 30px;
+  padding: 0 11px;
+  border: 0;
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.58);
+  font-size: 0.72rem;
+}
+
+.account-page .support-inbox .support-request-filters button.is-active,
+.account-page .support-inbox .support-request-filters button:hover {
+  color: #171313;
+  background: #ff9475;
+}
+
+.account-page .support-inbox #supportRequestsList {
+  gap: 2px;
+  overflow: auto;
+  scrollbar-width: thin;
+}
+
+.account-page .support-inbox .support-request-row {
+  position: relative;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  min-height: 76px;
+  padding: 12px 12px 12px 15px;
+  border: 0;
+  border-left: 2px solid transparent;
+  border-radius: 0 7px 7px 0;
+  background: transparent;
+}
+
+.account-page .support-inbox .support-request-row:hover {
+  border-color: transparent;
+  border-left-color: rgba(255, 148, 117, 0.65);
+  background: rgba(255, 148, 117, 0.06);
+}
+
+.account-page .support-inbox .support-request-row.is-selected {
+  border-left-color: #ff9475;
+  background: rgba(255, 148, 117, 0.1);
+}
+
+.account-page .support-request-row > div:first-child strong {
+  font-size: 0.84rem;
+  line-height: 1.3;
+}
+
+.account-page .support-request-row > div:first-child span {
+  margin-top: 4px;
+  font-size: 0.72rem;
+}
+
+.account-page .support-request-row .support-request-updated {
+  margin-top: 7px;
+  color: rgba(255, 255, 255, 0.42);
+  font-size: 0.68rem;
+}
+
+.account-page .support-request-row > div:nth-child(2) {
+  display: flex;
+  min-width: 66px;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.account-page .support-request-status {
+  min-height: 22px;
+  padding: 2px 8px;
+  border: 0;
+  color: #ffb99f !important;
+  background: rgba(255, 148, 117, 0.12);
+  font-size: 0.66rem !important;
+  text-transform: none;
+}
+
+.account-page .support-request-status--resolved {
+  color: #a8edbb !important;
+  background: rgba(132, 221, 166, 0.1);
+}
+
+.account-page .support-request-new {
+  margin: 0;
+  color: #ff9475 !important;
+  font-size: 0.62rem !important;
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+
+.account-page .support-requests-pagination {
+  margin-top: 10px;
+}
+
+.account-page .support-conversation-empty,
+.account-page .support-dashboard-section #supportRequestConversation {
+  min-height: 0;
+  border: 0;
+  border-radius: 0;
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.account-page .support-conversation-empty {
+  margin-left: 20px;
+}
+
+.account-page .support-conversation-empty strong {
+  font-family: "Cabin", Arial, sans-serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.account-page .support-dashboard-section #supportRequestConversation {
+  margin-left: 20px;
+}
+
+.account-page .support-dashboard-section .support-conversation-header {
+  gap: 5px;
+  padding: 20px 24px 17px;
+}
+
+.account-page .support-dashboard-section .support-conversation-header__top {
+  justify-content: flex-end;
+}
+
+.account-page .support-dashboard-section .support-conversation-back {
+  display: none;
+}
+
+.account-page .support-dashboard-section .support-conversation-header h3 {
+  font-size: 1.2rem;
+}
+
+.account-page .support-dashboard-section .support-conversation-header__meta {
+  font-size: 0.74rem;
+}
+
+.account-page .support-dashboard-section .support-customer-message-list {
+  gap: 18px;
+  padding: 24px;
+}
+
+.account-page .support-dashboard-section .support-customer-message {
+  max-width: 72%;
+  padding: 11px 14px;
+  border: 0;
+  border-radius: 12px 12px 12px 4px;
+  background: #202124;
+}
+
+.account-page .support-dashboard-section .support-customer-message--customer {
+  border-radius: 12px 12px 4px 12px;
+  background: rgba(255, 148, 117, 0.16);
+}
+
+.account-page .support-dashboard-section .support-customer-message header {
+  display: block;
+  margin-bottom: 6px;
+}
+
+.account-page .support-dashboard-section .support-customer-message header strong {
+  display: block;
+  font-size: 0.72rem;
+}
+
+.account-page .support-dashboard-section .support-customer-message time {
+  display: block;
+  margin-top: 3px;
+  font-size: 0.65rem;
+}
+
+.account-page .support-dashboard-section .support-customer-message p {
+  font-size: 0.84rem;
+  line-height: 1.5;
+}
+
+.account-page .support-dashboard-section .support-customer-reply {
+  gap: 7px;
+  padding: 12px 24px 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.account-page .support-dashboard-section .support-customer-reply label {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.68rem;
+  font-weight: 500;
+}
+
+.account-page .support-dashboard-section .support-customer-reply textarea {
+  min-height: 52px;
+  max-height: 130px;
+  padding: 12px 13px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.05);
+  resize: vertical;
+}
+
+.account-page .support-dashboard-section .support-customer-reply > div {
+  justify-content: flex-end;
+}
+
+.account-page .support-dashboard-section .support-customer-reply-status {
+  margin-right: auto;
+  font-size: 0.7rem;
+}
+
+.account-page .support-dashboard-section .support-customer-reply .auth-submit {
+  width: auto;
+  min-height: 34px;
+  padding: 0 16px;
+  border-radius: 7px;
+  font-size: 0.72rem;
+  text-transform: none;
+}
+
+.account-page .support-dashboard-section .support-resolved-message {
+  margin: 0 24px 20px;
+  padding: 12px 14px;
+  border-left: 2px solid rgba(132, 221, 166, 0.7);
+  background: rgba(132, 221, 166, 0.08);
+  font-size: 0.8rem;
+}
+
+@media (max-width: 1040px) and (min-width: 761px) {
+  .account-page .support-dashboard-section.is-visible {
+    grid-template-columns: minmax(280px, 300px) minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 760px) {
+  .account-page .support-dashboard-section.is-visible {
+    min-height: 0;
+    overflow: visible;
+  }
+
+  .account-page .support-dashboard-section > .account-section-header {
+    padding-bottom: 16px;
+  }
+
+  .account-page .support-section-description {
+    max-width: 260px;
+    line-height: 1.4;
+  }
+
+  .account-page .support-section-header__actions .section-count {
+    display: none;
+  }
+
+  .account-page .support-inbox {
+    padding-right: 0;
+    border-right: 0;
+  }
+
+  .account-page .support-inbox #supportRequestsList {
+    max-height: calc(100dvh - 310px);
+  }
+
+  .account-page .support-conversation-empty,
+  .account-page .support-dashboard-section #supportRequestConversation {
+    margin-left: 0;
+  }
+
+  .account-page .support-dashboard-section #supportRequestConversation {
+    min-height: calc(100dvh - 250px);
+  }
+
+  .account-page .support-dashboard-section .support-conversation-back {
+    display: inline-flex;
+    margin-right: auto;
+  }
+
+  .account-page .support-dashboard-section .support-conversation-header__top {
+    justify-content: space-between;
+  }
+
+  .account-page .support-dashboard-section .support-customer-message {
+    max-width: 88%;
+  }
+}
