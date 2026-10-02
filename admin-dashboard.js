@@ -2912,12 +2912,31 @@
   };
   const supportIdentityMarkup = (membership) =>
     `<span class="support-identity"><span class="support-avatar" aria-hidden="true">${supportInitials(membership)}</span><strong>${escapeHtml(supportMembershipLabel(membership))}</strong></span>`;
+  const supportIcon = (name) => {
+    const paths = {
+      users:
+        '<path d="M16 11a3 3 0 1 0-2.9-3.75A4 4 0 0 1 16 11Zm-8 0a4 4 0 1 0 0-8a4 4 0 0 0 0 8Zm0 2c-3.87 0-7 2.02-7 4.5V19h14v-1.5C15 15.02 11.87 13 8 13Zm8 0c-.56 0-1.1.06-1.61.17A6.7 6.7 0 0 1 18 17v2h5v-1.5c0-2.48-3.13-4.5-7-4.5Z"/>',
+      history:
+        '<path d="M5 3h10l4 4v14H5V3Zm9 1.5V8h3.5L14 4.5ZM8 12h8v-1.5H8V12Zm0 3h8v-1.5H8V15Zm0 3h5v-1.5H8V18Z"/>',
+      revoked:
+        '<path d="M15 11a4 4 0 1 0-4-4a4 4 0 0 0 4 4Zm0 2c-3.87 0-7 2.02-7 4.5V19h9.5a6.8 6.8 0 0 1-2.5-5.33c0-.23.02-.45.04-.67H15ZM4.53 4.47 3.47 5.53l3 3L7.53 7.47l-3-3Zm14.94 0-3 3 1.06 1.06 3-3-1.06-1.06Z"/>',
+      eye:
+        '<path d="M12 5c-5 0-8.5 3.8-10 7c1.5 3.2 5 7 10 7s8.5-3.8 10-7c-1.5-3.2-5-7-10-7Zm0 12a5 5 0 1 1 0-10a5 5 0 0 1 0 10Zm0-2.2a2.8 2.8 0 1 0 0-5.6a2.8 2.8 0 0 0 0 5.6Z"/>',
+      remove:
+        '<path d="M15 11a4 4 0 1 0-4-4a4 4 0 0 0 4 4Zm0 2c-3.87 0-7 2.02-7 4.5V19h7.5a6.8 6.8 0 0 1-1.5-4.33c0-.57.07-1.13.2-1.67H15ZM19 13h-2v2h2v2h2v-2h2v-2h-2v-2h-2v2Z"/>',
+      add:
+        '<path d="M14 11a4 4 0 1 0-4-4a4 4 0 0 0 4 4Zm0 2c-3.87 0-7 2.02-7 4.5V19h8.5a6.8 6.8 0 0 1-1.5-4.33c0-.57.07-1.13.2-1.67H14ZM4 12V9H2v3H0v2h2v3h2v-3h2v-2H4Z"/>',
+      more:
+        '<circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/>',
+    };
+    return `<svg viewBox="0 0 24 24" aria-hidden="true">${paths[name]}</svg>`;
+  };
   const supportStatusMarkup = (membership) => {
     const active = !membership.revoked_at;
     return `<span class="support-membership-status support-membership-status--${active ? "active" : "revoked"}"><span class="support-status-dot" aria-hidden="true"></span>${active ? "Active" : "Revoked"}</span>`;
   };
   const supportActionsMarkup = (membership) =>
-    `<div class="support-actions"><button class="support-actions-toggle" type="button" aria-label="Actions for ${escapeHtml(supportMembershipLabel(membership))}" aria-expanded="false" data-support-actions-toggle>…</button><div class="support-actions-menu" hidden><button type="button" data-support-details="${escapeHtml(membership.id || "")}">View details</button>${!membership.revoked_at && membership.user_id ? `<button class="is-destructive" type="button" data-support-revoke="${escapeHtml(membership.user_id)}">Revoke access</button>` : ""}</div></div>`;
+    `<div class="support-actions"><button class="support-actions-toggle" type="button" aria-label="Actions for ${escapeHtml(supportMembershipLabel(membership))}" aria-expanded="false" data-support-actions-toggle>${supportIcon("more")}</button><div class="support-actions-menu" hidden><button type="button" data-support-details="${escapeHtml(membership.id || "")}">${supportIcon("eye")}<span>View details</span></button>${!membership.revoked_at && membership.user_id ? `<button class="is-destructive" type="button" data-support-revoke="${escapeHtml(membership.user_id)}">${supportIcon("remove")}<span>Revoke access</span></button>` : ""}</div></div>`;
   const supportMembershipStatus = (membership) =>
     membership.revoked_at ? "revoked" : "active";
   const supportActionError = (action) =>
@@ -2933,10 +2952,11 @@
     const revokedCount = memberships.filter(
       (membership) => membership.revoked_at,
     ).length;
-    supportMetrics.innerHTML = `<article class="admin-metric"><span class="support-metric-icon" aria-hidden="true">👥</span><div><strong>${activeCount}</strong><span>Active Support Employees</span></div></article><article class="admin-metric"><span class="support-metric-icon" aria-hidden="true">↺</span><div><strong>${memberships.length}</strong><span>Membership History</span></div></article><article class="admin-metric"><span class="support-metric-icon" aria-hidden="true">⊘</span><div><strong>${revokedCount}</strong><span>Revoked Memberships</span></div></article>`;
+    supportMetrics.innerHTML = `<article class="admin-metric"><span class="support-metric-icon">${supportIcon("users")}</span><div><strong>${activeCount}</strong><span>Active Support Employees</span></div></article><article class="admin-metric"><span class="support-metric-icon">${supportIcon("history")}</span><div><strong>${memberships.length}</strong><span>Membership History</span></div></article><article class="admin-metric"><span class="support-metric-icon">${supportIcon("revoked")}</span><div><strong>${revokedCount}</strong><span>Revoked Memberships</span></div></article>`;
   }
 
   function renderSupportMemberships() {
+    closeSupportActionMenus();
     const memberships = state.supportManagement.memberships;
     const active = memberships.filter((membership) => !membership.revoked_at);
     supportActiveStatus.textContent = active.length
@@ -3028,7 +3048,7 @@
           ? `<span class="support-user-result__blocked">Admin accounts cannot be assigned Support access.</span>`
           : activeIds.has(user.id)
             ? `<span class="support-membership-status support-membership-status--active">Support access active</span>`
-            : `<button class="admin-outline" type="button" data-support-grant="${escapeHtml(user.id)}">Grant Support Access</button>`;
+            : `<button class="admin-outline" type="button" data-support-grant="${escapeHtml(user.id)}">${supportIcon("add")}<span>Grant Support Access</span></button>`;
         return `<article class="support-user-result"><div><strong>${escapeHtml(userLabel(user))}</strong><small>${escapeHtml(user.email || "No email")}</small></div><div class="support-user-result__status"><span class="support-user-role support-user-role--${role.toLocaleLowerCase()}">${role}</span>${action}</div></article>`;
       })
       .join("");
@@ -3151,6 +3171,7 @@
   }
 
   function openSupportMembershipDetails(membership) {
+    closeSupportActionMenus();
     const detail = (label, value) =>
       `<div><dt>${label}</dt><dd>${value || "—"}</dd></div>`;
     supportMembershipDetailsList.innerHTML = [
@@ -3195,13 +3216,26 @@
     }
     const detailsButton = event.target.closest("[data-support-details]");
     if (detailsButton) {
+      closeSupportActionMenus();
       const membership = state.supportManagement.memberships.find(
         (item) => item.id === detailsButton.dataset.supportDetails,
       );
       if (membership) openSupportMembershipDetails(membership);
       return;
     }
+    if (event.target.closest("[data-support-revoke]")) {
+      closeSupportActionMenus();
+    }
     handleSupportRevokeClick(event);
+  }
+
+  function closeSupportActionMenus() {
+    document.querySelectorAll(".support-actions-menu").forEach((menu) => {
+      menu.hidden = true;
+    });
+    document
+      .querySelectorAll("[data-support-actions-toggle]")
+      .forEach((toggle) => toggle.setAttribute("aria-expanded", "false"));
   }
 
   function handleSupportRevokeClick(event) {
@@ -3438,6 +3472,12 @@
     "click",
     handleSupportActionClick,
   );
+  document.addEventListener("click", (event) => {
+    if (!event.target.closest(".support-actions")) closeSupportActionMenus();
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") closeSupportActionMenus();
+  });
   supportUserResults.addEventListener("click", handleSupportGrantClick);
   openSupportEmployeeDialog.addEventListener("click", () => {
     supportEmployeeDialog.showModal();

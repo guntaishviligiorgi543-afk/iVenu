@@ -12,10 +12,69 @@
   overflow-x: hidden;
 }
 
+.support-actions-menu button svg,
+.support-user-result button svg,
+.support-section-heading > .auth-submit svg,
+.support-dialog-heading .newsletter-preview-dialog__close svg {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
+  stroke: none;
+}
+
+.support-dialog-heading .newsletter-preview-dialog__close svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-width: 2;
+}
+
+.support-section-heading > .auth-submit,
+.support-user-result button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.support-search-field {
+  position: relative;
+  display: block;
+}
+
+.support-search-icon {
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  left: 10px;
+  width: 17px;
+  height: 17px;
+  color: rgba(255, 255, 255, 0.5);
+  pointer-events: none;
+  transform: translateY(-50%);
+}
+
+.support-search-icon svg {
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-width: 1.8;
+}
+
+.support-history-controls .support-search-icon + input,
+.support-search-field input {
+  padding-left: 34px;
+}
+
 .admin-page *,
 .admin-page *::before,
 .admin-page *::after {
   box-sizing: border-box;
+}
+
+.support-add-dialog .support-user-results {
+  overflow-y: auto;
 }
 
 .admin-gated .admin-shell {
@@ -2984,7 +3043,13 @@ body.newsletter-editor-mode .newsletter-composer {
   border-radius: 8px;
   color: #ff9475;
   background: rgba(255, 148, 117, 0.12);
-  font-size: 1.15rem;
+}
+
+.support-metric-icon svg {
+  width: 22px;
+  height: 22px;
+  fill: currentColor;
+  stroke: none;
 }
 
 .admin-panel[data-panel="support"] .support-metrics .admin-metric > div {
@@ -3006,7 +3071,9 @@ body.newsletter-editor-mode .newsletter-composer {
 }
 
 .admin-panel[data-panel="support"] .support-management-block {
+  min-height: 250px;
   padding: 24px 0;
+  overflow: visible;
 }
 
 .admin-panel[data-panel="support"] .support-management-block:first-of-type {
@@ -3031,6 +3098,13 @@ body.newsletter-editor-mode .newsletter-composer {
 
 .support-table {
   min-width: 0;
+}
+
+.admin-panel[data-panel="support"] .support-table-wrap {
+  min-height: 150px;
+  max-height: none;
+  overflow-x: auto;
+  overflow-y: visible;
 }
 
 .support-table th,
@@ -3090,15 +3164,21 @@ body.newsletter-editor-mode .newsletter-composer {
 }
 
 .support-actions-toggle {
+  display: grid;
+  place-items: center;
   width: 32px;
   height: 30px;
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 6px;
   color: rgba(255, 255, 255, 0.8);
   background: transparent;
-  font-size: 1.1rem;
-  line-height: 1;
   cursor: pointer;
+}
+
+.support-actions-toggle svg {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
 }
 
 .support-actions-toggle:hover,
@@ -3121,7 +3201,14 @@ body.newsletter-editor-mode .newsletter-composer {
   box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
 }
 
+.support-actions-menu[hidden] {
+  display: none;
+}
+
 .support-actions-menu button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   padding: 8px 10px;
   border: 0;
   color: rgba(255, 255, 255, 0.84);
