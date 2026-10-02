@@ -1967,6 +1967,41 @@ body.auth-gate-open {
   display: none;
 }
 
+.supportFloatingLink {
+  position: fixed;
+  z-index: 1000001;
+  left: calc(22px + env(safe-area-inset-left, 0px));
+  bottom: calc(22px + env(safe-area-inset-bottom, 0px));
+  padding: 11px 15px;
+  border: 1px solid #ff9475;
+  border-radius: 7px;
+  color: #000;
+  background: #ff9475;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.28);
+  font-family: "Cabin", sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.supportFloatingLink:hover,
+.supportFloatingLink:focus-visible {
+  color: #ff9475;
+  background: #111;
+}
+
+.supportFloatingLink[hidden] {
+  display: none;
+}
+
+@media (max-width: 600px) {
+  .supportFloatingLink {
+    left: calc(16px + env(safe-area-inset-left, 0px));
+    bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
 .auth-link-button {
   padding: 0;
   border: 0;

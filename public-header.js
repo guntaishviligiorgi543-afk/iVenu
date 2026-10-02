@@ -2,6 +2,21 @@
   const isDashboard =
     document.body.classList.contains("account-page") ||
     /(?:^|\/)admin-dashboard\.html$/.test(location.pathname);
+  const isAuthPage =
+    document.body.className.includes("auth") ||
+    /login|register|verify|reset|forgot/.test(location.pathname);
+  const supportNavigationExcludedPages = new Set([
+    "support.html",
+    "gettickets.html",
+    "checkout.html",
+  ]);
+  const currentPageName =
+    location.pathname.split("/").filter(Boolean).pop()?.toLowerCase() ||
+    "index.html";
+  const isSupportNavigationEligiblePage =
+    !isDashboard &&
+    !isAuthPage &&
+    !supportNavigationExcludedPages.has(currentPageName);
   if (isDashboard) return;
 
   let header = document.querySelector("header");
@@ -12,9 +27,6 @@
   if (header.dataset.publicHeaderReady) return;
   header.dataset.publicHeaderReady = "true";
 
-  const isAuthPage =
-    document.body.className.includes("auth") ||
-    /login|register|verify|reset|forgot/.test(location.pathname);
   header.classList.toggle("auth-page-header", isAuthPage);
   let authHeaderContent = null;
   if (isAuthPage) {
@@ -81,15 +93,7 @@
   }
   mobileDashboard?.classList.add("mobileDashboardLink");
   mobileDashboard.hidden = true;
-  let mobileSupport = nav?.querySelector(".mobileSupportLink");
-  if (!mobileSupport && nav) {
-    mobileSupport = document.createElement("a");
-    mobileSupport.className = "mobileSupportLink";
-    mobileSupport.href = "support.html";
-    mobileSupport.textContent = "Support workspace";
-    nav.append(mobileSupport);
-  }
-  mobileSupport.hidden = true;
+  nav?.querySelectorAll(".mobileSupportLink").forEach((link) => link.remove());
   let socialSlot = menu.querySelector(".mobileMenuSocial");
   let account = menu.querySelector(".mobileMenuAccount");
   if (!socialSlot && panel) {
@@ -110,13 +114,10 @@
   headerAccount.className = "authNavLink";
   headerAccount.href = "profile.html";
   headerAccount.textContent = "account";
-  headerNav?.querySelectorAll(".authNavLink").forEach((link) => link.remove());
-  const headerSupport = document.createElement("a");
-  headerSupport.className = "authNavLink supportWorkspaceLink";
-  headerSupport.href = "support.html";
-  headerSupport.textContent = "support";
-  headerSupport.hidden = true;
-  headerNav?.append(headerAuth, headerAccount, headerSupport);
+  headerNav
+    ?.querySelectorAll(".authNavLink, .supportWorkspaceLink")
+    .forEach((link) => link.remove());
+  headerNav?.append(headerAuth, headerAccount);
 
   const normalizedPagePath = (pathname) => {
     const normalized = pathname.replace(/\/+$/, "") || "/";
@@ -157,6 +158,28 @@
     else if (burgerBreakpoint.matches) headerContent.append(social);
     else if (socialParent) socialParent.insertBefore(social, socialNext);
   };
+  const setSupportFloatingLinkVisibility = (visible) => {
+    let supportLink = document.querySelector("#supportFloatingLink");
+
+    if (!visible) {
+      supportLink?.remove();
+      return;
+    }
+
+    if (!supportLink) {
+      supportLink = document.createElement("a");
+      supportLink.id = "supportFloatingLink";
+      supportLink.className = "supportFloatingLink";
+      supportLink.href = "support.html";
+      supportLink.textContent = "Support";
+      supportLink.setAttribute("aria-label", "Open Support workspace");
+      supportLink.hidden = true;
+      document.body.append(supportLink);
+    }
+
+    supportLink.dataset.supportVisible = "true";
+    supportLink.hidden = menu.classList.contains("is-open");
+  };
   const setOpen = (open) => {
     menu.classList.toggle("is-open", open);
     toggle.classList.toggle("is-open", open);
@@ -168,6 +191,11 @@
     if (outsideDashboard) {
       outsideDashboard.hidden =
         open || outsideDashboard.dataset.adminVisible !== "true";
+    }
+    const outsideSupport = document.querySelector("#supportFloatingLink");
+    if (outsideSupport) {
+      outsideSupport.hidden =
+        open || outsideSupport.dataset.supportVisible !== "true";
     }
     placeSocial(open);
   };
@@ -185,8 +213,7 @@
     syncActiveNavigation();
     if (mobileCart) mobileCart.hidden = !signedIn;
     mobileDashboard.hidden = true;
-    mobileSupport.hidden = true;
-    headerSupport.hidden = true;
+    setSupportFloatingLinkVisibility(false);
     account.replaceChildren();
 
     if (!signedIn) {
@@ -229,9 +256,11 @@
       );
       if (error) throw error;
       if (renderId !== authRenderId) return;
-      mobileSupport.hidden = isSupportEmployee !== true;
-      headerSupport.hidden = isSupportEmployee !== true;
+      setSupportFloatingLinkVisibility(
+        isSupportEmployee === true && isSupportNavigationEligiblePage,
+      );
     } catch (error) {
+      setSupportFloatingLinkVisibility(false);
       console.error("Unable to check Support workspace access", error);
     }
   };
