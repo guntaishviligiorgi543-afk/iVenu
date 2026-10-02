@@ -456,7 +456,7 @@
       return true;
     } catch (error) {
       console.error("Unable to determine whether password setup is required", error);
-      throw error;
+      return false;
     }
   }
 
@@ -697,6 +697,7 @@
         await remindIncompleteProfile(session);
     })
     .catch((error) => {
+      completeInitialPasswordSetupGuard();
       console.error("Unable to complete the initial authentication check", error);
     });
   subscribeToAuthChanges((event, session) => {
