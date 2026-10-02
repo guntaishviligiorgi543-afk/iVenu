@@ -475,7 +475,8 @@ body.support-page {
   overflow: hidden;
 }
 
-.support-detail[hidden] {
+/* Honor JS visibility state even when a component sets grid/flex display. */
+.support-page [hidden] {
   display: none !important;
 }
 

@@ -564,7 +564,7 @@
       }
 
       if (!preserveSelection || !selectedRequest()) {
-        state.selectedId = state.requests[0]?.id || null;
+        state.selectedId = null;
       }
 
       renderQueue();
@@ -583,7 +583,7 @@
 
       /*
        * Desktop:
-       * first request may be selected automatically.
+       * preserve the selected conversation when refreshing.
        *
        * Mobile:
        * inbox stays visible until the employee
