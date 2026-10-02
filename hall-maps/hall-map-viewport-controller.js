@@ -5,31 +5,52 @@
   const WHEEL_ZOOM_SENSITIVITY = 0.0015;
   const DEFAULT_MAX_SCALE = 6;
 
-  const clamp = (value, minimum, maximum) => Math.max(minimum, Math.min(maximum, value));
-  const distance = (first, second) => Math.hypot(first.clientX - second.clientX, first.clientY - second.clientY);
+  const clamp = (value, minimum, maximum) =>
+    Math.max(minimum, Math.min(maximum, value));
+  const distance = (first, second) =>
+    Math.hypot(first.clientX - second.clientX, first.clientY - second.clientY);
   const midpoint = (first, second) => ({
     clientX: (first.clientX + second.clientX) / 2,
     clientY: (first.clientY + second.clientY) / 2,
   });
   const parseViewBox = (svg, fallback) => {
-    const values = (svg.getAttribute("viewBox") || "").trim().split(/[\s,]+/).map(Number);
+    const values = (svg.getAttribute("viewBox") || "")
+      .trim()
+      .split(/[\s,]+/)
+      .map(Number);
     if (values.length === 4 && values.every(Number.isFinite)) return values;
     return [...fallback];
   };
-  const isEditableTarget = (target) => target instanceof Element
-    && (target.matches("input, textarea, select, button, [contenteditable='true']") || target.closest("[contenteditable='true']"));
+  const isEditableTarget = (target) =>
+    target instanceof Element &&
+    (target.matches(
+      "input, textarea, select, button, [contenteditable='true']",
+    ) ||
+      target.closest("[contenteditable='true']"));
 
   class HallMapViewportController {
     static attachSvg({ viewport, svg, viewBox, maxScale = DEFAULT_MAX_SCALE }) {
-      return new HallMapViewportController({ viewport, content: svg, mode: "svg", viewBox, maxScale });
+      return new HallMapViewportController({
+        viewport,
+        content: svg,
+        mode: "svg",
+        viewBox,
+        maxScale,
+      });
     }
 
     static attachHtml({ viewport, content, maxScale = DEFAULT_MAX_SCALE }) {
-      return new HallMapViewportController({ viewport, content, mode: "html", maxScale });
+      return new HallMapViewportController({
+        viewport,
+        content,
+        mode: "html",
+        maxScale,
+      });
     }
 
     constructor({ viewport, content, mode, viewBox, maxScale }) {
-      if (!viewport || !content) throw new Error("Hall map viewport and content are required.");
+      if (!viewport || !content)
+        throw new Error("Hall map viewport and content are required.");
       this.viewport = viewport;
       this.content = content;
       this.mode = mode;
@@ -42,14 +63,23 @@
       this.hasDragged = false;
       this.layout = null;
       this.baseViewBox = mode === "svg" ? parseViewBox(content, viewBox) : null;
-      this.state = mode === "svg"
-        ? { scale: 1, translateX: 0, translateY: 0 }
-        : { scale: 1, translateX: 0, translateY: 0, fitScale: 1, contentWidth: 1, contentHeight: 1 };
+      this.state =
+        mode === "svg"
+          ? { scale: 1, translateX: 0, translateY: 0 }
+          : {
+              scale: 1,
+              translateX: 0,
+              translateY: 0,
+              fitScale: 1,
+              contentWidth: 1,
+              contentHeight: 1,
+            };
 
       viewport.classList.add("hall-map-viewport");
       viewport.setAttribute("tabindex", "0");
       viewport.setAttribute("data-hall-map-viewport", "true");
-      if (mode === "html") viewport.setAttribute("data-seat-interaction-root", "true");
+      if (mode === "html")
+        viewport.setAttribute("data-seat-interaction-root", "true");
       content.classList.add("hall-map-surface");
       if (mode === "html") content.classList.add("hall-map-html-content");
       this.controls = this.createControls();
@@ -80,8 +110,10 @@
         if (!action) return;
         event.preventDefault();
         this.viewport.focus({ preventScroll: true });
-        if (action === "zoom-in") this.zoomAt(this.state.scale * 1.25, this.viewportCenter());
-        if (action === "zoom-out") this.zoomAt(this.state.scale / 1.25, this.viewportCenter());
+        if (action === "zoom-in")
+          this.zoomAt(this.state.scale * 1.25, this.viewportCenter());
+        if (action === "zoom-out")
+          this.zoomAt(this.state.scale / 1.25, this.viewportCenter());
         if (action === "fit") this.fit();
         if (action === "pan-left") this.panByFraction(-0.28, 0);
         if (action === "pan-right") this.panByFraction(0.28, 0);
@@ -89,23 +121,43 @@
         if (action === "pan-down") this.panByFraction(0, 0.28);
       });
 
-      this.viewport.addEventListener("pointerdown", (event) => this.onPointerDown(event));
-      this.viewport.addEventListener("pointermove", (event) => this.onPointerMove(event), { passive: false });
-      this.viewport.addEventListener("pointerup", (event) => this.onPointerEnd(event));
-      this.viewport.addEventListener("pointercancel", (event) => this.onPointerEnd(event));
-      this.viewport.addEventListener("lostpointercapture", (event) => this.onPointerEnd(event));
-      this.viewport.addEventListener("wheel", (event) => this.onWheel(event), { passive: false });
-      this.viewport.addEventListener("keydown", (event) => this.onKeyDown(event));
+      this.viewport.addEventListener("pointerdown", (event) =>
+        this.onPointerDown(event),
+      );
+      this.viewport.addEventListener(
+        "pointermove",
+        (event) => this.onPointerMove(event),
+        { passive: false },
+      );
+      this.viewport.addEventListener("pointerup", (event) =>
+        this.onPointerEnd(event),
+      );
+      this.viewport.addEventListener("pointercancel", (event) =>
+        this.onPointerEnd(event),
+      );
+      this.viewport.addEventListener("lostpointercapture", (event) =>
+        this.onPointerEnd(event),
+      );
+      this.viewport.addEventListener("wheel", (event) => this.onWheel(event), {
+        passive: false,
+      });
+      this.viewport.addEventListener("keydown", (event) =>
+        this.onKeyDown(event),
+      );
 
       // This runs before the delegated seat click handler. Only a completed drag
       // is swallowed; a normal seat click continues through untouched.
-      this.viewport.addEventListener("click", (event) => {
-        if (Date.now() > this.suppressSeatClickUntil) return;
-        this.suppressSeatClickUntil = 0;
-        if (!event.target.closest(".seat[data-event-seat-id]")) return;
-        event.preventDefault();
-        event.stopImmediatePropagation();
-      }, true);
+      this.viewport.addEventListener(
+        "click",
+        (event) => {
+          if (Date.now() > this.suppressSeatClickUntil) return;
+          this.suppressSeatClickUntil = 0;
+          if (!event.target.closest(".seat[data-event-seat-id]")) return;
+          event.preventDefault();
+          event.stopImmediatePropagation();
+        },
+        true,
+      );
     }
 
     observeResize() {
@@ -141,7 +193,10 @@
 
     viewportCenter() {
       const rect = this.viewportRect();
-      return { clientX: rect.left + rect.width / 2, clientY: rect.top + rect.height / 2 };
+      return {
+        clientX: rect.left + rect.width / 2,
+        clientY: rect.top + rect.height / 2,
+      };
     }
 
     svgRenderedBox() {
@@ -210,7 +265,11 @@
       if (!this.pan || this.pan.pointerId !== event.pointerId) return;
       const deltaX = event.clientX - this.pan.startX;
       const deltaY = event.clientY - this.pan.startY;
-      if (!record.dragged && Math.hypot(deltaX, deltaY) < POINTER_DRAG_THRESHOLD) return;
+      if (
+        !record.dragged &&
+        Math.hypot(deltaX, deltaY) < POINTER_DRAG_THRESHOLD
+      )
+        return;
       if (!record.dragged) {
         record.dragged = true;
         this.hasDragged = true;
@@ -218,8 +277,12 @@
         this.setPanning(true);
       }
       const dimensions = this.pan.dimensions;
-      this.state.translateX = this.pan.translateX + deltaX * dimensions.mapWidth / dimensions.screenWidth;
-      this.state.translateY = this.pan.translateY + deltaY * dimensions.mapHeight / dimensions.screenHeight;
+      this.state.translateX =
+        this.pan.translateX +
+        (deltaX * dimensions.mapWidth) / dimensions.screenWidth;
+      this.state.translateY =
+        this.pan.translateY +
+        (deltaY * dimensions.mapHeight) / dimensions.screenHeight;
       this.clampState();
       this.scheduleRender();
       event.preventDefault();
@@ -227,12 +290,15 @@
 
     onPointerEnd(event) {
       const record = this.pointerRecords.get(event.pointerId);
-      if (record?.dragged || this.hasDragged) this.suppressSeatClickUntil = Date.now() + 450;
+      if (record?.dragged || this.hasDragged)
+        this.suppressSeatClickUntil = Date.now() + 450;
       this.pointerRecords.delete(event.pointerId);
-      if (this.viewport.hasPointerCapture?.(event.pointerId)) this.viewport.releasePointerCapture(event.pointerId);
+      if (this.viewport.hasPointerCapture?.(event.pointerId))
+        this.viewport.releasePointerCapture(event.pointerId);
       this.pinch = null;
       this.setPanning(false);
-      if (this.pointerRecords.size === 1) this.startPan([...this.pointerRecords.values()][0]);
+      if (this.pointerRecords.size === 1)
+        this.startPan([...this.pointerRecords.values()][0]);
       if (!this.pointerRecords.size) {
         this.pan = null;
         this.hasDragged = false;
@@ -273,13 +339,19 @@
       if (!this.pinch) this.startPinch();
       const nextDistance = Math.max(distance(first, second), 1);
       const nextMidpoint = midpoint(first, second);
-      this.zoomAt(this.state.scale * nextDistance / this.pinch.distance, nextMidpoint, false);
+      this.zoomAt(
+        (this.state.scale * nextDistance) / this.pinch.distance,
+        nextMidpoint,
+        false,
+      );
       const deltaX = nextMidpoint.clientX - this.pinch.midpoint.clientX;
       const deltaY = nextMidpoint.clientY - this.pinch.midpoint.clientY;
       if (this.mode === "svg") {
         const dimensions = this.currentPanDimensions();
-        this.state.translateX += deltaX * dimensions.mapWidth / dimensions.screenWidth;
-        this.state.translateY += deltaY * dimensions.mapHeight / dimensions.screenHeight;
+        this.state.translateX +=
+          (deltaX * dimensions.mapWidth) / dimensions.screenWidth;
+        this.state.translateY +=
+          (deltaY * dimensions.mapHeight) / dimensions.screenHeight;
       } else {
         this.state.translateX += deltaX;
         this.state.translateY += deltaY;
@@ -308,7 +380,7 @@
         "=": () => this.zoomAt(this.state.scale * 1.25, this.viewportCenter()),
         "-": () => this.zoomAt(this.state.scale / 1.25, this.viewportCenter()),
         _: () => this.zoomAt(this.state.scale / 1.25, this.viewportCenter()),
-        "0": () => this.fit(),
+        0: () => this.fit(),
       };
       const action = keyActions[event.key];
       if (!action) return;
@@ -320,7 +392,12 @@
       if (this.mode === "svg") {
         const viewBox = this.visibleSvgViewBox();
         const box = this.svgRenderedBox();
-        return { mapWidth: viewBox[2], mapHeight: viewBox[3], screenWidth: box.width, screenHeight: box.height };
+        return {
+          mapWidth: viewBox[2],
+          mapHeight: viewBox[3],
+          screenWidth: box.width,
+          screenHeight: box.height,
+        };
       }
       return {
         mapWidth: 1,
@@ -358,8 +435,14 @@
         const [baseX, baseY, baseWidth, baseHeight] = this.baseViewBox;
         const nextWidth = baseWidth / nextScale;
         const nextHeight = baseHeight / nextScale;
-        this.state.translateX = baseX + (baseWidth - nextWidth) / 2 - (focalX - nextWidth * pointer.x);
-        this.state.translateY = baseY + (baseHeight - nextHeight) / 2 - (focalY - nextHeight * pointer.y);
+        this.state.translateX =
+          baseX +
+          (baseWidth - nextWidth) / 2 -
+          (focalX - nextWidth * pointer.x);
+        this.state.translateY =
+          baseY +
+          (baseHeight - nextHeight) / 2 -
+          (focalY - nextHeight * pointer.y);
       } else {
         const rect = this.viewportRect();
         const localX = focalEvent.clientX - rect.left;
@@ -375,8 +458,16 @@
     }
 
     measureHtmlContent() {
-      const width = Math.max(this.content.scrollWidth, this.content.offsetWidth, 1);
-      const height = Math.max(this.content.scrollHeight, this.content.offsetHeight, 1);
+      const width = Math.max(
+        this.content.scrollWidth,
+        this.content.offsetWidth,
+        1,
+      );
+      const height = Math.max(
+        this.content.scrollHeight,
+        this.content.offsetHeight,
+        1,
+      );
       this.state.contentWidth = width;
       this.state.contentHeight = height;
     }
@@ -389,11 +480,17 @@
       } else {
         this.measureHtmlContent();
         const rect = this.viewportRect();
-        const fitScale = Math.min(1, rect.width / this.state.contentWidth, rect.height / this.state.contentHeight);
+        const fitScale = Math.min(
+          1,
+          rect.width / this.state.contentWidth,
+          rect.height / this.state.contentHeight,
+        );
         this.state.fitScale = Math.max(fitScale || 1, 0.01);
         this.state.scale = this.state.fitScale;
-        this.state.translateX = (rect.width - this.state.contentWidth * this.state.scale) / 2;
-        this.state.translateY = (rect.height - this.state.contentHeight * this.state.scale) / 2;
+        this.state.translateX =
+          (rect.width - this.state.contentWidth * this.state.scale) / 2;
+        this.state.translateY =
+          (rect.height - this.state.contentHeight * this.state.scale) / 2;
       }
       this.clampState();
       this.render();
@@ -415,14 +512,27 @@
       const rect = this.viewportRect();
       const width = this.state.contentWidth * this.state.scale;
       const height = this.state.contentHeight * this.state.scale;
-      const overscrollX = Math.min(rect.width * 0.12, Math.max(20, width * 0.08));
-      const overscrollY = Math.min(rect.height * 0.12, Math.max(20, height * 0.08));
+      const overscrollX = Math.min(
+        rect.width * 0.12,
+        Math.max(20, width * 0.08),
+      );
+      const overscrollY = Math.min(
+        rect.height * 0.12,
+        Math.max(20, height * 0.08),
+      );
       const centeredX = (rect.width - width) / 2;
       const centeredY = (rect.height - height) / 2;
-      const minX = width >= rect.width ? rect.width - width - overscrollX : centeredX - overscrollX;
+      const minX =
+        width >= rect.width
+          ? rect.width - width - overscrollX
+          : centeredX - overscrollX;
       const maxX = width >= rect.width ? overscrollX : centeredX + overscrollX;
-      const minY = height >= rect.height ? rect.height - height - overscrollY : centeredY - overscrollY;
-      const maxY = height >= rect.height ? overscrollY : centeredY + overscrollY;
+      const minY =
+        height >= rect.height
+          ? rect.height - height - overscrollY
+          : centeredY - overscrollY;
+      const maxY =
+        height >= rect.height ? overscrollY : centeredY + overscrollY;
       this.state.translateX = clamp(this.state.translateX, minX, maxX);
       this.state.translateY = clamp(this.state.translateY, minY, maxY);
     }
@@ -443,7 +553,10 @@
     render() {
       if (this.mode === "svg") {
         const viewBox = this.visibleSvgViewBox();
-        this.content.setAttribute("viewBox", viewBox.map((value) => value.toFixed(3)).join(" "));
+        this.content.setAttribute(
+          "viewBox",
+          viewBox.map((value) => value.toFixed(3)).join(" "),
+        );
         return;
       }
       this.content.style.transform = `translate(${this.state.translateX.toFixed(2)}px, ${this.state.translateY.toFixed(2)}px) scale(${this.state.scale.toFixed(4)})`;
