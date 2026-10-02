@@ -2348,18 +2348,30 @@ body.auth-gate-open {
 
 .account-page .email-change-launcher {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
   gap: 20px;
   margin-top: 38px;
   padding: 22px 0 0;
   border-top: 1px solid rgba(255, 255, 255, 0.12);
 }
 
+.account-page .email-change-launcher > div {
+  min-width: 0;
+  width: 100%;
+}
+
+.account-page .email-change-launcher > .account-outline-button {
+  width: 100%;
+  min-height: 44px;
+}
+
 .account-page .email-change-launcher .account-status {
   max-width: none;
   margin-top: 7px;
   text-align: left;
+  overflow-wrap: anywhere;
 }
 
 .email-change-modal[hidden] {
@@ -3279,11 +3291,6 @@ body.auth-gate-open {
 
   .account-page .form-grid {
     grid-template-columns: 1fr;
-  }
-
-  .account-page .email-change-launcher {
-    align-items: flex-start;
-    flex-direction: column;
   }
 
   .email-change-modal {
