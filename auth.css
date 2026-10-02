@@ -4639,6 +4639,30 @@ body.auth-gate-open {
   background: rgba(255, 255, 255, 0.025);
 }
 
+.account-page .account-section[data-section="security"] > .dashboard-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.account-page
+  .account-section[data-section="security"]
+  > .dashboard-form
+  .form-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.account-page
+  .account-section[data-section="security"]
+  > .dashboard-form
+  #securityNewPasswordFields {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
 .account-page .account-section[data-section="orders"] .dashboard-row,
 .account-page .account-section[data-section="cart"] .dashboard-row {
   border-radius: 10px;
