@@ -9,6 +9,15 @@
     throw new Error("Supabase client is not configured.");
   }
 
+  // Public pages mount their loading overlay before this script runs. Keep it
+  // active through the first server-backed password-status check so an OAuth
+  // user who still needs a password never sees the page before redirecting.
+  const releaseInitialPasswordSetupGuard = window.pageLoading?.lock(
+    "initial-password-setup-check",
+  );
+  const completeInitialPasswordSetupGuard = () =>
+    releaseInitialPasswordSetupGuard?.();
+
   async function getSession() {
     const { data, error } = await client.auth.getSession();
     if (error) throw error;
@@ -447,7 +456,7 @@
       return true;
     } catch (error) {
       console.error("Unable to determine whether password setup is required", error);
-      return false;
+      throw error;
     }
   }
 
@@ -683,10 +692,13 @@
   getSession()
     .then(async (session) => {
       if (await enforceGooglePasswordSetup(session)) return;
+      completeInitialPasswordSetupGuard();
       if ((await enforcePolicyAcceptance(session)) && !isPolicyPage())
         await remindIncompleteProfile(session);
     })
-    .catch((error) => console.error("Unable to read the current session", error));
+    .catch((error) => {
+      console.error("Unable to complete the initial authentication check", error);
+    });
   subscribeToAuthChanges((event, session) => {
     if (event === "SIGNED_OUT") {
       clearReservationLogoutDialog();
