@@ -99,7 +99,7 @@
 
     .eventFilters {
       display: grid;
-      grid-template-columns: minmax(0, 2fr) minmax(180px, 1fr);
+      grid-template-columns: minmax(0, 2.2fr) minmax(180px, 1fr) minmax(180px, 1fr);
       gap: 12px;
       width: min(100%, 900px);
       margin: 34px auto 0;
@@ -659,6 +659,10 @@
             <select id="eventCategory" aria-label="Filter events by category">
               <option value="">All categories</option>
             </select>
+            <select id="eventSort" aria-label="Sort events by date">
+              <option value="nearest">Nearest first</option>
+              <option value="latest">Latest first</option>
+            </select>
           </div>
           <div class="eventCards"></div>
           <div class="pagination" aria-label="Event pages"></div>
@@ -724,6 +728,7 @@
       const pagination = document.querySelector(".pagination");
       const eventSearch = document.querySelector("#eventSearch");
       const eventCategory = document.querySelector("#eventCategory");
+      const eventSort = document.querySelector("#eventSort");
       const showsCartMessage = document.querySelector("#showsCartMessage");
       const releaseShowsInitialLoad = window.pageLoading?.lock(
         "shows-first-section",
@@ -990,6 +995,15 @@
         return event.categories?.name || "Uncategorized";
       }
 
+      function getEventDateValue(event) {
+        const cutoff = window.iVenueEventTime?.getEventCutoff?.(event);
+        if (cutoff) return cutoff.getTime();
+        const value = Date.parse(
+          `${event.event_date || ""}T${event.event_time || "00:00:00"}`,
+        );
+        return Number.isNaN(value) ? Number.POSITIVE_INFINITY : value;
+      }
+
       function fillCategoryFilter() {
         const categories = [
           ...new Set(loadedEvents.map(getEventCategory).filter(Boolean)),
@@ -1014,12 +1028,19 @@
             (!selectedCategory || getEventCategory(event) === selectedCategory)
           );
         });
+        const direction = eventSort.value === "latest" ? -1 : 1;
+        filteredEvents.sort(
+          (first, second) =>
+            direction *
+            (getEventDateValue(first) - getEventDateValue(second)),
+        );
         currentPage = 1;
         renderPage();
       }
 
       eventSearch.addEventListener("input", applyEventFilters);
       eventCategory.addEventListener("change", applyEventFilters);
+      eventSort.addEventListener("change", applyEventFilters);
       eventCards.addEventListener("click", (clickEvent) => {
         const cartButton = clickEvent.target.closest("[data-show-cart-event]");
         if (cartButton) {
