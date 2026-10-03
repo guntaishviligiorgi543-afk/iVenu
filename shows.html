@@ -107,11 +107,10 @@
     }
 
     .eventFilters input,
-    .eventFilters select {
+    .eventFilterDropdown {
       width: 100%;
       box-sizing: border-box;
       min-height: 44px;
-      padding: 10px 13px;
       border: 1px solid rgba(255, 255, 255, 0.35);
       border-radius: 0;
       color: #fff;
@@ -120,9 +119,96 @@
       outline: none;
     }
 
-    .eventFilters input:focus,
-    .eventFilters select:focus {
+    .eventFilters input {
+      padding: 10px 13px;
+    }
+
+    .eventFilterDropdown {
+      position: relative;
+    }
+
+    .eventFilterDropdown__toggle {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      min-height: 42px;
+      padding: 10px 13px;
+      border: 0;
+      color: #fff;
+      background: transparent;
+      font: inherit;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .eventFilterDropdown__chevron {
+      width: 12px;
+      height: 12px;
+      margin-left: 10px;
+      fill: none;
+      stroke: currentColor;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-width: 2;
+      transition: transform 0.2s ease;
+    }
+
+    .eventFilterDropdown.is-open .eventFilterDropdown__chevron {
+      transform: rotate(180deg);
+    }
+
+    .eventFilterDropdown:focus-within {
       border-color: #ff9475;
+    }
+
+    .eventFilterDropdown__menu {
+      position: absolute;
+      top: calc(100% + 5px);
+      right: -1px;
+      left: -1px;
+      z-index: 20;
+      max-height: 240px;
+      margin: 0;
+      padding: 5px 0;
+      overflow-y: auto;
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      background: #111;
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(-5px);
+      transition:
+        opacity 0.2s ease,
+        transform 0.2s ease;
+    }
+
+    .eventFilterDropdown.is-open .eventFilterDropdown__menu {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0);
+    }
+
+    .eventFilterDropdown__option {
+      width: 100%;
+      padding: 9px 13px;
+      border: 0;
+      color: rgba(255, 255, 255, 0.72);
+      background: transparent;
+      font: inherit;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .eventFilterDropdown__option:hover,
+    .eventFilterDropdown__option:focus-visible {
+      color: #fff;
+      background: rgba(255, 148, 117, 0.18);
+      outline: none;
+    }
+
+    .eventFilterDropdown__option.is-selected {
+      color: #ff9475;
     }
 
     .pagination {
@@ -656,13 +742,51 @@
               placeholder="Search events"
               aria-label="Search events by name"
             />
-            <select id="eventCategory" aria-label="Filter events by category">
-              <option value="">All categories</option>
-            </select>
-            <select id="eventSort" aria-label="Sort events by date">
-              <option value="nearest">Nearest first</option>
-              <option value="latest">Latest first</option>
-            </select>
+            <div
+              class="eventFilterDropdown"
+              id="eventCategory"
+              data-filter-dropdown
+              data-value=""
+              data-label="All categories"
+            >
+              <button
+                class="eventFilterDropdown__toggle"
+                type="button"
+                aria-label="Filter events by category"
+                aria-haspopup="listbox"
+                aria-expanded="false"
+              >
+                <span class="eventFilterDropdown__label">All categories</span>
+                <svg class="eventFilterDropdown__chevron" viewBox="0 0 12 8" aria-hidden="true">
+                  <path d="m1 1 5 5 5-5" />
+                </svg>
+              </button>
+              <div class="eventFilterDropdown__menu" role="listbox" tabindex="-1"></div>
+            </div>
+            <div
+              class="eventFilterDropdown"
+              id="eventSort"
+              data-filter-dropdown
+              data-value="nearest"
+              data-label="Nearest first"
+            >
+              <button
+                class="eventFilterDropdown__toggle"
+                type="button"
+                aria-label="Sort events by date"
+                aria-haspopup="listbox"
+                aria-expanded="false"
+              >
+                <span class="eventFilterDropdown__label">Nearest first</span>
+                <svg class="eventFilterDropdown__chevron" viewBox="0 0 12 8" aria-hidden="true">
+                  <path d="m1 1 5 5 5-5" />
+                </svg>
+              </button>
+              <div class="eventFilterDropdown__menu" role="listbox" tabindex="-1">
+                <button class="eventFilterDropdown__option is-selected" type="button" role="option" aria-selected="true" data-value="nearest">Nearest first</button>
+                <button class="eventFilterDropdown__option" type="button" role="option" aria-selected="false" data-value="latest">Latest first</button>
+              </div>
+            </div>
           </div>
           <div class="eventCards"></div>
           <div class="pagination" aria-label="Event pages"></div>
@@ -741,6 +865,111 @@
       const pendingCartEventIds = new Set();
       const compactPaginationBreakpoint = window.matchMedia("(max-width: 768px)");
       let cartMessageTimeout;
+      let selectedCategory = "";
+      let selectedSort = "nearest";
+
+      function closeFilterDropdown(dropdown) {
+        dropdown.classList.remove("is-open");
+        dropdown
+          .querySelector(".eventFilterDropdown__toggle")
+          .setAttribute("aria-expanded", "false");
+      }
+
+      function openFilterDropdown(dropdown) {
+        document
+          .querySelectorAll("[data-filter-dropdown].is-open")
+          .forEach((item) => {
+            if (item !== dropdown) closeFilterDropdown(item);
+          });
+        dropdown.classList.add("is-open");
+        dropdown
+          .querySelector(".eventFilterDropdown__toggle")
+          .setAttribute("aria-expanded", "true");
+      }
+
+      function setFilterDropdownValue(dropdown, value, label, notify = true) {
+        dropdown.dataset.value = value;
+        dropdown.dataset.label = label;
+        dropdown.querySelector(".eventFilterDropdown__label").textContent = label;
+        dropdown.querySelectorAll(".eventFilterDropdown__option").forEach((option) => {
+          const selected = option.dataset.value === value;
+          option.classList.toggle("is-selected", selected);
+          option.setAttribute("aria-selected", String(selected));
+        });
+        closeFilterDropdown(dropdown);
+        if (notify) applyEventFilters();
+      }
+
+      function configureFilterDropdown(dropdown, options) {
+        const menu = dropdown.querySelector(".eventFilterDropdown__menu");
+        menu.innerHTML = options
+          .map(
+            ({ value, label }) =>
+              `<button class="eventFilterDropdown__option" type="button" role="option" aria-selected="false" data-value="${value}">${label}</button>`,
+          )
+          .join("");
+        setFilterDropdownValue(
+          dropdown,
+          dropdown.dataset.value || options[0].value,
+          options.find(({ value }) => value === (dropdown.dataset.value || options[0].value))?.label ||
+            options[0].label,
+          false,
+        );
+      }
+
+      document.querySelectorAll("[data-filter-dropdown]").forEach((dropdown) => {
+        const toggle = dropdown.querySelector(".eventFilterDropdown__toggle");
+        const menu = dropdown.querySelector(".eventFilterDropdown__menu");
+        toggle.addEventListener("click", () => {
+          if (dropdown.classList.contains("is-open")) closeFilterDropdown(dropdown);
+          else openFilterDropdown(dropdown);
+        });
+        toggle.addEventListener("keydown", (event) => {
+          if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+            event.preventDefault();
+            openFilterDropdown(dropdown);
+            const options = [...menu.querySelectorAll("[role='option']")];
+            options[event.key === "ArrowDown" ? 0 : options.length - 1]?.focus();
+          } else if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            if (dropdown.classList.contains("is-open")) closeFilterDropdown(dropdown);
+            else openFilterDropdown(dropdown);
+          } else if (event.key === "Escape") {
+            event.preventDefault();
+            closeFilterDropdown(dropdown);
+          }
+        });
+        menu.addEventListener("click", (event) => {
+          const option = event.target.closest("[role='option']");
+          if (!option) return;
+          if (dropdown === eventCategory) selectedCategory = option.dataset.value;
+          if (dropdown === eventSort) selectedSort = option.dataset.value;
+          setFilterDropdownValue(dropdown, option.dataset.value, option.textContent);
+          dropdown.querySelector(".eventFilterDropdown__toggle").focus();
+        });
+        menu.addEventListener("keydown", (event) => {
+          const options = [...menu.querySelectorAll("[role='option']")];
+          const current = options.indexOf(document.activeElement);
+          if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+            event.preventDefault();
+            options[(current + (event.key === "ArrowDown" ? 1 : -1) + options.length) % options.length]?.focus();
+          } else if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            document.activeElement?.click();
+          } else if (event.key === "Escape") {
+            event.preventDefault();
+            closeFilterDropdown(dropdown);
+            toggle.focus();
+          }
+        });
+      });
+
+      document.addEventListener("click", (event) => {
+        if (!event.target.closest("[data-filter-dropdown]"))
+          document
+            .querySelectorAll("[data-filter-dropdown].is-open")
+            .forEach(closeFilterDropdown);
+      });
 
       function showCartMessage(message, isError = false) {
         window.clearTimeout(cartMessageTimeout);
@@ -1008,18 +1237,14 @@
         const categories = [
           ...new Set(loadedEvents.map(getEventCategory).filter(Boolean)),
         ].sort((first, second) => first.localeCompare(second));
-        eventCategory.innerHTML = '<option value="">All categories</option>';
-        categories.forEach((category) => {
-          const option = document.createElement("option");
-          option.value = category;
-          option.textContent = category;
-          eventCategory.appendChild(option);
-        });
+        configureFilterDropdown(eventCategory, [
+          { value: "", label: "All categories" },
+          ...categories.map((category) => ({ value: category, label: category })),
+        ]);
       }
 
       function applyEventFilters() {
         const searchTerm = eventSearch.value.trim().toLowerCase();
-        const selectedCategory = eventCategory.value;
         filteredEvents = loadedEvents.filter((event) => {
           const name =
             `${event.title || ""} ${event.performer || ""} ${event.bands?.name || ""}`.toLowerCase();
@@ -1028,7 +1253,7 @@
             (!selectedCategory || getEventCategory(event) === selectedCategory)
           );
         });
-        const direction = eventSort.value === "latest" ? -1 : 1;
+        const direction = selectedSort === "latest" ? -1 : 1;
         filteredEvents.sort(
           (first, second) =>
             direction *
@@ -1039,8 +1264,6 @@
       }
 
       eventSearch.addEventListener("input", applyEventFilters);
-      eventCategory.addEventListener("change", applyEventFilters);
-      eventSort.addEventListener("change", applyEventFilters);
       eventCards.addEventListener("click", (clickEvent) => {
         const cartButton = clickEvent.target.closest("[data-show-cart-event]");
         if (cartButton) {
