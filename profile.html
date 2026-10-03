@@ -10,6 +10,7 @@
     <script defer src="public-header.js"></script>
     <link rel="stylesheet" href="auth.css" />
   </head>
+
   <body class="account-page">
     <main class="account-page-main">
       <section class="account-dashboard" aria-labelledby="account-title">
@@ -252,7 +253,9 @@
                   >Email <input name="email" type="email" readonly
                 /></label>
                 <label>Phone <input name="phone" type="tel" /></label>
-                <label>Avatar URL (optional) <input name="avatarUrl" type="url" /></label>
+                <label
+                  >Avatar URL (optional) <input name="avatarUrl" type="url"
+                /></label>
                 <label
                   >Upload avatar (optional)
                   <input
@@ -684,7 +687,9 @@
                   <span class="section-count" id="supportRequestsCount"
                     >0 requests</span
                   >
-                  <a class="auth-submit support-contact-link" href="contact.html"
+                  <a
+                    class="auth-submit support-contact-link"
+                    href="contact.html"
                     >+ New Request</a
                   >
                 </div>
@@ -692,31 +697,38 @@
 
               <div class="support-inbox">
                 <div class="support-request-toolbar">
-                <div
-                  class="support-request-filters"
-                  role="group"
-                  aria-label="Support request filters"
-                >
-                  <button
-                    class="is-active"
-                    type="button"
-                    data-support-filter="all"
+                  <div
+                    class="support-request-filters"
+                    role="group"
+                    aria-label="Support request filters"
                   >
-                    All
-                  </button>
-                  <button type="button" data-support-filter="open">Open</button>
-                  <button type="button" data-support-filter="resolved">
-                    Resolved
-                  </button>
+                    <button
+                      class="is-active"
+                      type="button"
+                      data-support-filter="all"
+                    >
+                      All
+                    </button>
+                    <button type="button" data-support-filter="open">
+                      Open
+                    </button>
+                    <button type="button" data-support-filter="resolved">
+                      Resolved
+                    </button>
+                  </div>
                 </div>
-              </div>
 
                 <div id="supportRequestsList" class="dashboard-list">
-                  <div class="dashboard-loading">Loading Support requests...</div>
+                  <div class="dashboard-loading">
+                    Loading Support requests...
+                  </div>
                 </div>
                 <div class="empty-state" id="supportRequestsEmpty" hidden>
                   <strong>No Support requests yet</strong>
-                  <span>Need help? Start a new request and our Support team will get back to you.</span>
+                  <span
+                    >Need help? Start a new request and our Support team will
+                    get back to you.</span
+                  >
                   <a class="auth-submit" href="contact.html">New Request</a>
                 </div>
                 <div
@@ -728,7 +740,10 @@
 
               <div class="support-conversation-empty" aria-live="polite">
                 <strong>Select a Support request</strong>
-                <span>Choose a request from the inbox to view the conversation.</span>
+                <span
+                  >Choose a request from the inbox to view the
+                  conversation.</span
+                >
               </div>
 
               <div

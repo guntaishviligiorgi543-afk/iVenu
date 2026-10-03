@@ -83,7 +83,17 @@ async function loadSelectedEvent() {
       return;
     }
     const inventory = await window.supabaseData.getEventInventory(bandId);
-    if (!inventory?.has_inventory || Number(inventory.available_count) <= 0) {
+    if (!inventory?.has_inventory) {
+      window.__ticketEventUnavailable = true;
+      document.querySelector("#soldOutEventState").querySelector("h1").textContent = "Tickets unavailable";
+      document.querySelector("#soldOutEventState").querySelector("p").textContent = "Tickets have not been configured for this event.";
+      document.querySelector("#soldOutEventState").hidden = false;
+      document.querySelector(".ticketHero")?.remove();
+      document.querySelector(".sec2")?.remove();
+      document.querySelector(".selectTktContainer")?.remove();
+      return;
+    }
+    if (Number(inventory.available_count) <= 0) {
       window.__ticketEventSoldOut = true;
       document.querySelector("#soldOutEventState").hidden = false;
       document.querySelector(".ticketHero")?.remove();

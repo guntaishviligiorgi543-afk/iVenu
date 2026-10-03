@@ -10,13 +10,18 @@ as $function$
     case
       when exists (select 1 from public.event_seats where event_id = p_event_id)
         then exists (
-          select 1 from public.event_seats
-          where event_id = p_event_id and status = 'available'
+          select 1
+          from public.event_seats es
+          join public.ticket_types tt on tt.id = es.ticket_type_id
+          where es.event_id = p_event_id
+            and tt.is_active
+            and es.status = 'available'
         )
       else exists (
         select 1 from public.ticket_types
         where event_id = p_event_id
           and is_active
+          and total_quantity > 0
           and available_quantity > 0
       )
     end;
@@ -48,7 +53,9 @@ begin
       count(*) filter (where es.status = 'reserved')::integer as reserved_count,
       count(*) filter (where es.status = 'sold')::integer as sold_count
     from public.event_seats es
+    join public.ticket_types tt on tt.id = es.ticket_type_id
     join event_ids on event_ids.id = es.event_id
+    where tt.is_active
     group by es.event_id
   ), ticket_counts as (
     select tt.event_id,
@@ -56,7 +63,9 @@ begin
       coalesce(sum(tt.available_quantity), 0)::integer as available_count
     from public.ticket_types tt
     join event_ids on event_ids.id = tt.event_id
-    where not exists (
+    where tt.is_active
+      and tt.total_quantity > 0
+      and not exists (
       select 1 from public.event_seats es where es.event_id = tt.event_id
     )
     group by tt.event_id
@@ -69,6 +78,38 @@ begin
   from event_ids
   left join seat_counts on seat_counts.event_id = event_ids.id
   left join ticket_counts on ticket_counts.event_id = event_ids.id;
+end;
+$function$;
+
+create or replace function public.get_admin_event_inventory()
+returns table (
+  event_id uuid,
+  total_capacity integer,
+  available_capacity integer,
+  reserved_capacity integer,
+  sold_capacity integer
+)
+language plpgsql
+security definer
+set search_path = ''
+as $function$
+begin
+  if not exists (
+    select 1 from public.admin_users a where a.user_id = auth.uid()
+  ) then
+    raise exception 'Administrator access is required.';
+  end if;
+  perform public.expire_event_seat_reservations();
+  return query
+  select es.event_id,
+    count(*)::integer,
+    count(*) filter (where es.status = 'available')::integer,
+    count(*) filter (where es.status = 'reserved')::integer,
+    count(*) filter (where es.status = 'sold')::integer
+  from public.event_seats es
+  join public.ticket_types tt on tt.id = es.ticket_type_id
+  where tt.is_active
+  group by es.event_id;
 end;
 $function$;
 

@@ -828,17 +828,19 @@
         const card = document.createElement("div");
         const ended = window.iVenueEventTime.isEventEnded(event);
         const soldOut = !ended && event.inventory?.has_inventory && Number(event.inventory.available_count) <= 0;
+        const ticketsUnavailable = !ended && !event.inventory?.has_inventory;
 
         card.classList.add("vntCrd");
         card.classList.toggle("is-ended", ended);
         card.classList.toggle("is-sold-out", soldOut);
+        card.classList.toggle("is-tickets-unavailable", ticketsUnavailable);
 
         card.innerHTML = `
     <div class="cardContent">
 
       <div class="eventCardImage">
         <img src="${event.image_url || band.image_url || ""}" alt="${performer}" />
-        ${ended ? '<span class="eventCardEndedOverlay">EVENT ENDED</span>' : soldOut ? '<span class="eventCardSoldOutOverlay">SOLD OUT</span>' : ""}
+        ${ended ? '<span class="eventCardEndedOverlay">EVENT ENDED</span>' : soldOut ? '<span class="eventCardSoldOutOverlay">SOLD OUT</span>' : ticketsUnavailable ? '<span class="eventCardSoldOutOverlay">TICKETS UNAVAILABLE</span>' : ""}
         <button class="eventCardShareButton" type="button" data-show-share-event="${event.id}" aria-label="Share this event">
           <svg xmlns="http://www.w3.org/2000/svg" width="1.69em" height="1.5em" viewBox="0 0 1792 1600" aria-hidden="true">
             <path d="M0 0h1792v1600H0z" fill="none" />
@@ -863,7 +865,7 @@
 
       <button class="moreInfoBtn">more info</button>
  <button class="getTicketBtn" data-id="${event.id}">
-  ${ended ? "Event Ended" : soldOut ? "Sold Out" : "get tickets"}
+  ${ended ? "Event Ended" : soldOut ? "Sold Out" : ticketsUnavailable ? "Tickets Unavailable" : "get tickets"}
 </button>
     </div>
 
@@ -890,7 +892,7 @@
     </p>
 
  <button class="getTicketBtn" data-id="${event.id}">
-  ${ended ? "Event Ended" : soldOut ? "Sold Out" : "get tickets"}
+  ${ended ? "Event Ended" : soldOut ? "Sold Out" : ticketsUnavailable ? "Tickets Unavailable" : "get tickets"}
 </button>
  
 </div>
@@ -1124,7 +1126,7 @@
         });
 
         document.querySelectorAll(".getTicketBtn").forEach((button) => {
-          if (button.closest(".vntCrd")?.matches(".is-ended, .is-sold-out")) {
+          if (button.closest(".vntCrd")?.matches(".is-ended, .is-sold-out, .is-tickets-unavailable")) {
             button.disabled = true;
             button.classList.add("is-ended");
             return;

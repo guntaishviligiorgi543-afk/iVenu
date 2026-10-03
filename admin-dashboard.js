@@ -537,9 +537,10 @@
         reserved: Number(inventory.reserved_capacity || 0),
         blocked: Number(inventory.blocked_capacity || 0),
         soldOut: Number(inventory.available_capacity || 0) <= 0,
+        noInventory: false,
       };
     }
-    const tickets = eventTickets(event.id);
+    const tickets = eventTickets(event.id).filter((ticket) => ticket.is_active);
     const remaining = tickets.reduce(
       (sum, ticket) => sum + Number(ticket.available_quantity || 0),
       0,
@@ -558,6 +559,7 @@
       sold,
       blocked: 0,
       soldOut: tickets.length > 0 && remaining <= 0,
+      noInventory: tickets.length === 0,
     };
   };
 
@@ -1580,7 +1582,7 @@
             const location = getEventLocation(event);
             return {
               image: `<div class="admin-event-group__image"><img src="${escapeHtml(event.image_url || "")}" alt="${escapeHtml(event.title)}" loading="lazy" /></div>`,
-              info: `<article class="admin-event-row admin-event-group__item"><div class="admin-event-group__details"><strong>${escapeHtml(event.title)}</strong><span>${escapeHtml(event.performer)} &middot; ${escapeHtml(event.categories?.name || "Uncategorized")}</span><span>${escapeHtml(location.text)}</span><time datetime="${escapeHtml(event.event_date)}">${escapeHtml(event.event_date)} &middot; ${escapeHtml(event.event_time)}</time><small>${stats.sold} sold / ${stats.remaining} available${stats.blocked ? ` / ${stats.blocked} blocked` : ""}</small></div><div class="admin-event-group__footer"><span class="admin-badge">${escapeHtml(event.status || "active")}</span>${stats.soldOut ? '<span class="admin-badge">Sold Out</span>' : ""}<div class="admin-event-actions"><button data-edit="${event.id}" type="button">Edit</button><button data-delete="${event.id}" type="button">Delete</button></div></div></article>`,
+              info: `<article class="admin-event-row admin-event-group__item"><div class="admin-event-group__details"><strong>${escapeHtml(event.title)}</strong><span>${escapeHtml(event.performer)} &middot; ${escapeHtml(event.categories?.name || "Uncategorized")}</span><span>${escapeHtml(location.text)}</span><time datetime="${escapeHtml(event.event_date)}">${escapeHtml(event.event_date)} &middot; ${escapeHtml(event.event_time)}</time><small>${stats.sold} sold / ${stats.remaining} available${stats.blocked ? ` / ${stats.blocked} blocked` : ""}</small></div><div class="admin-event-group__footer"><span class="admin-badge">${escapeHtml(event.status || "active")}</span>${stats.soldOut ? '<span class="admin-badge">Sold Out</span>' : stats.noInventory ? '<span class="admin-badge">No Inventory</span>' : ""}<div class="admin-event-actions"><button data-edit="${event.id}" type="button">Edit</button><button data-delete="${event.id}" type="button">Delete</button></div></div></article>`,
             };
           });
           return `<section class="admin-event-group"><div class="admin-event-group__images">${cards.map((card) => card.image).join("")}</div><div class="admin-event-group__information">${cards.map((card) => card.info).join("")}</div></section>`;
@@ -1590,7 +1592,7 @@
         .map((event) => {
           const stats = eventStats(event);
           const location = getEventLocation(event);
-          return `<article class="admin-event-mobile-row"><div class="admin-event-mobile-row__image"><img src="${escapeHtml(event.image_url || "")}" alt="${escapeHtml(event.title)}" loading="lazy" /></div><div class="admin-event-mobile-row__info"><strong>${escapeHtml(event.title)}</strong><span>${escapeHtml(event.performer)} &middot; ${escapeHtml(event.categories?.name || "Uncategorized")}</span><span>${escapeHtml(location.text)}</span><time datetime="${escapeHtml(event.event_date)}">${escapeHtml(event.event_date)} &middot; ${escapeHtml(event.event_time)}</time><small>${stats.sold} sold / ${stats.remaining} available${stats.blocked ? ` / ${stats.blocked} blocked` : ""}</small></div><div class="admin-event-mobile-row__actions"><span class="admin-badge">${escapeHtml(event.status || "active")}</span>${stats.soldOut ? '<span class="admin-badge">Sold Out</span>' : ""}<div class="admin-event-actions"><button data-edit="${event.id}" type="button">Edit</button><button data-delete="${event.id}" type="button">Delete</button></div></div></article>`;
+          return `<article class="admin-event-mobile-row"><div class="admin-event-mobile-row__image"><img src="${escapeHtml(event.image_url || "")}" alt="${escapeHtml(event.title)}" loading="lazy" /></div><div class="admin-event-mobile-row__info"><strong>${escapeHtml(event.title)}</strong><span>${escapeHtml(event.performer)} &middot; ${escapeHtml(event.categories?.name || "Uncategorized")}</span><span>${escapeHtml(location.text)}</span><time datetime="${escapeHtml(event.event_date)}">${escapeHtml(event.event_date)} &middot; ${escapeHtml(event.event_time)}</time><small>${stats.sold} sold / ${stats.remaining} available${stats.blocked ? ` / ${stats.blocked} blocked` : ""}</small></div><div class="admin-event-mobile-row__actions"><span class="admin-badge">${escapeHtml(event.status || "active")}</span>${stats.soldOut ? '<span class="admin-badge">Sold Out</span>' : stats.noInventory ? '<span class="admin-badge">No Inventory</span>' : ""}<div class="admin-event-actions"><button data-edit="${event.id}" type="button">Edit</button><button data-delete="${event.id}" type="button">Delete</button></div></div></article>`;
         })
         .join("");
       eventList.innerHTML = `<div class="admin-event-desktop-list">${desktopEvents}</div><div class="admin-event-mobile-list">${mobileEvents}</div>`;
