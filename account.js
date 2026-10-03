@@ -88,6 +88,11 @@
     "#supportUnreadNavBadge",
   );
   const supportState = {
+    customerId: null,
+    accessVersion: 0,
+    requestVersion: 0,
+    conversationVersion: 0,
+    selectedStatus: null,
     requests: [],
     selectedId: null,
     filter: "all",
@@ -102,6 +107,76 @@
   const isSupportMobile = () =>
     window.matchMedia("(max-width: 760px)").matches;
   let avatarPreviewUrl = "";
+  const supportNav = document.querySelector('.account-sidebar-item[data-section="support"]');
+  const supportSection = document.querySelector('.account-section[data-section="support"]');
+  let supportDeepLinkHandled = false;
+
+  function hideCustomerSupport() {
+    supportState.customerId = null;
+    supportState.requestVersion++;
+    supportState.conversationVersion++;
+    supportState.selectedId = null;
+    supportState.selectedStatus = null;
+    supportState.requests = [];
+    supportState.unread = new Map();
+    supportState.unreadTotal = 0;
+    supportNav.hidden = true;
+    supportSection.hidden = true;
+    supportUnreadNavBadge.hidden = true;
+    supportCustomerReplyForm.hidden = true;
+    supportRequestConversation.hidden = true;
+    supportRequestsList.replaceChildren();
+    supportCustomerMessageList.replaceChildren();
+    if (supportSection.classList.contains("is-visible")) {
+      document.querySelector('.account-sidebar-item[data-section="overview"]').click();
+    }
+  }
+
+  async function refreshCustomerSupportAccess(session) {
+    const version = ++supportState.accessVersion;
+    try {
+      session ??= await window.authApi.getSession();
+      if (!session?.user) {
+        hideCustomerSupport();
+        return false;
+      }
+      if (supportState.customerId && supportState.customerId !== session.user.id) hideCustomerSupport();
+      // Resolve both authoritative checks before revealing any customer UI.
+      const [admin, employee] = await Promise.all([
+        client.rpc("is_current_user_support_admin"),
+        client.rpc("is_current_user_support_employee"),
+      ]);
+      if (version !== supportState.accessVersion) return false;
+      if (admin.error || employee.error) throw admin.error || employee.error;
+      if (admin.data !== false || employee.data !== false) {
+        hideCustomerSupport();
+        return false;
+      }
+      supportState.customerId = session.user.id;
+      supportNav.hidden = false;
+      supportSection.hidden = false;
+      return true;
+    } catch (error) {
+      if (version === supportState.accessVersion) hideCustomerSupport();
+      console.error("Unable to verify customer Support access", error);
+      return false;
+    }
+  }
+
+  async function refreshCustomerSupport(session) {
+    if (!(await refreshCustomerSupportAccess(session))) return;
+    await loadSupportRequests();
+    if (!supportState.customerId || supportDeepLinkHandled) return;
+    supportDeepLinkHandled = true;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("section") === "support" || window.location.hash === "#support") {
+      supportNav.click();
+      const requestId = params.get("request");
+      if (requestId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(requestId)) {
+        await openSupportRequest(requestId);
+      }
+    }
+  }
 
   function setMessage(text, type = "", target = message) {
     target.className = `auth-message ${type}`;
@@ -331,6 +406,50 @@
     const firstCartEvent = eventsById.get(
       String(ticketsById.get(String(cartItems[0]?.ticket_type_id))?.event_id),
     );
+    const icon = (name) => {
+      const paths = {
+        account:
+          '<circle cx="12" cy="8" r="3.25"/><path d="M5.5 19.25c.55-3.05 2.75-4.75 6.5-4.75s5.95 1.7 6.5 4.75"/>',
+        cart:
+          '<path d="M4 5.5h2l1.25 8.25h8.9l2.1-6.25H7"/><circle cx="9.25" cy="18.5" r="1"/><circle cx="16.25" cy="18.5" r="1"/>',
+        ticket:
+          '<path d="M4 7.25A2.25 2.25 0 0 1 6.25 5h11.5A2.25 2.25 0 0 1 20 7.25v1.5a2.25 2.25 0 0 0 0 4.5v1.5A2.25 2.25 0 0 1 17.75 17H6.25A2.25 2.25 0 0 1 4 14.75v-1.5a2.25 2.25 0 0 0 0-4.5z"/><path d="M12 7.5v9"/>',
+        calendar:
+          '<rect x="4" y="5.5" width="16" height="14" rx="2"/><path d="M7.5 3.5v4M16.5 3.5v4M4 9.5h16"/>',
+        activity:
+          '<path d="M4 16.5h3l2-6 3.25 8 2.25-5H20"/>',
+        arrow: '<path d="M4 12h15M13.5 6.5 19 12l-5.5 5.5"/>',
+      };
+      return `<svg class="overview-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">${paths[name] || paths.activity}</svg>`;
+    };
+    const formatEventDate = (event) => {
+      if (!event?.date) return "";
+      const date = new Date(`${event.date}T00:00:00`);
+      return Number.isNaN(date.getTime())
+        ? ""
+        : date.toLocaleDateString(undefined, {
+            weekday: "short",
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+          });
+    };
+    const cartEventLabel =
+      firstCartEvent?.title ||
+      firstCartEvent?.performer ||
+      "Tickets in your cart";
+    const cartEventMeta = firstCartEvent
+      ? [
+          firstCartEvent.venue,
+          firstCartEvent.event_date
+            ? new Date(
+                `${firstCartEvent.event_date}T00:00:00`,
+              ).toLocaleDateString()
+            : "",
+        ]
+          .filter(Boolean)
+          .join(" · ")
+      : "";
     const stat = (title, value, description) =>
       `<article class="overview-card overview-stat"><p>${title}</p><strong>${value}</strong><span>${description}</span></article>`;
     const reservationCard = reservation
@@ -365,15 +484,53 @@
     const purchaseGrid = purchases
       ? `${stat("Purchased Tickets", data.tickets || 0, "Tickets currently available in your account.")}${stat("Total Orders", purchases, "Completed purchases made through your iVenue account.")}<article class="overview-card overview-spending"><p>Total Spent</p><strong>${formatMoney(data.total_spent)}</strong><span>Total value of your completed iVenue purchases.</span><small>This year: ${formatMoney(data.this_year_spent)}</small></article><article class="overview-card overview-recent-orders"><p>Recent Orders</p><h3>Completed purchases</h3><div class="overview-order-list">${recent}</div></article><article class="overview-card purchase-next-event"><p>Next Purchased Event</p>${next ? `<h3>${escapeHtml(next.name)}</h3><span>${escapeHtml(next.venue || "Venue to be announced")}</span>` : overviewEmpty("No upcoming purchased event", "Your next eligible ticket will appear here.")}</article>`
       : `<article class="overview-card purchase-tickets">${overviewEmpty("Purchased Tickets", "Tickets will appear after completed purchases.")}</article><article class="overview-card purchase-orders">${overviewEmpty("Orders", "Completed purchases will appear here.")}</article><article class="overview-card purchase-spending">${overviewEmpty("Spending", "Your completed purchase total will appear here.")}</article><article class="overview-card purchase-history">${overviewEmpty("No purchases yet", "Your completed ticket purchases and spending history will appear here.")}</article><article class="overview-card purchase-next-event">${overviewEmpty("Next Event", "Your next purchased event will appear here.")}</article>`;
+    const recentActivity = (data.recent_orders || [])
+      .map(
+        (order) =>
+          `<div class="overview-activity-row">${icon("ticket")}<span><strong>Order completed</strong><small>${escapeHtml(order.event_name || "Event")} · ${order.ticket_count} ${order.ticket_count === 1 ? "ticket" : "tickets"}</small></span><time>${escapeHtml(new Date(order.created_at).toLocaleDateString())}</time></div>`,
+      )
+      .join("");
+    const accountActivity = user?.created_at
+      ? `<div class="overview-activity-row">${icon("account")}<span><strong>Account created</strong><small>Joined iVenue</small></span><time>${escapeHtml(new Date(user.created_at).toLocaleDateString())}</time></div>`
+      : "";
+    const activityFeed = recentActivity + accountActivity;
     overviewDashboard.innerHTML = `
-      <section class="overview-panel is-active" id="overview-panel-summary" role="tabpanel" aria-labelledby="overview-tab-summary" data-overview-panel="summary"><div class="overview-grid overview-summary-grid">
-        <article class="overview-card overview-welcome"><div class="overview-avatar">${avatar}</div><div><p>Welcome back, ${escapeHtml(name)}</p><h3>${escapeHtml(profile?.email || user?.email || "Your iVenue account")}</h3><span>${user?.created_at ? `Member since ${escapeHtml(new Date(user.created_at).toLocaleDateString(undefined, { month: "long", year: "numeric" }))}` : ""}</span></div><small>Your iVenue overview, all in one place.</small></article>
-        <article class="overview-card overview-summary-reservation"><p>Reservation summary</p>${reservationCard}</article>
-        <article class="overview-card overview-cart-summary"><p>Cart Items</p>${cartCount ? `<strong>${cartCount}</strong><span>${cartCount === 1 ? "Ticket" : "Tickets"} currently in your cart.</span><a class="overview-action" href="#cart">View cart</a>` : overviewEmpty("Your cart is empty", "Add tickets to prepare your next night out.")}</article>
-        <article class="overview-card overview-cart-value"><p>Cart Value</p>${cartCount ? `<strong>${formatMoney(cartTotal)}</strong><span>${escapeHtml(firstCartEvent?.title || firstCartEvent?.performer || "Current cart total")}</span>` : overviewEmpty("No cart value", "Add tickets to calculate your total.")}</article>
-        <article class="overview-card overview-upcoming-summary"><p>Upcoming Event</p>${next ? `<h3>${escapeHtml(next.name)}</h3><strong>${escapeHtml(new Date(`${next.date}T00:00:00`).toLocaleDateString())}</strong><span>${escapeHtml(next.venue || "Venue to be announced")}</span>` : overviewEmpty("Nothing scheduled yet", "Your next purchased event will appear here.")}</article>
-        <article class="overview-card overview-quick-info"><p>Quick Information</p><strong>${reservation ? `${reservation.seat_count} reserved` : cartCount ? "Cart ready" : "Ready to explore"}</strong><span>${reservation ? "Your held seats are visible in Reservations." : "Browse events to find your next live experience."}</span></article>
-      </div></section>
+      <section class="overview-panel is-active" id="overview-panel-summary" role="tabpanel" aria-labelledby="overview-tab-summary" data-overview-panel="summary">
+        <div class="overview-summary-layout">
+          <article class="overview-summary-hero">
+            <div class="overview-summary-identity">
+              <div class="overview-avatar">${avatar}</div>
+              <div>
+                <p class="overview-eyebrow">Welcome back,</p>
+                <h3>${escapeHtml(name)}</h3>
+                <span>${escapeHtml(profile?.email || user?.email || "Your iVenue account")}</span>
+                ${user?.created_at ? `<small>Member since ${escapeHtml(new Date(user.created_at).toLocaleDateString(undefined, { month: "long", year: "numeric" }))}</small>` : ""}
+              </div>
+              <button class="overview-action overview-edit-action" type="button" data-overview-edit-profile>Edit profile ${icon("arrow")}</button>
+            </div>
+            <div class="overview-summary-stats">
+              <div class="overview-summary-stat">${icon("ticket")}<div><p>Cart items</p><strong>${cartCount}</strong><span>Tickets currently in your cart.</span></div></div>
+              <div class="overview-summary-stat">${icon("cart")}<div><p>Cart value</p><strong>${formatMoney(cartTotal)}</strong><span>${escapeHtml(cartCount ? cartEventLabel : "Add tickets to calculate your total.")}</span></div></div>
+              <div class="overview-summary-stat">${icon("calendar")}<div><p>Active reservation</p>${reservation ? `<strong>${reservation.seat_count} ${reservation.seat_count === 1 ? "seat" : "seats"}</strong><span>${escapeHtml(reservation.title || reservation.performer || "Event")} · <em data-reservation-until="${escapeHtml(reservation.reserved_until)}">Calculating time remaining…</em></span>` : `<strong>No active reservation</strong><span>Seats held for you will appear here.</span>`}</div></div>
+            </div>
+          </article>
+          <section class="overview-summary-section overview-next-event-section">
+            <div class="overview-summary-section-heading"><div><p class="overview-eyebrow">Your next event</p><h3>${next ? escapeHtml(next.name) : "Nothing scheduled yet"}</h3></div>${icon("calendar")}</div>
+            ${next ? `<div class="overview-summary-detail"><span>${escapeHtml([formatEventDate(next), next.venue || "Venue to be announced"].filter(Boolean).join(" · "))}</span><span>${next.tickets || 0} ${next.tickets === 1 ? "ticket" : "tickets"}${next.seats ? ` · ${escapeHtml(next.seats)}` : ""}</span></div>` : `<p class="overview-muted">Your next purchased event will appear here.</p>`}
+            <a class="overview-action" href="shows.html">Browse events ${icon("arrow")}</a>
+          </section>
+          <section class="overview-summary-section overview-cart-section">
+            <div class="overview-summary-section-heading"><div><p class="overview-eyebrow">Current cart</p><h3>${cartCount ? escapeHtml(cartEventLabel) : "Your cart is empty"}</h3></div>${icon("cart")}</div>
+            ${cartCount ? `<div class="overview-summary-detail"><span>${escapeHtml(cartEventMeta || `${cartCount} ${cartCount === 1 ? "ticket" : "tickets"} reserved`)}</span><span>${cartCount} ${cartCount === 1 ? "ticket" : "tickets"} reserved · Active</span></div>${cartItems.some((item) => item.event_seat_id) ? `<p class="overview-muted">Seat selections are held in your cart.</p>` : ""}<strong class="overview-summary-total">${formatMoney(cartTotal)}</strong>` : `<p class="overview-muted">Add tickets to prepare your next night out.</p>`}
+            <a class="overview-action" href="#cart">View cart ${icon("arrow")}</a>
+          </section>
+          <section class="overview-summary-section overview-activity-section">
+            <div class="overview-summary-section-heading"><div><p class="overview-eyebrow">Recent activity</p><h3>Your iVenue activity</h3></div><button class="overview-action overview-tab-link" type="button" data-overview-tab="activity">View all activity ${icon("arrow")}</button></div>
+            ${activityFeed || `<div class="overview-empty-feed">${icon("activity")}<span><strong>No activity yet.</strong>Your reservations and purchases will appear here.</span></div>`}
+            ${activityFeed ? `<div class="overview-activity-feed">${activityFeed}</div>` : ""}
+          </section>
+        </div>
+      </section>
       <section class="overview-panel" id="overview-panel-reservations" role="tabpanel" aria-labelledby="overview-tab-reservations" data-overview-panel="reservations" hidden><div class="overview-grid overview-reservations-grid">${reservationGrid}</div></section>
       <section class="overview-panel" id="overview-panel-activity" role="tabpanel" aria-labelledby="overview-tab-activity" data-overview-panel="activity" hidden><div class="overview-grid overview-activity-grid">${activityGrid}</div></section>
       <section class="overview-panel" id="overview-panel-purchases" role="tabpanel" aria-labelledby="overview-tab-purchases" data-overview-panel="purchases" hidden><div class="overview-grid overview-purchases-grid">${purchaseGrid}</div></section>`;
@@ -500,7 +657,12 @@
   }
 
   async function openSupportRequest(requestId) {
+    if (!supportState.customerId) return;
+    const customerId = supportState.customerId;
+    const version = ++supportState.conversationVersion;
     supportState.selectedId = requestId;
+    supportState.selectedStatus = null;
+    supportCustomerReplyForm.hidden = true;
     if (isSupportMobile()) {
       supportRequestsList.hidden = true;
       supportRequestsEmpty.hidden = true;
@@ -516,28 +678,23 @@
     loading.textContent = "Loading conversation...";
     supportCustomerMessageList.append(loading);
     try {
-      const [
-        { data: request, error: requestError },
-        { data: messages, error: messagesError },
-      ] = await Promise.all([
-        client
+      const { data: request, error: requestError } = await client
           .from("support_requests")
           .select("id,subject,category,status,created_at,updated_at")
           .eq("id", requestId)
-          .maybeSingle(),
-        client
+          .eq("customer_user_id", customerId)
+          .maybeSingle();
+      if (version !== supportState.conversationVersion || customerId !== supportState.customerId) return;
+      if (requestError || !request) throw requestError || new Error("Support request unavailable.");
+      const { data: messages, error: messagesError } = await client
           .from("support_messages")
           .select("sender_type,body,created_at")
           .eq("support_request_id", requestId)
           .order("created_at", { ascending: true })
-          .order("id", { ascending: true }),
-      ]);
-      if (requestError || messagesError || !request)
-        throw (
-          requestError ||
-          messagesError ||
-          new Error("Support request unavailable.")
-        );
+          .order("id", { ascending: true });
+      if (version !== supportState.conversationVersion || customerId !== supportState.customerId) return;
+      if (messagesError) throw messagesError;
+      supportState.selectedStatus = request.status;
       supportConversationCategory.textContent = supportCategoryLabel(
         request.category,
       );
@@ -553,6 +710,7 @@
       supportResolvedMessage.hidden = !resolved;
       await markCustomerRequestRead(requestId);
     } catch (error) {
+      if (version !== supportState.conversationVersion || customerId !== supportState.customerId) return;
       supportCustomerMessageList.replaceChildren();
       const failure = document.createElement("p");
       failure.className = "auth-message error";
@@ -565,6 +723,9 @@
   }
 
   async function loadSupportRequests() {
+    if (!supportState.customerId) return;
+    const customerId = supportState.customerId;
+    const version = ++supportState.requestVersion;
     supportRequestsList.hidden = false;
     supportRequestsEmpty.hidden = true;
     supportRequestsPagination.hidden = false;
@@ -575,7 +736,9 @@
       .select("id,subject,category,status,created_at,updated_at", {
         count: "exact",
       })
+      .eq("customer_user_id", customerId)
       .order("updated_at", { ascending: false })
+      .order("id", { ascending: false })
       .range(
         (supportState.page - 1) * supportState.pageSize,
         supportState.page * supportState.pageSize - 1,
@@ -585,6 +748,7 @@
     if (supportState.filter === "open")
       query = query.in("status", ["open", "waiting_for_user"]);
     const { data, error, count } = await query;
+    if (version !== supportState.requestVersion || customerId !== supportState.customerId) return;
     if (error) throw error;
     supportState.requests = data || [];
     supportState.total = count || 0;
@@ -596,17 +760,20 @@
       supportState.unreadTotal = 0;
       updateSupportUnreadBadge();
     }
-    renderSupportRequestList();
+    if (version === supportState.requestVersion && customerId === supportState.customerId) renderSupportRequestList();
   }
 
   function updateSupportUnreadBadge() {
     supportUnreadNavBadge.textContent =
       supportState.unreadTotal > 99 ? "99+" : String(supportState.unreadTotal);
-    supportUnreadNavBadge.hidden = supportState.unreadTotal === 0;
+    supportUnreadNavBadge.hidden = !supportState.customerId || supportState.unreadTotal === 0;
   }
 
   async function loadCustomerUnreadState() {
+    const customerId = supportState.customerId;
+    if (!customerId) return;
     const { data, error } = await client.rpc("get_support_unread_state");
+    if (customerId !== supportState.customerId) return;
     if (error) throw error;
     supportState.unread = new Map(
       (data || []).map((item) => [
@@ -622,10 +789,14 @@
   }
 
   async function markCustomerRequestRead(requestId) {
+    const customerId = supportState.customerId;
+    if (!customerId || supportState.selectedId !== requestId || !supportState.selectedStatus) return;
     try {
-      await client.rpc("mark_support_request_read", {
+      const { error } = await client.rpc("mark_support_request_read", {
         p_support_request_id: requestId,
       });
+      if (error) throw error;
+      if (customerId !== supportState.customerId) return;
       supportState.unread.set(requestId, 0);
       supportState.unreadTotal = [...supportState.unread.values()].reduce(
         (total, count) => total + count,
@@ -639,6 +810,7 @@
   }
 
   function showSupportRequestList() {
+    if (!supportState.customerId) return;
     if (!isSupportMobile()) return;
     supportState.selectedId = null;
     supportRequestConversation.hidden = true;
@@ -649,6 +821,7 @@
 
   async function submitSupportCustomerReply(event) {
     event.preventDefault();
+    if (!supportState.customerId || !["open", "waiting_for_user"].includes(supportState.selectedStatus)) return;
     const body = supportCustomerReply.value.trim();
     if (!supportState.selectedId || !body || supportState.sending) return;
     supportState.sending = true;
@@ -688,6 +861,7 @@
       return;
     }
     if (!session?.user) {
+      hideCustomerSupport();
       status.textContent = "Please sign in to view your account.";
       form.hidden = true;
       securityForm.hidden = true;
@@ -705,7 +879,7 @@
       return;
     }
 
-    loadSupportRequests().catch((error) => {
+    refreshCustomerSupport(session).catch((error) => {
       console.error("Unable to load Support requests", error);
       supportRequestsList.innerHTML =
         '<div class="auth-message error">Support requests could not be loaded. Please try again.</div>';
@@ -812,6 +986,19 @@
       if (tab) activateOverviewTab(tab.dataset.overviewTab);
     });
 
+  overviewDashboard?.addEventListener("click", (event) => {
+    const editProfile = event.target.closest("[data-overview-edit-profile]");
+    if (editProfile) {
+      document
+        .querySelector('.account-sidebar-item[data-section="profile"]')
+        ?.click();
+      editProfileButton?.click();
+      return;
+    }
+    const tab = event.target.closest("[data-overview-tab]");
+    if (tab) activateOverviewTab(tab.dataset.overviewTab);
+  });
+
   document
     .querySelector(".overview-tabs")
     ?.addEventListener("keydown", (event) => {
@@ -887,6 +1074,7 @@
     .forEach((button) => {
       button.addEventListener("click", () => {
         const section = button.dataset.section;
+        if (section === "support" && !supportState.customerId) return;
         document
           .querySelectorAll(".account-sidebar-item[data-section]")
           .forEach((item) => {
@@ -913,6 +1101,16 @@
       )
       ?.click();
   }
+
+  window.addEventListener("focus", () => {
+    refreshCustomerSupport().catch((error) => console.error("Unable to refresh customer Support", error));
+  });
+  client.auth.onAuthStateChange((event) => {
+    if (event === "SIGNED_OUT") {
+      supportState.accessVersion++;
+      hideCustomerSupport();
+    }
+  });
 
   cartList.addEventListener("click", async (event) => {
     const button = event.target.closest(".dashboard-cart-remove");

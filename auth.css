@@ -1,7 +1,326 @@
 @import url("https://fonts.googleapis.com/css2?family=Cabin:wght@400;500;600;700&family=Fjalla+One&display=swap");
-
 .account-page {
   overflow-x: hidden;
+}
+
+/* Spacious Summary dashboard */
+.account-page .overview-summary-layout {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.account-page .overview-summary-hero,
+.account-page .overview-summary-section {
+  min-width: 0;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  background: #111619;
+}
+
+.account-page .overview-summary-hero {
+  grid-column: 1 / -1;
+  padding: clamp(22px, 3vw, 34px);
+  background:
+    linear-gradient(110deg, rgba(255, 148, 117, 0.13), transparent 58%),
+    #111619;
+}
+
+.account-page .overview-summary-identity {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  min-width: 0;
+}
+
+.account-page .overview-summary-identity > div:nth-child(2) {
+  min-width: 0;
+}
+
+.account-page .overview-summary-identity h3,
+.account-page .overview-summary-section h3 {
+  margin: 3px 0 0;
+  color: #fff;
+  font-family: "Fjalla One", Impact, sans-serif;
+  font-size: clamp(1.55rem, 3vw, 2.35rem);
+  font-weight: 400;
+  line-height: 1.05;
+  overflow-wrap: anywhere;
+}
+
+.account-page .overview-summary-identity span,
+.account-page .overview-summary-identity small,
+.account-page .overview-summary-detail,
+.account-page .overview-muted {
+  display: block;
+  color: rgba(255, 255, 255, 0.58);
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.account-page .overview-summary-identity small {
+  margin-top: 5px;
+}
+
+.account-page .overview-eyebrow {
+  margin: 0;
+  color: #ff9475;
+  font-size: 0.69rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.account-page .overview-summary-identity .overview-avatar {
+  flex: 0 0 auto;
+  width: 72px;
+  height: 72px;
+}
+
+.account-page .overview-edit-action {
+  margin: 0 0 0 auto;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.account-page .overview-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: #ff9475;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  transition: color 160ms ease, transform 160ms ease;
+}
+
+.account-page .overview-action:hover,
+.account-page .overview-action:focus-visible {
+  color: #fff;
+  transform: translateX(2px);
+}
+
+.account-page .overview-icon {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 auto;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.6;
+}
+
+.account-page .overview-summary-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 32px;
+}
+
+.account-page .overview-summary-stat {
+  display: flex;
+  gap: 13px;
+  min-width: 0;
+  padding: 0 24px;
+}
+
+.account-page .overview-summary-stat:first-child {
+  padding-left: 0;
+}
+
+.account-page .overview-summary-stat + .overview-summary-stat {
+  border-left: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.account-page .overview-summary-stat > div {
+  min-width: 0;
+}
+
+.account-page .overview-summary-stat p {
+  margin: 0 0 5px;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 0.67rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.account-page .overview-summary-stat strong {
+  display: block;
+  color: #fff;
+  font-family: "Fjalla One", Impact, sans-serif;
+  font-size: 1.5rem;
+  font-weight: 400;
+  line-height: 1;
+}
+
+.account-page .overview-summary-stat span {
+  display: block;
+  margin-top: 7px;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 0.76rem;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.account-page .overview-summary-section {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: clamp(20px, 2.5vw, 28px);
+}
+
+.account-page .overview-next-event-section,
+.account-page .overview-cart-section {
+  grid-column: span 6;
+  min-height: 230px;
+}
+
+.account-page .overview-activity-section {
+  grid-column: 1 / -1;
+}
+
+.account-page .overview-summary-section-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.account-page .overview-summary-section-heading h3 {
+  font-family: "Cabin", Arial, sans-serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.account-page .overview-summary-section-heading > .overview-icon {
+  width: 25px;
+  height: 25px;
+  color: #ff9475;
+}
+
+.account-page .overview-summary-detail {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+}
+
+.account-page .overview-summary-total {
+  margin-top: auto;
+  color: #fff;
+  font-family: "Fjalla One", Impact, sans-serif;
+  font-size: clamp(1.65rem, 3vw, 2.25rem);
+  font-weight: 400;
+}
+
+.account-page .overview-summary-section > .overview-action {
+  margin-top: auto;
+  width: max-content;
+}
+
+.account-page .overview-tab-link {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.account-page .overview-activity-feed {
+  display: grid;
+}
+
+.account-page .overview-activity-row {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.09);
+}
+
+.account-page .overview-activity-row > .overview-icon {
+  color: #ff9475;
+}
+
+.account-page .overview-activity-row span {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.account-page .overview-activity-row strong {
+  color: #fff;
+  font-size: 0.86rem;
+}
+
+.account-page .overview-activity-row small,
+.account-page .overview-activity-row time {
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 0.75rem;
+}
+
+.account-page .overview-empty-feed {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0 2px;
+  color: rgba(255, 255, 255, 0.58);
+}
+
+.account-page .overview-empty-feed > span {
+  display: grid;
+  gap: 4px;
+  font-size: 0.8rem;
+}
+
+.account-page .overview-empty-feed strong {
+  color: #fff;
+  font-size: 0.86rem;
+}
+
+@media (max-width: 760px) {
+  .account-page .overview-summary-stats {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .account-page .overview-summary-stat,
+  .account-page .overview-summary-stat:first-child {
+    padding: 16px 0;
+  }
+
+  .account-page .overview-summary-stat + .overview-summary-stat {
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+    border-left: 0;
+  }
+
+  .account-page .overview-next-event-section,
+  .account-page .overview-cart-section {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 480px) {
+  .account-page .overview-summary-identity {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .account-page .overview-edit-action {
+    width: 100%;
+    margin-left: 0;
+    padding-left: 0;
+  }
+
+  .account-page .overview-activity-row {
+    grid-template-columns: 22px minmax(0, 1fr);
+  }
+
+  .account-page .overview-activity-row time {
+    grid-column: 2;
+  }
 }
 
 .account-page-main {
@@ -242,28 +561,23 @@
   .account-page-main {
     padding: 120px 18px 50px;
   }
-
   .account-layout {
     grid-template-columns: 1fr;
   }
-
   .account-sidebar {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px;
   }
-
   .account-sidebar-divider {
     display: none;
   }
-
   .account-sidebar-item {
     justify-content: center;
     padding: 12px 10px;
     font-size: 0.72rem;
     letter-spacing: 0.05em;
   }
-
   .account-section {
     padding: 22px 18px 26px;
   }
@@ -273,7 +587,6 @@
   .account-header {
     padding: 18px 16px 16px;
   }
-
   .account-sidebar {
     grid-template-columns: 1fr 1fr;
   }
@@ -316,6 +629,7 @@ body.auth-verification-page > header {
 }
 
 /* Authentication headers belong to the document flow, unlike site headers. */
+
 body header.auth-page-header {
   position: static;
   inset: auto;
@@ -413,14 +727,12 @@ body.auth-password-setup-page > header .auth-page-logo {
     height: 110px;
     padding: 0 24px;
   }
-
   body.auth-login-page > header > .authHeaderContent > nav,
   body.auth-register-page > header > .authHeaderContent > nav,
   body.auth-recovery-page > header > .authHeaderContent > nav,
   body.auth-verification-page > header > .authHeaderContent > nav {
     display: none;
   }
-
   body.auth-login-page > header .auth-page-logo,
   body.auth-register-page > header .auth-page-logo,
   body.auth-recovery-page > header .auth-page-logo,
@@ -448,6 +760,7 @@ body.auth-password-setup-page > header .auth-page-logo {
 }
 
 /* Keep the verification logo in the header's right-hand brand slot. */
+
 @media (max-width: 1290px) {
   body.auth-verification-page > header .auth-page-logo {
     right: 24px;
@@ -463,6 +776,7 @@ body.auth-password-setup-page > header .auth-page-logo {
 }
 
 /* Keep the authentication-page navigation sized to its links. */
+
 body.auth-login-page > header > .authHeaderContent > nav,
 body.auth-register-page > header > .authHeaderContent > nav,
 body.auth-recovery-page > header > .authHeaderContent > nav {
@@ -476,14 +790,12 @@ body.auth-recovery-page > header > .authHeaderContent > nav {
     gap: 8px;
     padding: 14px;
   }
-
   body.auth-login-page > header > .authHeaderContent > nav,
   body.auth-register-page > header > .authHeaderContent > nav,
   body.auth-recovery-page > header > .authHeaderContent > nav {
     gap: 8px;
     padding: 8px;
   }
-
   body.auth-login-page > header > .authHeaderContent > nav span,
   body.auth-register-page > header > .authHeaderContent > nav span,
   body.auth-recovery-page > header > .authHeaderContent > nav span {
@@ -555,6 +867,7 @@ header nav .authNavLink[hidden] {
 }
 
 /* Registration benefits from paired fields while preserving the shared auth form. */
+
 .auth-shell:has(#registerForm) {
   max-width: 680px;
 }
@@ -663,7 +976,6 @@ header nav .authNavLink[hidden] {
   #registerForm .phone-input-group {
     grid-template-columns: max-content minmax(0, 1fr);
   }
-
   #registerForm .phone-input-group select {
     padding-left: 10px;
     font-size: 0.85rem;
@@ -765,6 +1077,7 @@ header nav .authNavLink[hidden] {
 }
 
 /* Keep unreleased providers in the markup so they can be enabled by removing this modifier. */
+
 .social-auth-btn--not-released {
   display: none;
 }
@@ -906,13 +1219,11 @@ header nav .authNavLink[hidden] {
   .auth-page {
     padding: 120px 18px 50px;
   }
-
   .auth-shell {
     width: 100%;
     padding: 28px 22px;
     box-shadow: 7px 7px 0 rgba(255, 148, 117, 0.72);
   }
-
   #registerForm {
     grid-template-columns: 1fr;
     gap: 18px;
@@ -1019,13 +1330,13 @@ body.auth-gate-open {
   .auth-gate__dialog {
     padding: 25px;
   }
-
   .auth-gate__actions {
     flex-direction: column;
   }
 }
 
 /* Account dashboard */
+
 .account-page-main {
   min-height: 100vh;
   padding: 138px 24px 72px;
@@ -1541,11 +1852,16 @@ body.auth-gate-open {
   justify-content: center;
   margin-left: auto;
   padding: 0 5px;
-  border-radius: 999px;
+  border-radius: 50%;
   color: #111;
   background: #ff9475;
   font-size: 0.68rem;
   font-weight: 800;
+}
+
+.account-page [data-section="support"][hidden],
+.account-page #supportUnreadNavBadge[hidden] {
+  display: none !important;
 }
 
 .support-requests-pagination {
@@ -1692,34 +2008,27 @@ body.auth-gate-open {
   .account-page-main {
     padding: 32px 18px 50px;
   }
-
   .account-layout {
     grid-template-columns: 1fr;
   }
-
   .account-sidebar {
     min-height: 0;
     padding: 16px;
   }
-
   .account-sidebar-title {
     display: none;
   }
-
   .account-sidebar-nav {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
-
   .account-sidebar-divider {
     display: block;
     margin: 14px 0 8px;
   }
-
   .account-sidebar-item--logout {
     margin-top: 0;
   }
-
   .account-main,
   .account-section {
     min-height: 0;
@@ -1730,24 +2039,20 @@ body.auth-gate-open {
   .account-page-main {
     padding: 24px 12px 34px;
   }
-
   .account-header {
     display: block;
     padding: 16px 0 20px;
   }
-
   .account-status {
     max-width: none;
     margin-top: 12px;
     text-align: left;
   }
-
   .account-sidebar-nav {
     grid-column: 1 / -1;
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 5px;
   }
-
   .account-sidebar-item {
     flex-direction: column;
     justify-content: center;
@@ -1758,101 +2063,84 @@ body.auth-gate-open {
     letter-spacing: 0.02em;
     text-align: center;
   }
-
   .account-sidebar-item svg {
     width: 16px;
     height: 16px;
     flex-basis: 16px;
   }
-
   .account-page > header {
     align-items: flex-start;
     padding: 18px;
   }
-
   .account-page > header nav {
     gap: 10px 16px;
     padding: 8px;
   }
-
   .account-page > header nav span {
     font-size: 13px;
   }
-
   .account-page > header .contact {
     display: none;
   }
-
   .account-sidebar-item--logout {
     flex-direction: row;
     grid-column: 1 / -1;
     justify-content: center;
     margin-top: 4px;
   }
-
   .profile-summary {
     padding: 14px;
   }
-
   .dashboard-row {
     padding: 14px;
   }
-
   .account-section {
     padding: 25px 18px 28px;
   }
-
   .support-request-toolbar,
   .support-conversation-header,
   .support-customer-reply > div {
     align-items: stretch;
     flex-direction: column;
   }
-
   .support-contact-link,
   .support-customer-reply .auth-submit {
     width: 100%;
     text-align: center;
   }
-
   .support-request-row {
     grid-template-columns: 1fr;
     gap: 9px;
   }
-
   .support-request-row > div:nth-child(2) {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 10px;
   }
-
   .support-request-row > div:nth-child(2) span {
     margin-top: 0;
     text-align: right;
   }
-
   .support-customer-message {
     max-width: 96%;
   }
-
   .account-section-header {
     align-items: start;
     flex-direction: column;
   }
-
   .form-grid,
   .dashboard-row {
     grid-template-columns: 1fr;
     gap: 12px;
   }
-
   .dashboard-row {
     align-items: start;
   }
 }
 
 /* Premium account treatment. Keep all overrides scoped to this page. */
+
 .account-page {
   background: #080808;
 }
@@ -2307,11 +2595,9 @@ body.auth-gate-open {
     grid-template-columns: 92px minmax(0, 1fr);
     gap: 14px;
   }
-
   .account-page .cart-event-image {
     min-height: 92px;
   }
-
   .account-page .cart-event-actions {
     grid-column: 2;
     justify-items: start;
@@ -2323,12 +2609,10 @@ body.auth-gate-open {
   .account-page .cart-event-item {
     grid-template-columns: 1fr;
   }
-
   .account-page .cart-event-image {
     min-height: 0;
     aspect-ratio: 16 / 8;
   }
-
   .account-page .cart-event-actions {
     grid-column: auto;
     justify-items: start;
@@ -2383,6 +2667,7 @@ body.auth-gate-open {
 }
 
 /* User dashboard overview */
+
 .account-page .overview-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -2404,12 +2689,14 @@ body.auth-gate-open {
   align-content: start;
   gap: 8px;
 }
+
 .overview-card p,
 .overview-card h3,
 .overview-card span,
 .overview-card small {
   margin: 0;
 }
+
 .overview-card p {
   color: #ff9475;
   font-size: 0.7rem;
@@ -2417,6 +2704,7 @@ body.auth-gate-open {
   letter-spacing: 0.1em;
   text-transform: uppercase;
 }
+
 .overview-card h3 {
   color: #fff;
   font-family: "Fjalla One", Impact, sans-serif;
@@ -2425,6 +2713,7 @@ body.auth-gate-open {
   line-height: 1.05;
   overflow-wrap: anywhere;
 }
+
 .overview-card > strong {
   color: #fff;
   font-family: "Fjalla One", Impact, sans-serif;
@@ -2432,6 +2721,7 @@ body.auth-gate-open {
   font-weight: 400;
   line-height: 1;
 }
+
 .overview-card span,
 .overview-card small,
 .overview-card em {
@@ -2440,6 +2730,7 @@ body.auth-gate-open {
   font-style: normal;
   line-height: 1.45;
 }
+
 .overview-welcome {
   grid-column: span 2;
   min-height: 190px;
@@ -2451,9 +2742,11 @@ body.auth-gate-open {
     rgba(255, 255, 255, 0.025)
   );
 }
+
 .overview-welcome > small {
   grid-column: 1 / -1;
 }
+
 .overview-avatar {
   display: grid;
   width: 48px;
@@ -2466,52 +2759,64 @@ body.auth-gate-open {
   font-family: "Fjalla One", Impact, sans-serif;
   font-size: 1.35rem;
 }
+
 .overview-avatar img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
+
 .overview-welcome p {
   font-size: 0.83rem;
   text-transform: none;
   letter-spacing: 0;
 }
+
 .overview-next-event {
   grid-column: span 2;
   min-height: 190px;
 }
+
 .overview-next-event small,
 .overview-reservation em,
 .overview-spending small {
   margin-top: auto;
 }
+
 .overview-reservation {
   grid-column: span 2;
 }
+
 .overview-stat {
   min-height: 146px;
 }
+
 .overview-spending {
   grid-column: span 2;
   background: rgba(255, 148, 117, 0.07);
 }
+
 .overview-activity {
   grid-column: span 2;
   min-height: 220px;
   grid-template-columns: minmax(0, 1fr) 160px;
   align-items: end;
 }
+
 .overview-ranking {
   grid-column: span 2;
 }
+
 .overview-recent-orders {
   grid-column: span 4;
 }
+
 .overview-order-list {
   display: grid;
   gap: 8px;
   margin-top: 3px;
 }
+
 .overview-order-list > div {
   display: flex;
   align-items: center;
@@ -2520,34 +2825,41 @@ body.auth-gate-open {
   padding-top: 9px;
   border-top: 1px solid rgba(255, 255, 255, 0.09);
 }
+
 .overview-order-list span {
   display: grid;
   gap: 2px;
   min-width: 0;
 }
+
 .overview-order-list strong {
   color: rgba(255, 255, 255, 0.9);
   overflow-wrap: anywhere;
 }
+
 .overview-order-list b {
   color: #ff9475;
   white-space: nowrap;
 }
+
 .overview-empty {
   display: grid;
   align-content: center;
   gap: 7px;
   min-height: 105px;
 }
+
 .overview-empty strong {
   color: #fff;
   font-size: 0.93rem;
 }
+
 .overview-empty span {
   color: rgba(255, 255, 255, 0.56);
   font-size: 0.8rem;
   line-height: 1.45;
 }
+
 .activity-bars {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -2555,6 +2867,7 @@ body.auth-gate-open {
   gap: 9px;
   height: 135px;
 }
+
 .activity-bar {
   display: grid;
   grid-template-rows: 1fr auto auto;
@@ -2563,6 +2876,7 @@ body.auth-gate-open {
   height: 100%;
   text-align: center;
 }
+
 .activity-bar span {
   display: block;
   height: var(--activity-size);
@@ -2570,13 +2884,16 @@ body.auth-gate-open {
   border-radius: 4px 4px 0 0;
   background: #ff9475;
 }
+
 .activity-bar small {
   font-size: 0.65rem;
 }
+
 .activity-bar b {
   color: #fff;
   font-size: 0.78rem;
 }
+
 .overview-skeleton {
   animation: overview-pulse 1.1s ease-in-out infinite alternate;
   background: linear-gradient(
@@ -2586,9 +2903,11 @@ body.auth-gate-open {
     rgba(255, 255, 255, 0.035)
   );
 }
+
 .overview-skeleton--wide {
   grid-column: span 2;
 }
+
 @keyframes overview-pulse {
   to {
     opacity: 0.45;
@@ -2640,6 +2959,7 @@ body.auth-gate-open {
 }
 
 /* Overview sub-navigation and compact panel layouts. */
+
 .account-page .overview-tabs {
   display: flex;
   gap: 6px;
@@ -2675,68 +2995,86 @@ body.auth-gate-open {
   outline: 2px solid #ff9475;
   outline-offset: 2px;
 }
+
 .overview-panel[hidden] {
   display: none;
 }
+
 .overview-dashboard > .overview-skeleton {
   display: inline-block;
   width: calc(50% - 9px);
   margin: 0 10px 10px 0;
 }
+
 .overview-dashboard > .overview-skeleton:not(.overview-skeleton--wide) {
   width: calc(25% - 10px);
 }
+
 .overview-panel .overview-grid {
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
+
 .overview-summary-grid .overview-welcome {
   grid-column: span 2;
   grid-row: span 2;
 }
+
 .overview-summary-reservation {
   grid-column: span 2;
   min-height: 190px;
 }
+
 .overview-cart-summary,
 .overview-upcoming-summary {
   grid-column: span 1;
   min-height: 150px;
 }
+
 .overview-reservations-grid .overview-reservation-detail {
   grid-column: 1 / -1;
   min-height: 240px;
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
+
 .overview-reservation-detail p,
 .overview-reservation-detail h3 {
   grid-column: 1 / -1;
 }
+
 .overview-reservation-detail .overview-action {
   width: max-content;
 }
+
 .overview-activity-grid .overview-activity {
   grid-column: span 2;
 }
+
 .overview-activity-grid .overview-ranking {
   grid-column: span 2;
 }
+
 .overview-purchases-empty {
   grid-column: 1 / -1;
   min-height: 260px;
 }
+
 .overview-purchases-grid .overview-stat {
   grid-column: span 1;
 }
+
 .overview-purchases-grid .overview-spending {
   grid-column: span 2;
 }
+
 .overview-purchases-grid .overview-recent-orders {
   grid-column: 1 / -1;
 }
+
 .overview-empty-card {
   grid-column: span 2;
   min-height: 220px;
 }
+
 .overview-action {
   display: inline-flex;
   width: max-content;
@@ -2747,17 +3085,21 @@ body.auth-gate-open {
   letter-spacing: 0.04em;
   text-decoration: none;
 }
+
 .overview-card > .overview-empty {
   min-height: 0;
 }
+
 .overview-card > .overview-empty span {
   max-width: 32rem;
 }
+
 .activity-bars {
   grid-template-columns: repeat(3, minmax(0, 1fr));
   height: auto;
   margin-top: auto;
 }
+
 .activity-metric {
   display: grid;
   gap: 3px;
@@ -2766,12 +3108,14 @@ body.auth-gate-open {
   background: rgba(255, 255, 255, 0.04);
   text-align: center;
 }
+
 .activity-metric b {
   color: #ff9475;
   font-family: "Fjalla One", Impact, sans-serif;
   font-size: 1.35rem;
   font-weight: 400;
 }
+
 .activity-metric span {
   font-size: 0.68rem;
 }
@@ -2837,22 +3181,20 @@ body.auth-gate-open {
 }
 
 /* Each Overview tab is a composed six-track dashboard, not a stacked card list. */
+
 @media (min-width: 761px) {
   .overview-panel .overview-grid {
     grid-template-columns: repeat(6, minmax(0, 1fr));
     gap: 14px;
   }
-
   .overview-summary-grid .overview-welcome {
     grid-column: span 3;
     grid-row: span 2;
   }
-
   .overview-summary-grid .overview-summary-reservation {
     grid-column: span 3;
     grid-row: span 2;
   }
-
   .overview-summary-grid .overview-cart-summary,
   .overview-summary-grid .overview-cart-value {
     grid-column: span 1;
@@ -2863,7 +3205,6 @@ body.auth-gate-open {
   .overview-summary-grid .overview-quick-info {
     grid-column: span 2;
   }
-
   .overview-reservations-grid .reservation-event {
     grid-column: span 4;
   }
@@ -2877,7 +3218,6 @@ body.auth-gate-open {
   .overview-reservations-grid .reservation-details {
     grid-column: span 2;
   }
-
   .overview-activity-grid .activity-visual {
     grid-column: span 4;
     min-height: 210px;
@@ -2888,7 +3228,6 @@ body.auth-gate-open {
   .overview-activity-grid .activity-periods {
     grid-column: 1 / -1;
   }
-
   .overview-purchases-grid .overview-stat {
     grid-column: span 2;
   }
@@ -3194,39 +3533,31 @@ body.auth-gate-open {
   .account-page .account-header {
     display: block;
   }
-
   .account-page .account-status {
     max-width: none;
     margin-top: 14px;
     text-align: left;
     overflow-wrap: anywhere;
   }
-
   .account-page .account-layout {
     grid-template-columns: 1fr;
   }
-
   .account-page .account-sidebar {
     padding: 15px;
   }
-
   .account-page .account-sidebar-title {
     display: none;
   }
-
   .account-page .account-sidebar-nav {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 5px;
   }
-
   .account-page .account-sidebar-item {
     justify-content: center;
   }
-
   .account-page .account-sidebar-divider {
     margin: 12px 0 8px;
   }
-
   .account-page .account-sidebar-item--logout {
     grid-column: 1 / -1;
   }
@@ -3236,27 +3567,22 @@ body.auth-gate-open {
   .account-page .account-page-main {
     padding: 20px 14px 42px;
   }
-
   .account-page .account-home-link {
     margin-bottom: 24px;
   }
-
   .account-page .account-header {
     display: block;
     margin-bottom: 20px;
     padding-bottom: 20px;
   }
-
   .account-page .account-header h1 {
     font-size: 2.75rem;
   }
-
   .account-page .account-status {
     max-width: none;
     margin-top: 14px;
     text-align: left;
   }
-
   .account-page .account-sidebar-item {
     flex-direction: row;
     gap: 5px;
@@ -3267,52 +3593,42 @@ body.auth-gate-open {
     letter-spacing: 0.04em;
     text-align: left;
   }
-
   .account-page .account-sidebar-item svg {
     width: 16px;
     height: 16px;
     flex-basis: 16px;
   }
-
   .account-page .account-sidebar-item--logout {
     flex-direction: row;
     min-height: 40px;
   }
-
   .account-page .account-section {
     padding: 24px 18px 28px;
   }
-
   .account-page .account-section-header {
     align-items: start;
     flex-direction: column;
     gap: 14px;
   }
-
   .account-page .form-grid {
     grid-template-columns: 1fr;
   }
-
   .email-change-modal {
     padding: 10px;
   }
-
   .email-change-modal__panel {
     width: 95vw;
     border-radius: 12px;
   }
-
   .email-change-modal__content {
     max-width: none;
     padding: 48px 22px 28px;
   }
-
   .email-change-steps {
     flex-direction: column;
     gap: 7px;
     margin-bottom: 26px;
   }
-
   .email-change-steps span {
     padding-bottom: 6px;
   }
@@ -3615,15 +3931,12 @@ body.auth-gate-open {
   .account-delete-dialog {
     padding: 14px;
   }
-
   .account-delete-dialog__panel {
     padding: 28px 20px 22px;
   }
-
   .account-delete-dialog__actions {
     flex-direction: column-reverse;
   }
-
   .account-delete-dialog__actions .auth-submit,
   .account-delete-dialog__actions .auth-danger,
   .account-delete-dialog__actions .account-text-button {
@@ -3643,6 +3956,7 @@ body.auth-gate-open {
 }
 
 /* Shared reservation UI: used both inside ticket selection and beside Cart. */
+
 .selectionCountdown,
 .reservationCountdown {
   --countdown-surface: rgba(255, 255, 255, 0.92);
@@ -3738,6 +4052,7 @@ body.auth-gate-open {
   height: 22px;
   fill: currentColor;
 }
+
 .event-cart-toggle span {
   position: absolute;
   top: -5px;
@@ -3749,6 +4064,7 @@ body.auth-gate-open {
   background: #ff9475;
   font-size: 0.68rem;
 }
+
 .event-cart-panel {
   position: fixed;
   inset: 0 0 0 auto;
@@ -3765,33 +4081,40 @@ body.auth-gate-open {
   transition: transform 0.22s ease;
   font-family: "Cabin", sans-serif;
 }
+
 .event-cart-panel.is-open {
   transform: translateX(0);
 }
+
 .event-cart-panel-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
+
 .event-cart-panel-head h2 {
   color: #ff9475;
   font-family: "Fjalla One", Impact, sans-serif;
   font-weight: 400;
 }
+
 .event-cart-panel-head button {
   color: #fff;
   font-size: 1.5rem;
   cursor: pointer;
 }
+
 .event-cart-summary {
   margin: 8px 0 18px;
   color: rgba(255, 255, 255, 0.6);
 }
+
 .event-cart-list {
   display: grid;
   gap: 10px;
   overflow: auto;
 }
+
 .event-cart-row {
   display: grid;
   grid-template-columns: 96px minmax(0, 1fr) auto;
@@ -3800,21 +4123,25 @@ body.auth-gate-open {
   padding: 14px 0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.12);
 }
+
 .event-cart-row img {
   width: 96px;
   height: 78px;
   object-fit: cover;
   border-radius: 6px;
 }
+
 .event-cart-row strong,
 .event-cart-row span {
   display: block;
 }
+
 .event-cart-row span {
   margin-top: 4px;
   color: rgba(255, 255, 255, 0.5);
   font-size: 0.75rem;
 }
+
 .event-cart-tickets {
   grid-column: 3;
   width: max-content;
@@ -3828,6 +4155,7 @@ body.auth-gate-open {
   text-transform: uppercase;
   text-align: center;
 }
+
 .event-cart-go {
   margin-top: auto;
   padding: 13px;
@@ -3837,9 +4165,11 @@ body.auth-gate-open {
   text-align: center;
   text-transform: uppercase;
 }
+
 .event-cart-empty {
   color: rgba(255, 255, 255, 0.55);
 }
+
 .dashboard-event-cart {
   display: grid;
   gap: 10px;
@@ -3857,6 +4187,7 @@ body.auth-gate-open {
   width: fit-content;
   align-self: center;
 }
+
 .addEventToCartBtn {
   padding: 10px 13px;
   font-size: 1.1rem;
@@ -3912,13 +4243,11 @@ body.auth-gate-open {
   .event-cart-anchor {
     gap: 6px;
   }
-
   .reservationCountdown {
     gap: 4px;
     padding: 7px 9px;
     font-size: 10px;
   }
-
   .reservationCountdownValue {
     font-size: 12px;
   }
@@ -3931,6 +4260,7 @@ body.auth-gate-open {
 }
 
 /* Global cart aside only. The dashboard cart deliberately keeps its own layout. */
+
 #eventCartPanel {
   height: 100dvh;
   padding: 0;
@@ -4064,10 +4394,7 @@ body.auth-gate-open {
   box-sizing: border-box;
   height: 246px;
   max-height: 246px;
-  grid-template-areas:
-    "image info"
-    "image tickets"
-    "image remove";
+  grid-template-areas: "image info" "image tickets" "image remove";
   grid-template-columns: 35% minmax(0, 1fr);
   grid-template-rows: minmax(0, 1fr) 46px 46px;
   gap: 8px 5%;
@@ -4209,6 +4536,7 @@ body.auth-gate-open {
 }
 
 /* Keep the User Dashboard deliberately flat and compact. */
+
 .account-page .account-dashboard,
 .account-page .account-dashboard * {
   border-radius: 0;
@@ -4292,29 +4620,24 @@ body.auth-gate-open {
   #eventCartPanel {
     width: min(92vw, 420px);
   }
-
   #eventCartPanel .event-cart-panel-head,
   #eventCartPanel .event-cart-summary {
     padding-right: 20px;
     padding-left: 20px;
   }
-
   #eventCartPanel .event-cart-panel-head::after,
   #eventCartPanel .event-cart-summary::after {
     right: 20px;
     left: 20px;
   }
-
   #eventCartPanel .event-cart-panel-head {
     min-height: 88px;
     padding-top: 21px;
     padding-bottom: 21px;
   }
-
   #eventCartPanel .event-cart-list {
     padding: 12px 20px 0;
   }
-
   #eventCartPanel .event-cart-row {
     flex-basis: 220px;
     height: 220px;
@@ -4325,27 +4648,22 @@ body.auth-gate-open {
     min-height: 220px;
     padding: 18px 0;
   }
-
   #eventCartPanel .event-cart-row img {
     min-height: 0;
   }
-
   #eventCartPanel .event-cart-row strong {
     font-size: 1.18rem;
   }
-
   #eventCartPanel .event-cart-row span {
     margin-top: 6px;
     font-size: 0.82rem;
   }
-
   #eventCartPanel .event-cart-tickets,
   #eventCartPanel .event-cart-remove {
     height: 42px;
     min-height: 42px;
     font-size: 0.76rem;
   }
-
   #eventCartPanel .event-cart-go {
     width: calc(100% - 40px);
     margin: 46px 20px 24px;
@@ -4353,6 +4671,7 @@ body.auth-gate-open {
 }
 
 /* User dashboard refresh: a focused customer workspace, scoped to profile.html. */
+
 .account-page .account-page-main {
   min-height: 100dvh;
   padding: 24px;
@@ -4839,11 +5158,9 @@ body.auth-gate-open {
   .account-page .account-layout {
     grid-template-columns: 206px minmax(0, 1fr);
   }
-
   .account-page .account-section {
     padding: 24px;
   }
-
   .account-page .support-dashboard-section.is-visible {
     grid-template-columns: minmax(250px, 0.72fr) minmax(0, 1.28fr);
     gap: 14px;
@@ -4854,28 +5171,22 @@ body.auth-gate-open {
   .account-page .account-page-main {
     padding: 18px;
   }
-
   .account-page .account-layout {
     grid-template-columns: 1fr;
   }
-
   .account-page .account-sidebar {
     position: static;
     min-height: 0;
   }
-
   .account-page .account-sidebar-title {
     display: none;
   }
-
   .account-page .account-sidebar-nav {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
-
   .account-page .account-section[data-section="security"].is-visible {
     grid-template-columns: 1fr;
   }
-
   .account-page .account-section[data-section="security"] > .dashboard-form,
   .account-page
     .account-section[data-section="security"]
@@ -4889,28 +5200,22 @@ body.auth-gate-open {
     min-height: 0;
     padding: 22px 20px;
   }
-
   .account-page .support-dashboard-section.is-visible {
     display: block;
   }
-
   .account-page .support-conversation-empty,
   .account-page .support-dashboard-section #supportRequestConversation {
     min-height: 500px;
   }
-
   .account-page .support-conversation-empty {
     display: none;
   }
-
   .account-page .support-dashboard-section #supportRequestConversation {
     margin-top: 14px;
   }
-
   .account-page .support-dashboard-section .support-conversation-header {
     padding: 12px 16px;
   }
-
   .account-page .support-dashboard-section .support-conversation-back {
     min-height: 36px;
     font-size: 0.78rem;
@@ -4921,36 +5226,31 @@ body.auth-gate-open {
   .account-page .account-page-main {
     padding: 14px;
   }
-
   .account-page .account-home-link {
     margin: 4px 0 12px 8px;
   }
-
   .account-page .account-sidebar-nav {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-
   .account-page .account-section {
     min-height: 0;
     padding: 22px 16px;
   }
-
   .account-page .overview-summary-grid .overview-welcome {
     min-height: 230px;
   }
-
   .account-page #profileForm:not([hidden]) {
     width: calc(100vw - 20px);
     max-height: calc(100dvh - 20px);
     padding: 22px 18px;
   }
-
   .account-page .support-inbox {
     padding: 10px;
   }
 }
 
 /* Customer support inbox */
+
 .account-page .support-dashboard-section.is-visible {
   grid-template-columns: minmax(320px, 350px) minmax(0, 1fr);
   grid-template-rows: auto minmax(0, 1fr);
@@ -5167,7 +5467,11 @@ body.auth-gate-open {
   margin-bottom: 6px;
 }
 
-.account-page .support-dashboard-section .support-customer-message header strong {
+.account-page
+  .support-dashboard-section
+  .support-customer-message
+  header
+  strong {
   display: block;
   font-size: 0.72rem;
 }
@@ -5242,48 +5546,43 @@ body.auth-gate-open {
     min-height: 0;
     overflow: visible;
   }
-
   .account-page .support-dashboard-section > .account-section-header {
     padding-bottom: 16px;
   }
-
   .account-page .support-section-description {
     max-width: 260px;
     line-height: 1.4;
   }
-
   .account-page .support-section-header__actions .section-count {
     display: none;
   }
-
   .account-page .support-inbox {
     padding-right: 0;
     border-right: 0;
   }
-
   .account-page .support-inbox #supportRequestsList {
     max-height: calc(100dvh - 310px);
   }
-
   .account-page .support-conversation-empty,
   .account-page .support-dashboard-section #supportRequestConversation {
     margin-left: 0;
   }
-
   .account-page .support-dashboard-section #supportRequestConversation {
     min-height: calc(100dvh - 250px);
   }
-
   .account-page .support-dashboard-section .support-conversation-back {
     display: inline-flex;
     margin-right: auto;
   }
-
   .account-page .support-dashboard-section .support-conversation-header__top {
     justify-content: space-between;
   }
-
   .account-page .support-dashboard-section .support-customer-message {
     max-width: 88%;
   }
+}
+
+/* Keep dashboard controls consistently rounded across every account section. */
+.account-page button {
+  border-radius: 7px;
 }

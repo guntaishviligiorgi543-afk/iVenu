@@ -589,7 +589,7 @@
           <div>
             <p class="admin-eyebrow">Support Management</p>
             <h2>Support Management</h2>
-            <p>Manage support employee access and review membership history.</p>
+            <p>Review customer requests, audit conversations, and manage Support employee access.</p>
           </div>
         </div>
 
@@ -598,6 +598,49 @@
           id="supportMetrics"
           aria-live="polite"
         ></div>
+
+        <section class="admin-content-block support-oversight" aria-labelledby="supportOversightTitle">
+          <div class="support-section-heading">
+            <div>
+              <p class="admin-eyebrow">Request oversight</p>
+              <h3 id="supportOversightTitle">Support Requests</h3>
+              <p class="newsletter-table-status">Review request activity and conversation history.</p>
+            </div>
+            <button class="admin-outline" id="refreshSupportOversight" type="button">Refresh requests</button>
+          </div>
+          <div class="admin-metrics support-request-metrics" id="supportRequestMetrics" aria-label="Support request overview" aria-live="polite"></div>
+          <div class="support-oversight-controls">
+            <label>Search requests<input id="supportRequestSearch" type="search" placeholder="Customer, email, or subject" maxlength="160" /></label>
+            <label>Status<select id="supportRequestStatusFilter"><option value="all">All statuses</option><option value="open">Open</option><option value="waiting_for_user">Waiting for customer</option><option value="resolved">Resolved</option></select></label>
+            <label>Category<select id="supportRequestCategoryFilter"><option value="all">All categories</option><option value="general">General</option><option value="account">Account</option><option value="event">Event</option><option value="reservation">Reservation</option><option value="order">Order</option><option value="technical">Technical</option><option value="other">Other</option></select></label>
+            <label>Assignment<select id="supportRequestAssignmentFilter"><option value="all">All assignments</option><option value="unassigned">Unassigned</option><option value="assigned">Assigned</option></select></label>
+          </div>
+          <p class="newsletter-table-status" id="supportRequestListStatus" role="status">Select Support Management to load requests.</p>
+          <div class="support-oversight-table-wrap">
+            <table class="newsletter-table support-oversight-table">
+              <thead><tr><th scope="col">Customer</th><th scope="col">Request</th><th scope="col">Status</th><th scope="col">Assigned Support</th><th scope="col">Activity</th><th scope="col"><span class="sr-only">Details</span></th></tr></thead>
+              <tbody id="supportRequestRows"></tbody>
+            </table>
+          </div>
+          <div class="support-oversight-cards" id="supportRequestCards"></div>
+          <nav class="admin-pagination" id="supportRequestPagination" aria-label="Support request pagination"></nav>
+        </section>
+
+        <dialog class="admin-delete-dialog support-request-dialog" id="supportRequestDetailsDialog" aria-labelledby="supportRequestDetailsTitle">
+          <section class="admin-delete-dialog__panel">
+            <div class="support-dialog-heading">
+              <div><p class="admin-eyebrow">Support oversight · Read only</p><h2 id="supportRequestDetailsTitle">Request Details</h2></div>
+              <button class="admin-outline" id="closeSupportRequestDetails" type="button" aria-label="Close request details">Close</button>
+            </div>
+            <p class="newsletter-table-status" id="supportRequestDetailsStatus" role="status"></p>
+            <dl class="support-details-list" id="supportRequestDetailsMetadata"></dl>
+            <section aria-labelledby="supportRequestHistoryTitle">
+              <h3 id="supportRequestHistoryTitle">Conversation history</h3>
+              <div class="support-audit-history" id="supportRequestHistory"></div>
+              <button class="admin-outline" id="loadMoreSupportHistory" type="button" hidden>Load earlier messages</button>
+            </section>
+          </section>
+        </dialog>
 
         <section class="admin-content-block support-management-block">
           <div class="admin-content-block__heading support-section-heading">

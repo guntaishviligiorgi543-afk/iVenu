@@ -2996,7 +2996,7 @@ body.newsletter-editor-mode .newsletter-composer {
 }
 
 .admin-panel[data-panel="support"] .support-metrics .admin-metric {
-  justify-content: flex-start;
+  justify-content: center;
   gap: 14px;
   min-height: 96px;
   padding: 18px;
@@ -3029,11 +3029,12 @@ body.newsletter-editor-mode .newsletter-composer {
 
 .admin-panel[data-panel="support"] .support-metrics .admin-metric > div {
   min-width: 0;
+  text-align: center;
 }
 
 .admin-panel[data-panel="support"] .support-metrics .admin-metric strong {
   display: block;
-  font-size: 1.8rem;
+  font-size: 2.2rem;
   line-height: 1;
 }
 
@@ -3041,7 +3042,7 @@ body.newsletter-editor-mode .newsletter-composer {
   display: block;
   margin-top: 7px;
   color: rgba(255, 255, 255, 0.66);
-  font-size: 0.78rem;
+  font-size: 0.9rem;
   line-height: 1.2;
 }
 
@@ -3287,6 +3288,173 @@ body.newsletter-editor-mode .newsletter-composer {
 .support-details-list dd {
   margin: 0;
   overflow-wrap: anywhere;
+}
+
+/* Request auditing stays separate from employee operations. */
+.support-oversight {
+  min-width: 0;
+  margin-bottom: 28px;
+}
+.support-request-metrics {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin: 20px 0;
+}
+.support-request-metrics .admin-metric {
+  align-items: center;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+}
+.support-request-metrics .admin-metric strong,
+.support-request-metrics .admin-metric span {
+  width: 100%;
+  text-align: center;
+}
+.support-oversight-controls {
+  display: grid;
+  grid-template-columns: minmax(180px, 2fr) repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 20px 0;
+}
+.support-oversight-controls label {
+  display: grid;
+  min-width: 0;
+  gap: 7px;
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 0.75rem;
+}
+.support-oversight-controls input,
+.support-oversight-controls select {
+  width: 100%;
+  min-width: 0;
+  padding: 11px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 6px;
+  background: #171717;
+  color: #fff;
+  font: inherit;
+}
+.support-oversight-table {
+  width: 100%;
+  min-width: 0;
+  table-layout: fixed;
+}
+.support-oversight-table th,
+.support-oversight-table td {
+  padding: 14px 10px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  vertical-align: top;
+}
+.support-oversight-table th:nth-child(2) { width: 23%; }
+.support-oversight-table th:last-child { width: 110px; }
+.support-oversight-table small,
+.support-oversight-card p > span {
+  display: block;
+  margin-top: 6px;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 0.75rem;
+}
+.support-audit-status {
+  display: inline-block;
+  padding: 5px 8px;
+  border: 1px solid rgba(255, 148, 117, 0.35);
+  border-radius: 5px;
+  background: rgba(255, 148, 117, 0.08);
+  color: #ffb09a;
+  font-size: 0.72rem;
+}
+.support-audit-status.is-resolved {
+  border-color: rgba(130, 203, 167, 0.35);
+  background: rgba(130, 203, 167, 0.08);
+  color: #a3dbbd;
+}
+.support-oversight-cards { display: none; }
+.support-oversight-card {
+  min-width: 0;
+  padding: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.025);
+  overflow-wrap: anywhere;
+}
+.support-oversight-card__heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.support-oversight-card h4 { margin: 0; font-size: 1rem; }
+.support-oversight-card dl {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin: 18px 0;
+}
+.support-oversight-card dt { color: rgba(255, 255, 255, 0.5); font-size: 0.7rem; }
+.support-oversight-card dd { margin: 5px 0 0; font-size: 0.82rem; }
+.support-request-dialog {
+  width: min(800px, calc(100vw - 32px));
+  max-width: calc(100vw - 32px);
+  max-height: calc(100dvh - 32px);
+  overflow: auto;
+}
+.support-request-dialog .admin-delete-dialog__panel { min-width: 0; }
+.support-request-dialog h2 { overflow-wrap: anywhere; }
+.support-request-dialog .support-dialog-heading > div { min-width: 0; }
+.support-request-dialog .support-dialog-heading > button { flex-shrink: 0; }
+.support-audit-history {
+  display: grid;
+  gap: 14px;
+  margin: 18px 0;
+}
+.support-audit-message {
+  padding: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-left: 3px solid #777;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.025);
+  min-width: 0;
+}
+.support-audit-message.is-support { border-left-color: #ff9475; }
+.support-request-dialog .support-audit-message header {
+  position: static;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 6px 16px;
+  width: auto;
+  height: auto;
+  padding: 0;
+  background: none;
+  border: 0;
+  font-size: 0.8rem;
+}
+.support-audit-message time { color: rgba(255, 255, 255, 0.5); font-size: 0.72rem; }
+.support-audit-message p {
+  margin: 12px 0 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.85);
+}
+#loadMoreSupportHistory[hidden] { display: none; }
+#supportRequestPagination { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+@media (max-width: 1100px) {
+  .support-oversight-table-wrap { display: none; }
+  .support-oversight-cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+  .support-oversight-controls { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .support-request-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 600px) {
+  .support-oversight-cards { grid-template-columns: minmax(0, 1fr); }
+  .support-oversight .support-section-heading { align-items: flex-start; flex-direction: column; }
+  .support-oversight-controls { grid-template-columns: minmax(0, 1fr); }
+  .support-oversight-card__heading { flex-direction: column; }
+  .support-request-dialog .admin-delete-dialog__panel { padding: 18px; }
+  .support-request-dialog .support-details-list div { grid-template-columns: minmax(0, 1fr); gap: 5px; }
+  .support-request-dialog .support-dialog-heading { gap: 10px; }
+  .support-request-dialog h2 { font-size: 1.3rem; }
 }
 
 .support-membership-card .support-actions {

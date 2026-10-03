@@ -315,6 +315,26 @@
   const usersMobileList = document.querySelector("#usersMobileList");
   const usersPagination = document.querySelector("#usersPagination");
   const supportMetrics = document.querySelector("#supportMetrics");
+  const supportRequestMetrics = document.querySelector("#supportRequestMetrics");
+  const supportRequestSearch = document.querySelector("#supportRequestSearch");
+  const supportRequestStatusFilter = document.querySelector("#supportRequestStatusFilter");
+  const supportRequestCategoryFilter = document.querySelector("#supportRequestCategoryFilter");
+  const supportRequestAssignmentFilter = document.querySelector("#supportRequestAssignmentFilter");
+  const supportRequestListStatus = document.querySelector("#supportRequestListStatus");
+  const supportRequestRows = document.querySelector("#supportRequestRows");
+  const supportRequestCards = document.querySelector("#supportRequestCards");
+  const supportRequestPagination = document.querySelector("#supportRequestPagination");
+  const supportRequestDetailsDialog = document.querySelector("#supportRequestDetailsDialog");
+  const supportRequestDetailsTitle = document.querySelector("#supportRequestDetailsTitle");
+  const supportRequestDetailsStatus = document.querySelector("#supportRequestDetailsStatus");
+  const supportRequestDetailsMetadata = document.querySelector("#supportRequestDetailsMetadata");
+  const supportRequestHistory = document.querySelector("#supportRequestHistory");
+  const loadMoreSupportHistory = document.querySelector("#loadMoreSupportHistory");
+  const supportOversight = {
+    page: 1, pageSize: 10, listVersion: 0, detailVersion: 0, metricsVersion: 0,
+    selectedId: null, messageCount: 0, messagesLoaded: 0, messagePageSize: 50,
+  };
+  const SUPPORT_REQUEST_COLUMNS = "id,customer_name,customer_email,subject,category,status,assigned_support_user_id,created_at,updated_at,resolved_at,resolved_by_name,resolved_by_email";
   const supportActiveStatus = document.querySelector("#supportActiveStatus");
   const supportActiveList = document.querySelector("#supportActiveList");
   const supportActiveMobileList = document.querySelector(
@@ -3078,6 +3098,166 @@
     renderSupportUserResults();
   }
 
+  const supportRequestLabel = (value) => ({
+    open: "Open", waiting_for_user: "Waiting for customer", resolved: "Resolved",
+  })[value] || String(value || "Unknown").replaceAll("_", " ");
+
+  function supportAssigneeLabel(userId) {
+    if (!userId) return "Unassigned";
+    const membership = state.supportManagement.memberships.find((item) => item.user_id === userId);
+    return membership?.user_name || membership?.user_email || "Assigned employee";
+  }
+
+  async function assertSupportOversightAccess() {
+    const { data, error } = await client.rpc("is_current_user_support_admin");
+    if (error || data !== true) throw error || new Error("Administrator access is required.");
+  }
+
+  async function loadSupportOverviewMetrics() {
+    const version = ++supportOversight.metricsVersion;
+    supportRequestMetrics.textContent = "Loading request overview...";
+    try {
+      await assertSupportOversightAccess();
+      const results = await Promise.all([
+        client.from("support_requests").select("id", { count: "exact", head: true }).in("status", ["open", "waiting_for_user"]),
+        client.from("support_requests").select("id", { count: "exact", head: true }).eq("status", "resolved"),
+        client.from("support_requests").select("id", { count: "exact", head: true }).is("assigned_support_user_id", null).in("status", ["open", "waiting_for_user"]),
+        client.from("support_users").select("id", { count: "exact", head: true }).is("revoked_at", null),
+      ]);
+      if (version !== supportOversight.metricsVersion) return;
+      if (results.some((result) => result.error || result.count == null)) throw new Error("Overview unavailable");
+      const labels = ["Open Requests", "Resolved Requests", "Unassigned Open Requests", "Active Support Employees"];
+      supportRequestMetrics.innerHTML = results.map((result, index) => `<article class="admin-metric"><strong>${Number(result.count)}</strong><span>${labels[index]}</span></article>`).join("");
+    } catch (error) {
+      if (version === supportOversight.metricsVersion) supportRequestMetrics.textContent = "Request overview is temporarily unavailable. Refresh to try again.";
+    }
+  }
+
+  async function loadSupportOversightRequests() {
+    const version = ++supportOversight.listVersion;
+    supportRequestListStatus.textContent = "Loading Support requests...";
+    supportRequestRows.replaceChildren();
+    supportRequestCards.replaceChildren();
+    supportRequestPagination.replaceChildren();
+    try {
+      await assertSupportOversightAccess();
+      let query = client.from("support_requests").select(SUPPORT_REQUEST_COLUMNS, { count: "exact" });
+      const statusFilter = supportRequestStatusFilter.value;
+      if (statusFilter === "open") query = query.in("status", ["open", "waiting_for_user"]);
+      else if (statusFilter !== "all") query = query.eq("status", statusFilter);
+      if (supportRequestCategoryFilter.value !== "all") query = query.eq("category", supportRequestCategoryFilter.value);
+      if (supportRequestAssignmentFilter.value === "unassigned") query = query.is("assigned_support_user_id", null);
+      if (supportRequestAssignmentFilter.value === "assigned") query = query.not("assigned_support_user_id", "is", null);
+      // Quote the PostgREST value; escape LIKE wildcards so search remains literal.
+      const search = supportRequestSearch.value.trim().slice(0, 160);
+      if (search) {
+        const pattern = JSON.stringify(`%${search.replace(/[\\%_]/g, "\\$&")}%`);
+        query = query.or(["customer_name", "customer_email", "subject"].map((column) => `${column}.ilike.${pattern}`).join(","));
+      }
+      const start = (supportOversight.page - 1) * supportOversight.pageSize;
+      const { data, count, error } = await query.order("updated_at", { ascending: false }).order("id", { ascending: false }).range(start, start + supportOversight.pageSize - 1);
+      if (version !== supportOversight.listVersion) return;
+      if (error) throw error;
+      const total = count || 0;
+      const pages = Math.max(1, Math.ceil(total / supportOversight.pageSize));
+      if (supportOversight.page > pages) {
+        supportOversight.page = pages;
+        return loadSupportOversightRequests();
+      }
+      const items = data || [];
+      supportRequestListStatus.textContent = total ? `${start + 1}–${start + items.length} of ${total} requests` : "No Support requests match these filters.";
+      const action = (request) => `<button class="admin-outline" type="button" data-support-view-request="${escapeHtml(request.id)}">View Details</button>`;
+      const status = (request) => `<span class="support-audit-status${request.status === "resolved" ? " is-resolved" : ""}">${escapeHtml(supportRequestLabel(request.status))}</span>`;
+      supportRequestRows.innerHTML = items.map((request) => `<tr>
+        <td><strong>${escapeHtml(request.customer_name)}</strong><small>${escapeHtml(request.customer_email)}</small></td>
+        <td><strong>${escapeHtml(request.subject)}</strong><small>${escapeHtml(supportRequestLabel(request.category))}</small></td>
+        <td>${status(request)}</td><td>${escapeHtml(supportAssigneeLabel(request.assigned_support_user_id))}</td>
+        <td><span>${escapeHtml(formatUserDate(request.updated_at))}</span><small>Created ${escapeHtml(formatUserDate(request.created_at))}</small></td><td>${action(request)}</td>
+      </tr>`).join("");
+      supportRequestCards.innerHTML = items.map((request) => `<article class="support-oversight-card">
+        <div class="support-oversight-card__heading"><h4>${escapeHtml(request.subject)}</h4>${status(request)}</div>
+        <p><strong>${escapeHtml(request.customer_name)}</strong><span>${escapeHtml(request.customer_email)}</span></p>
+        <dl><div><dt>Category</dt><dd>${escapeHtml(supportRequestLabel(request.category))}</dd></div><div><dt>Assigned Support</dt><dd>${escapeHtml(supportAssigneeLabel(request.assigned_support_user_id))}</dd></div><div><dt>Last activity</dt><dd>${escapeHtml(formatUserDate(request.updated_at))}</dd></div><div><dt>Created</dt><dd>${escapeHtml(formatUserDate(request.created_at))}</dd></div></dl>
+        ${action(request)}</article>`).join("");
+      if (pages > 1) supportRequestPagination.innerHTML = `<button class="admin-outline" type="button" data-support-request-page="${supportOversight.page - 1}" ${supportOversight.page === 1 ? "disabled" : ""}>Previous</button><span>Page ${supportOversight.page} of ${pages}</span><button class="admin-outline" type="button" data-support-request-page="${supportOversight.page + 1}" ${supportOversight.page === pages ? "disabled" : ""}>Next</button>`;
+    } catch (error) {
+      if (version === supportOversight.listVersion) supportRequestListStatus.textContent = "Support requests could not be loaded. Refresh requests to try again.";
+    }
+  }
+
+  async function loadSupportAuditMessages(version = supportOversight.detailVersion) {
+    loadMoreSupportHistory.disabled = true;
+    try {
+      await assertSupportOversightAccess();
+      if (version !== supportOversight.detailVersion) return;
+      const { data, count, error } = await client.from("support_messages")
+        .select("id,sender_type,body,created_at", { count: "exact" })
+        .eq("support_request_id", supportOversight.selectedId)
+        .order("created_at", { ascending: false }).order("id", { ascending: false })
+        .range(supportOversight.messagesLoaded, supportOversight.messagesLoaded + supportOversight.messagePageSize - 1);
+      if (version !== supportOversight.detailVersion) return;
+      if (error) throw error;
+      supportOversight.messageCount = count || 0;
+      supportOversight.messagesLoaded += (data || []).length;
+      const fragment = document.createDocumentFragment();
+      [...(data || [])].reverse().forEach((message) => {
+        const item = document.createElement("article");
+        item.className = `support-audit-message${message.sender_type === "support" ? " is-support" : ""}`;
+        const header = document.createElement("header");
+        const author = document.createElement("strong");
+        author.textContent = message.sender_type === "support" ? "iVenue Support" : "Customer";
+        const time = document.createElement("time");
+        time.dateTime = message.created_at;
+        time.textContent = formatUserDate(message.created_at);
+        header.append(author, time);
+        const body = document.createElement("p");
+        body.textContent = message.body;
+        item.append(header, body);
+        fragment.append(item);
+      });
+      supportRequestHistory.prepend(fragment);
+      loadMoreSupportHistory.hidden = supportOversight.messagesLoaded >= supportOversight.messageCount;
+      supportRequestDetailsStatus.textContent = supportOversight.messageCount ? `Showing ${supportOversight.messagesLoaded} of ${supportOversight.messageCount} messages. Opening this view does not change unread state.` : "No conversation messages are available.";
+    } catch (error) {
+      if (version === supportOversight.detailVersion) {
+        supportRequestDetailsStatus.textContent = "Conversation history could not be loaded. Try again.";
+        loadMoreSupportHistory.hidden = false;
+      }
+    } finally {
+      if (version === supportOversight.detailVersion) loadMoreSupportHistory.disabled = false;
+    }
+  }
+
+  async function openSupportRequestDetails(requestId) {
+    const version = ++supportOversight.detailVersion;
+    supportOversight.selectedId = requestId;
+    supportOversight.messagesLoaded = 0;
+    supportRequestDetailsTitle.textContent = "Request Details";
+    supportRequestDetailsMetadata.replaceChildren();
+    supportRequestHistory.replaceChildren();
+    loadMoreSupportHistory.hidden = true;
+    supportRequestDetailsStatus.textContent = "Loading request details...";
+    if (!supportRequestDetailsDialog.open) supportRequestDetailsDialog.showModal();
+    try {
+      await assertSupportOversightAccess();
+      const { data: request, error } = await client.from("support_requests").select(SUPPORT_REQUEST_COLUMNS).eq("id", requestId).maybeSingle();
+      if (version !== supportOversight.detailVersion) return;
+      if (error || !request) throw error || new Error("Request unavailable");
+      supportRequestDetailsTitle.textContent = request.subject;
+      const details = [
+        ["Customer", request.customer_name], ["Email", request.customer_email],
+        ["Subject", request.subject], ["Category", supportRequestLabel(request.category)],
+        ["Status", supportRequestLabel(request.status)], ["Assigned Support", supportAssigneeLabel(request.assigned_support_user_id)],
+        ["Created", formatUserDate(request.created_at)], ["Last activity", formatUserDate(request.updated_at)],
+      ];
+      if (request.resolved_at) details.push(["Resolved", formatUserDate(request.resolved_at)], ["Resolved by", request.resolved_by_name || "Unavailable"], ["Resolver email", request.resolved_by_email || "Unavailable"]);
+      supportRequestDetailsMetadata.innerHTML = details.map(([label, value]) => `<div><dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value || "Unavailable")}</dd></div>`).join("");
+      await loadSupportAuditMessages(version);
+    } catch (error) {
+      if (version === supportOversight.detailVersion) supportRequestDetailsStatus.textContent = "Request details could not be loaded. Close this view and try again.";
+    }
+  }
+
   async function loadSupportManagement() {
     supportActiveStatus.textContent = "Loading Support employees…";
     supportHistoryStatus.textContent = "Loading membership history…";
@@ -3108,6 +3288,7 @@
         "error",
       );
     }
+    await Promise.all([loadSupportOverviewMetrics(), loadSupportOversightRequests()]);
   }
 
   function openSupportMembershipDialog(action, subject) {
@@ -3438,6 +3619,36 @@
     loadUsers().catch((error) => setMessage(error.message, "error"));
   });
   let supportUserSearchTimer = null;
+  let supportRequestSearchTimer = null;
+  supportRequestSearch.addEventListener("input", () => {
+    window.clearTimeout(supportRequestSearchTimer);
+    supportOversight.listVersion++;
+    supportRequestSearchTimer = window.setTimeout(() => {
+      supportOversight.page = 1;
+      loadSupportOversightRequests();
+    }, 300);
+  });
+  [supportRequestStatusFilter, supportRequestCategoryFilter, supportRequestAssignmentFilter].forEach((control) => control.addEventListener("change", () => {
+    supportOversight.page = 1;
+    loadSupportOversightRequests();
+  }));
+  supportRequestPagination.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-support-request-page]");
+    if (!button || button.disabled) return;
+    supportOversight.page = Math.max(1, Number(button.dataset.supportRequestPage));
+    loadSupportOversightRequests();
+  });
+  [supportRequestRows, supportRequestCards].forEach((container) => container.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-support-view-request]");
+    if (button) openSupportRequestDetails(button.dataset.supportViewRequest);
+  }));
+  document.querySelector("#refreshSupportOversight").addEventListener("click", () => loadSupportManagement());
+  document.querySelector("#closeSupportRequestDetails").addEventListener("click", () => supportRequestDetailsDialog.close());
+  supportRequestDetailsDialog.addEventListener("close", () => {
+    supportOversight.detailVersion++;
+    supportOversight.selectedId = null;
+  });
+  loadMoreSupportHistory.addEventListener("click", () => loadSupportAuditMessages());
   supportUserSearch.addEventListener("input", () => {
     window.clearTimeout(supportUserSearchTimer);
     supportUserSearchTimer = window.setTimeout(() => {
