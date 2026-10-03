@@ -214,6 +214,30 @@
       text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
       pointer-events: none;
     }
+    .vntCrd.is-sold-out .eventCardImage::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      background: rgba(0, 0, 0, 0.62);
+      pointer-events: none;
+    }
+    .eventCardSoldOutOverlay {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      display: grid;
+      place-items: center;
+      color: #fff;
+      font-family: "Cabin", sans-serif;
+      font-size: clamp(1.5rem, 3.4vw, 2.6rem);
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      line-height: 1;
+      text-align: center;
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+      pointer-events: none;
+    }
     .getTicketBtn.is-ended,
     .getTicketBtn:disabled {
       cursor: not-allowed;
@@ -803,16 +827,18 @@
         const location = window.supabaseData.getEventLocation(event);
         const card = document.createElement("div");
         const ended = window.iVenueEventTime.isEventEnded(event);
+        const soldOut = !ended && event.inventory?.has_inventory && Number(event.inventory.available_count) <= 0;
 
         card.classList.add("vntCrd");
         card.classList.toggle("is-ended", ended);
+        card.classList.toggle("is-sold-out", soldOut);
 
         card.innerHTML = `
     <div class="cardContent">
 
       <div class="eventCardImage">
         <img src="${event.image_url || band.image_url || ""}" alt="${performer}" />
-        ${ended ? '<span class="eventCardEndedOverlay">EVENT ENDED</span>' : ""}
+        ${ended ? '<span class="eventCardEndedOverlay">EVENT ENDED</span>' : soldOut ? '<span class="eventCardSoldOutOverlay">SOLD OUT</span>' : ""}
         <button class="eventCardShareButton" type="button" data-show-share-event="${event.id}" aria-label="Share this event">
           <svg xmlns="http://www.w3.org/2000/svg" width="1.69em" height="1.5em" viewBox="0 0 1792 1600" aria-hidden="true">
             <path d="M0 0h1792v1600H0z" fill="none" />
@@ -837,7 +863,7 @@
 
       <button class="moreInfoBtn">more info</button>
  <button class="getTicketBtn" data-id="${event.id}">
-  ${ended ? "Event Ended" : "get tickets"}
+  ${ended ? "Event Ended" : soldOut ? "Sold Out" : "get tickets"}
 </button>
     </div>
 
@@ -864,7 +890,7 @@
     </p>
 
  <button class="getTicketBtn" data-id="${event.id}">
-  ${ended ? "Event Ended" : "get tickets"}
+  ${ended ? "Event Ended" : soldOut ? "Sold Out" : "get tickets"}
 </button>
  
 </div>
@@ -1098,7 +1124,7 @@
         });
 
         document.querySelectorAll(".getTicketBtn").forEach((button) => {
-          if (button.closest(".vntCrd")?.classList.contains("is-ended")) {
+          if (button.closest(".vntCrd")?.matches(".is-ended, .is-sold-out")) {
             button.disabled = true;
             button.classList.add("is-ended");
             return;

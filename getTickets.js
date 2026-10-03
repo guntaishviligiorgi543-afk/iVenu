@@ -82,6 +82,15 @@ async function loadSelectedEvent() {
       document.querySelector(".selectTktContainer")?.remove();
       return;
     }
+    const inventory = await window.supabaseData.getEventInventory(bandId);
+    if (!inventory?.has_inventory || Number(inventory.available_count) <= 0) {
+      window.__ticketEventSoldOut = true;
+      document.querySelector("#soldOutEventState").hidden = false;
+      document.querySelector(".ticketHero")?.remove();
+      document.querySelector(".sec2")?.remove();
+      document.querySelector(".selectTktContainer")?.remove();
+      return;
+    }
     const ticketTypes = await window.supabaseData.getTicketTypes(bandId);
 
     const band = event.bands || {};

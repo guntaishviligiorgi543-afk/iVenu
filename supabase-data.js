@@ -43,16 +43,29 @@
   }
 
   async function getEvents() {
-    const { data, error } = await client
-      .from("events")
-      .select(
-        "id, performer, band_id, category_id, title, description, event_date, event_time, doors_open, venue_id, venue, city, country, image_url, status, created_at, display_order, venues:venues!events_venue_id_fkey(id, name, city_area, region, country, address, latitude, longitude, image_url), categories(id, name), bands(id, name, description, genre, country, image_url)",
-      )
-      .order("display_order", { ascending: true })
-      .order("id", { ascending: true });
-
-    if (error) throw new Error(getErrorMessage(error));
-    return data || [];
+    const [eventsResult, inventoryResult] = await Promise.all([
+      client
+        .from("events")
+        .select(
+          "id, performer, band_id, category_id, title, description, event_date, event_time, doors_open, venue_id, venue, city, country, image_url, status, created_at, display_order, venues:venues!events_venue_id_fkey(id, name, city_area, region, country, address, latitude, longitude, image_url), categories(id, name), bands(id, name, description, genre, country, image_url)",
+        )
+        .order("display_order", { ascending: true })
+        .order("id", { ascending: true }),
+      client.rpc("get_public_event_inventory"),
+    ]);
+    if (eventsResult.error) throw new Error(getErrorMessage(eventsResult.error));
+    if (inventoryResult.error)
+      throw new Error(getErrorMessage(inventoryResult.error));
+    const inventoryByEvent = new Map(
+      (inventoryResult.data || []).map((item) => [String(item.event_id), item]),
+    );
+    return (eventsResult.data || []).map((event) => ({
+      ...event,
+      inventory: inventoryByEvent.get(String(event.id)) || {
+        has_inventory: false,
+        available_count: 0,
+      },
+    }));
   }
 
   async function getEvent(eventId) {
@@ -93,6 +106,14 @@
     return data || [];
   }
 
+  async function getEventInventory(eventId) {
+    const { data, error } = await client.rpc("get_public_event_inventory", {
+      p_event_id: eventId,
+    });
+    if (error) throw new Error(getErrorMessage(error));
+    return data?.[0] || null;
+  }
+
   async function recordEventView(eventId) {
     const { error } = await client.rpc("record_event_view", {
       p_event_id: eventId,
@@ -114,6 +135,7 @@
     getEvent,
     getHomepageHeroEvents,
     getHomepageUpcomingShows,
+    getEventInventory,
     getEventLocation,
     getTicketTypes,
     recordEventView,
