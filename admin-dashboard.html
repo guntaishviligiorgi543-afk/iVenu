@@ -346,27 +346,59 @@
           </div>
           <form class="admin-form" id="heroForm">
             <fieldset class="admin-hero-mode">
-              <legend>Hero selection</legend>
+              <legend>Hero Display Mode</legend>
               <label class="admin-check"
                 ><input
                   type="radio"
                   name="hero_mode"
-                  value="automatic"
+                  value="latest_added"
                   checked
                 />
-                Automatic — 3 newest events</label
+                Latest Added</label
               ><label class="admin-check"
-                ><input type="radio" name="hero_mode" value="manual" />
-                Manual</label
+                ><input
+                  type="radio"
+                  name="hero_mode"
+                  value="most_added_to_cart"
+                />
+                Most Added to Cart</label
+              ><label class="admin-check"
+                ><input type="radio" name="hero_mode" value="best_selling" />
+                Best Selling</label
+              ><label class="admin-check"
+                ><input
+                  type="radio"
+                  name="hero_mode"
+                  value="custom_selection"
+                />
+                Custom Selection</label
               >
             </fieldset>
-            <p class="admin-hero-help" id="heroHelp">
-              The three newest active events will be displayed automatically.
-            </p>
-            <div class="admin-form-grid" id="heroSlots" hidden>
-              <label>Slot 1<select name="hero_slot_1"></select></label
-              ><label>Slot 2<select name="hero_slot_2"></select></label
-              ><label>Slot 3<select name="hero_slot_3"></select></label>
+            <label class="admin-hero-limit"
+              >Hero event count<input
+                id="heroLimit"
+                type="number"
+                min="1"
+                max="20"
+                step="1"
+                inputmode="numeric"
+            /></label>
+            <p class="admin-hero-help" id="heroHelp"></p>
+            <div id="heroAutomatic"></div>
+            <div id="heroSlots" hidden>
+              <label
+                >Find eligible events<input
+                  id="heroSearch"
+                  type="search"
+                  placeholder="Search title, date, venue or category"
+                  autocomplete="off"
+              /></label>
+              <div
+                class="upcoming-shows-results"
+                id="heroResults"
+              ></div>
+              <p class="admin-hero-help" id="heroCount"></p>
+              <div class="upcoming-shows-selected" id="heroSelected"></div>
             </div>
             <div class="admin-form-actions">
               <button class="auth-submit" type="submit">Save Hero</button>

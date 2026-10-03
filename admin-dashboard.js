@@ -419,7 +419,6 @@
   let newsletterCampaignTarget = null;
   let newsletterCampaigns = [];
   const heroForm = document.querySelector("#heroForm");
-  heroForm.innerHTML = `<fieldset class="admin-hero-mode"><legend>Hero Display Mode</legend><label class="admin-check"><input type="radio" name="hero_mode" value="latest_added" checked /> Latest Added</label><label class="admin-check"><input type="radio" name="hero_mode" value="most_added_to_cart" /> Most Added to Cart</label><label class="admin-check"><input type="radio" name="hero_mode" value="best_selling" /> Best Selling</label><label class="admin-check"><input type="radio" name="hero_mode" value="custom_selection" /> Custom Selection</label></fieldset><label class="admin-hero-limit">Hero event count<input id="heroLimit" type="number" min="1" step="1" inputmode="numeric" /></label><p class="admin-hero-help" id="heroHelp"></p><div id="heroAutomatic"></div><div id="heroSlots" hidden><label>Find eligible events<input id="heroSearch" type="search" placeholder="Search title, date, venue or category" autocomplete="off" /></label><div class="upcoming-shows-results" id="heroResults"></div><p class="admin-hero-help" id="heroCount"></p><div class="upcoming-shows-selected" id="heroSelected"></div></div><div class="admin-form-actions"><button class="auth-submit" type="submit">Save Hero</button></div>`;
   const heroSlots = document.querySelector("#heroSlots");
   const heroHelp = document.querySelector("#heroHelp");
   const heroAutomatic = document.querySelector("#heroAutomatic");
@@ -678,19 +677,20 @@
         event.status === "active" &&
         event.event_date >= new Date().toISOString().slice(0, 10),
     );
-    const availableCount = eligibleEvents.length;
-    const limit = Math.max(1, Math.floor(Number(config.display_limit) || 3));
+    const configuredLimit = Number(config.display_limit);
+    const limit =
+      Number.isInteger(configuredLimit) && configuredLimit >= 1
+        ? Math.min(configuredLimit, 20)
+        : 3;
     heroForm.elements.hero_mode.value = mode;
-    heroLimit.max = String(Math.max(1, availableCount));
+    heroLimit.max = "20";
     heroLimit.value = String(limit);
     heroSlots.hidden = mode !== "custom_selection";
     heroAutomatic.hidden = mode === "custom_selection";
     const help = {
       latest_added: `Automatically shows the ${limit} newest active, upcoming events.`,
-      most_added_to_cart:
-        "Automatically ranks active, upcoming events by recorded add-to-cart ticket units.",
-      best_selling:
-        "Automatically ranks active, upcoming events by ticket quantities in paid orders.",
+      most_added_to_cart: `Automatically shows the ${limit} eligible events most added to cart.`,
+      best_selling: `Automatically shows the ${limit} best-selling eligible upcoming events.`,
       custom_selection: `Choose and order up to ${limit} active, upcoming events. Removing one here does not delete the event.`,
     };
     heroHelp.textContent = help[mode];
@@ -3846,15 +3846,10 @@
   });
   heroSearch.addEventListener("input", renderHeroForm);
   heroLimit.addEventListener("change", () => {
-    const availableCount = state.events.filter(
-      (event) =>
-        event.status === "active" &&
-        event.event_date >= new Date().toISOString().slice(0, 10),
-    ).length;
     const value = Number.parseInt(heroLimit.value, 10);
     state.heroConfig.display_limit = Number.isInteger(value)
-      ? Math.min(Math.max(value, 1), Math.max(1, availableCount))
-      : 3;
+      ? Math.min(Math.max(value, 1), 20)
+      : state.heroConfig.display_limit;
     renderHeroForm();
   });
   heroForm.addEventListener("click", (event) => {
