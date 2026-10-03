@@ -744,20 +744,6 @@
             )
             .join("") ||
           '<p class="admin-message">No eligible matching events found.</p>';
-    return;
-    /* const mode = state.heroConfig.mode === "manual" ? "manual" : "automatic";
-    heroForm.elements.hero_mode.value = mode;
-    heroSlots.hidden = mode !== "manual";
-    heroHelp.textContent = mode === "manual"
-      ? "Choose up to three active events. Empty or invalid slots are filled with the newest eligible events."
-      : "The three newest active events will be displayed automatically.";
-    const activeEvents = state.events.filter((event) => event.status === "active");
-    [1, 2, 3].forEach((slot) => {
-      const select = heroForm.elements[`hero_slot_${slot}`];
-      const selectedId = state.heroConfig.slots?.[slot] || "";
-      select.innerHTML = `<option value="">Automatic fallback</option>${activeEvents.map((event) => `<option value="${event.id}">${escapeHtml(event.title)} — ${escapeHtml(event.performer)}</option>`).join("")}`;
-      select.value = selectedId;
-    }); */
   }
 
   function formatUpcomingEvent(event) {
@@ -3932,31 +3918,6 @@
         p_mode: heroMode,
         p_display_limit: displayLimit,
         p_event_ids: heroIds,
-      });
-      if (error) throw error;
-      setMessage("Homepage Hero saved.", "success");
-      await loadData();
-    } catch (error) {
-      console.error(error);
-      setMessage(
-        "Homepage Hero could not be saved. Please review your selection and try again.",
-        "error",
-      );
-    }
-    return;
-    const mode = heroForm.elements.hero_mode.value;
-    const ids = [1, 2, 3].map(
-      (slot) => heroForm.elements[`hero_slot_${slot}`].value || null,
-    );
-    const selectedIds = ids.filter(Boolean);
-    if (new Set(selectedIds).size !== selectedIds.length) {
-      setMessage("Choose each Hero event only once.", "error");
-      return;
-    }
-    try {
-      const { error } = await client.rpc("admin_save_homepage_hero_config", {
-        p_mode: mode,
-        p_event_ids: mode === "manual" ? ids : [],
       });
       if (error) throw error;
       setMessage("Homepage Hero saved.", "success");
