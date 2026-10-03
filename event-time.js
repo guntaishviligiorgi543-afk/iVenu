@@ -40,6 +40,9 @@
   }
 
   function isEventEnded(event, now = new Date()) {
+    if (event?.status === "cancelled") return false;
+    if (event?.status === "completed") return true;
+    if (event?.status !== "active") return false;
     const cutoff = getEventCutoff(event);
     return Boolean(cutoff && cutoff.getTime() <= now.getTime());
   }

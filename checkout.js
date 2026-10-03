@@ -81,7 +81,7 @@
   async function loadCheckoutEvent() {
     const { data, error } = await client
       .from("events")
-      .select("id, title, performer, event_date, event_time, venues:venues!events_venue_id_fkey(name)")
+      .select("id, title, performer, event_date, event_time, status, venues:venues!events_venue_id_fkey(name)")
       .eq("id", eventId)
       .maybeSingle();
     if (error) {
