@@ -190,14 +190,19 @@ security definer
 set search_path = ''
 as $function$
   with config as (
-    select coalesce((select mode from public.homepage_hero_configs where id), 'latest_added') as mode
+    select
+      coalesce((select mode from public.homepage_hero_configs where id), 'latest_added') as mode,
+      coalesce((select display_limit from public.homepage_hero_configs where id), 3) as display_limit
   ), expired as (
     select public.expire_event_seat_reservations() as released
   ), automatic as (
     select ranked.id, ranked.performer, ranked.title, ranked.event_date, ranked.event_time,
       ranked.venue, ranked.city, ranked.country, ranked.image_url,
       ranked.display_position::smallint as slot
-    from public.get_ranked_homepage_events((select mode from config), 3) ranked
+    from public.get_ranked_homepage_events(
+      (select mode from config),
+      (select display_limit from config)
+    ) ranked
     where (select mode from config) <> 'custom_selection'
   ), custom as (
     select event.id, event.performer, event.title, event.event_date, event.event_time,
@@ -211,6 +216,7 @@ as $function$
     cross join config
     cross join expired
     where config.mode = 'custom_selection'
+      and hero_slot.slot <= config.display_limit
       and event.status = 'active'
       and public.event_has_purchasable_inventory(event.id)
       and make_timestamptz(
