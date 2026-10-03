@@ -772,6 +772,12 @@
   async function loadCustomerUnreadState() {
     const customerId = supportState.customerId;
     if (!customerId) return;
+    const session = await window.authApi.getSession();
+    if (!session?.user || session.user.id !== customerId) {
+      supportState.customerId = null;
+      hideCustomerSupport();
+      return;
+    }
     const { data, error } = await client.rpc("get_support_unread_state");
     if (customerId !== supportState.customerId) return;
     if (error) throw error;

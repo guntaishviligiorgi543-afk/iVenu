@@ -30,6 +30,16 @@
     return data.user;
   }
 
+  const logSupabaseError = (context, error) => {
+    console.error(context, {
+      status: error?.status ?? null,
+      code: error?.code ?? null,
+      message: error?.message ?? String(error),
+      details: error?.details ?? null,
+      hint: error?.hint ?? null,
+    });
+  };
+
   async function isAdmin(session) {
     if (!session?.user) return false;
     const { data, error } = await client
@@ -438,7 +448,7 @@
       return false;
 
     try {
-      const user = await getUser();
+      const user = session.user;
       const authState = googleAuthState(user);
       const requiresSetup =
         authState.isGoogleAccount &&
@@ -455,7 +465,10 @@
       window.location.replace("oauth-password-setup.html");
       return true;
     } catch (error) {
-      console.error("Unable to determine whether password setup is required", error);
+      logSupabaseError(
+        "Unable to determine whether password setup is required",
+        error,
+      );
       return false;
     }
   }
@@ -557,7 +570,7 @@
         policyConsentUserId = session.user.id;
         await remindIncompleteProfile(session);
       } catch (error) {
-        console.error("Unable to record policy acceptance", error);
+        logSupabaseError("Unable to record policy acceptance", error);
         message.textContent = "We could not save your acceptance. Please try again.";
         accept.disabled = false;
         logout.disabled = false;
@@ -591,7 +604,7 @@
       showPolicyConsentDialog(session);
       return false;
     } catch (error) {
-      console.error("Unable to confirm policy acceptance", error);
+      logSupabaseError("Unable to confirm policy acceptance", error);
       showPolicyConsentDialog(
         session,
         "We could not confirm your policy acceptance. Please try again.",
@@ -698,7 +711,10 @@
     })
     .catch((error) => {
       completeInitialPasswordSetupGuard();
-      console.error("Unable to complete the initial authentication check", error);
+      logSupabaseError(
+        "Unable to complete the initial authentication check",
+        error,
+      );
     });
   subscribeToAuthChanges((event, session) => {
     if (event === "SIGNED_OUT") {
@@ -708,12 +724,15 @@
       clearPolicyConsentDialog();
       return;
     }
+    if (!session?.user || event === "INITIAL_SESSION") return;
     enforceGooglePasswordSetup(session)
       .then((redirected) => {
         if (redirected) return false;
         return enforcePolicyAcceptance(session);
       })
       .then((accepted) => accepted && !isPolicyPage() && remindIncompleteProfile(session))
-      .catch((error) => console.error("Unable to check policy acceptance", error));
+      .catch((error) =>
+        logSupabaseError("Unable to check policy acceptance", error),
+      );
   });
 })();
