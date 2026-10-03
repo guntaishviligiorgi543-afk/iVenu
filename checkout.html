@@ -73,6 +73,10 @@
       background: var(--black);
     }
 
+    .logo a {
+      display: block;
+    }
+
     nav button {
       border: 1px solid var(--black);
       background: transparent;
@@ -433,7 +437,9 @@
       <nav>
         <button type="button" id="goBack">go back</button>
         <div class="logo">
-          <img src="assets/ivenue-logo.png" alt="iVenue" />
+          <a href="index.html" aria-label="iVenue home">
+            <img src="assets/ivenue-logo.png" alt="iVenue" />
+          </a>
         </div>
       </nav>
     </header>
