@@ -27,6 +27,37 @@ main {
   background: #000;
 }
 
+.endedEventState {
+  min-height: 70vh;
+  display: grid;
+  place-content: center;
+  gap: 16px;
+  padding: 40px 20px;
+  color: #fff;
+  text-align: center;
+}
+
+.endedEventState h1 {
+  margin: 0;
+  font-size: clamp(2rem, 6vw, 4rem);
+  text-transform: uppercase;
+}
+
+.endedEventState p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.8);
+  font-family: "Cabin", sans-serif;
+}
+
+.endedEventState__button {
+  justify-self: center;
+  padding: 12px 20px;
+  border: 1px solid #ff9475;
+  color: #ff9475;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
 .ticketHero > .logo {
   position: relative;
   z-index: 20;

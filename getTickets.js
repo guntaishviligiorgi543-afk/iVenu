@@ -68,15 +68,21 @@ async function loadSelectedEvent() {
   renderTicketHeroSkeleton();
 
   try {
-    const [event, ticketTypes] = await Promise.all([
-      window.supabaseData.getEvent(bandId),
-      window.supabaseData.getTicketTypes(bandId),
-    ]);
+    const event = await window.supabaseData.getEvent(bandId);
 
     if (!event) {
       setTicketHeroState("Event unavailable", true);
       return;
     }
+    if (window.iVenueEventTime.isEventEnded(event)) {
+      window.__ticketEventEnded = true;
+      document.querySelector("#endedEventState").hidden = false;
+      document.querySelector(".ticketHero")?.remove();
+      document.querySelector(".sec2")?.remove();
+      document.querySelector(".selectTktContainer")?.remove();
+      return;
+    }
+    const ticketTypes = await window.supabaseData.getTicketTypes(bandId);
 
     const band = event.bands || {};
     const eventLocation = window.supabaseData.getEventLocation(event);

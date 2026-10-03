@@ -190,6 +190,35 @@
       object-fit: cover;
       transition: transform 0.5s ease;
     }
+    .vntCrd.is-ended .eventCardImage::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      background: rgba(0, 0, 0, 0.62);
+      pointer-events: none;
+    }
+    .eventCardEndedOverlay {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      display: grid;
+      place-items: center;
+      color: #fff;
+      font-family: "Cabin", sans-serif;
+      font-size: clamp(1.5rem, 3.4vw, 2.6rem);
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      line-height: 1;
+      text-align: center;
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+      pointer-events: none;
+    }
+    .getTicketBtn.is-ended,
+    .getTicketBtn:disabled {
+      cursor: not-allowed;
+      opacity: 0.55;
+    }
 
     .vntCrd:hover img {
       transform: scale(1.1);
@@ -659,6 +688,7 @@
     <script src="supabase-config.js"></script>
     <script src="newsletter.js"></script>
     <script src="event-listing-config.js"></script>
+    <script src="event-time.js"></script>
     <script src="supabase-data.js"></script>
     <script src="event-share.js"></script>
     <script src="auth.js"></script>
@@ -772,14 +802,17 @@
         const performer = event.performer || band.name || event.title;
         const location = window.supabaseData.getEventLocation(event);
         const card = document.createElement("div");
+        const ended = window.iVenueEventTime.isEventEnded(event);
 
         card.classList.add("vntCrd");
+        card.classList.toggle("is-ended", ended);
 
         card.innerHTML = `
     <div class="cardContent">
 
       <div class="eventCardImage">
         <img src="${event.image_url || band.image_url || ""}" alt="${performer}" />
+        ${ended ? '<span class="eventCardEndedOverlay">EVENT ENDED</span>' : ""}
         <button class="eventCardShareButton" type="button" data-show-share-event="${event.id}" aria-label="Share this event">
           <svg xmlns="http://www.w3.org/2000/svg" width="1.69em" height="1.5em" viewBox="0 0 1792 1600" aria-hidden="true">
             <path d="M0 0h1792v1600H0z" fill="none" />
@@ -804,7 +837,7 @@
 
       <button class="moreInfoBtn">more info</button>
  <button class="getTicketBtn" data-id="${event.id}">
-  get tickets
+  ${ended ? "Event Ended" : "get tickets"}
 </button>
     </div>
 
@@ -831,7 +864,7 @@
     </p>
 
  <button class="getTicketBtn" data-id="${event.id}">
-  get tickets
+  ${ended ? "Event Ended" : "get tickets"}
 </button>
  
 </div>
@@ -1065,6 +1098,11 @@
         });
 
         document.querySelectorAll(".getTicketBtn").forEach((button) => {
+          if (button.closest(".vntCrd")?.classList.contains("is-ended")) {
+            button.disabled = true;
+            button.classList.add("is-ended");
+            return;
+          }
           button.addEventListener("click", () => {
             window.location.href = `getTickets.html?id=${button.dataset.id}`;
           });

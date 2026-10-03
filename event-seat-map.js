@@ -414,7 +414,7 @@
   }
 
   function loadEventSeatMap() {
-    if (!selectedBand?.id) return;
+    if (!selectedBand?.id || window.__ticketEventEnded) return;
     const eventId = selectedBand.id;
     if (
       seatState.activeLoadEventId === eventId &&

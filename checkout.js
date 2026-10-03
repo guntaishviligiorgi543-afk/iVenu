@@ -145,6 +145,9 @@
     ]);
     checkoutItems = items;
     checkoutEvent = event;
+    if (!checkoutEvent || window.iVenueEventTime.isEventEnded(checkoutEvent)) {
+      throw new Error("This event has ended. Ticket reservations are no longer available for this event.");
+    }
     if (!checkoutItems.length) return redirectToTickets();
     document.querySelector("#email").value = session.user.email || "";
     renderOrderSummary(checkoutItems);
