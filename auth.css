@@ -1183,6 +1183,7 @@ header nav .authNavLink[hidden] {
   width: min(420px, 100%);
   padding: 32px;
   border: 1px solid rgba(255, 148, 117, 0.75);
+  border-radius: 14px;
   background: #151515;
   box-shadow: 10px 10px 0 rgba(255, 148, 117, 0.5);
   text-align: center;
@@ -1253,6 +1254,7 @@ body.auth-gate-open {
   width: min(430px, 100%);
   padding: 32px;
   border: 1px solid rgba(255, 148, 117, 0.75);
+  border-radius: 14px;
   background: #171717;
   box-shadow: 10px 10px 0 rgba(255, 148, 117, 0.75);
   color: #fff;
@@ -3739,6 +3741,7 @@ body.auth-gate-open {
 }
 
 .account-page .account-result-dialog__panel {
+  border-radius: 14px;
   position: relative;
   width: min(380px, 100%);
   padding: 28px;
@@ -3792,6 +3795,7 @@ body.auth-gate-open {
 }
 
 .account-delete-dialog__panel {
+  border-radius: 14px;
   position: relative;
   width: min(460px, 100%);
   padding: 32px;

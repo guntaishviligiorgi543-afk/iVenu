@@ -260,6 +260,7 @@
 
 .admin-delete-dialog__panel {
   padding: clamp(20px, 5vw, 32px);
+  border-radius: 10px;
 }
 
 .admin-delete-dialog h2 {

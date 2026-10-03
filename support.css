@@ -721,6 +721,7 @@ body.support-page {
 
 .support-confirm-dialog__panel {
   padding: 22px;
+  border-radius: 10px;
 }
 
 .support-confirm-dialog__panel h2 {
