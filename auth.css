@@ -5036,7 +5036,8 @@ body.auth-gate-open {
   min-width: 0;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  gap: 8px;
+  align-items: start;
+  gap: 16px;
   padding: 0;
   border: 0;
   color: inherit;
@@ -5048,7 +5049,7 @@ body.auth-gate-open {
 .account-page .support-request-row__main > span:first-child {
   min-width: 0;
   display: grid;
-  gap: 3px;
+  gap: 4px;
 }
 
 .account-page .support-request-row__main strong,
@@ -5080,6 +5081,27 @@ body.auth-gate-open {
   justify-items: end;
   align-content: start;
   gap: 4px;
+  min-width: 86px;
+}
+
+.account-page .support-request-row__meta {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  color: rgba(255, 255, 255, 0.42) !important;
+  font-size: 0.68rem;
+}
+
+.account-page .support-request-row__meta > span {
+  margin: 0 !important;
+}
+
+.account-page .support-request-row__status {
+  min-width: 86px;
+  display: grid !important;
+  justify-items: end;
+  align-content: start;
+  gap: 4px;
 }
 
 .account-page .support-request-row__delete {
@@ -5091,14 +5113,30 @@ body.auth-gate-open {
 .account-page .support-request-row__delete:hover,
 .account-page .support-request-row__delete:focus-visible {
   color: #ff8b7d;
+  background: transparent;
+}
+
+.account-page .support-request-row__delete {
+  transition: transform 0.15s ease;
+}
+
+.account-page .support-request-row__delete:hover {
+  transform: scale(1.1);
 }
 
 @media (max-width: 760px) {
   .account-page .support-request-row__main {
     grid-template-columns: 1fr;
+    gap: 8px;
   }
-  .account-page .support-request-row__main > span:last-child {
+
+  .account-page .support-request-row__status {
     justify-items: start;
+  }
+
+  .account-page .support-request-row__meta {
+    grid-template-columns: 1fr;
+    gap: 2px;
   }
 }
 

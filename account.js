@@ -628,7 +628,7 @@
       const item = document.createElement("div");
       item.className = `dashboard-row support-request-row${request.id === supportState.selectedId ? " is-selected" : ""}`;
       const unread = supportState.unread.get(request.id) || 0;
-      item.innerHTML = `<button class="support-request-row__main" type="button" data-support-request-id="${escapeHtml(request.id)}"><span><strong>${escapeHtml(request.subject)}</strong><span>${escapeHtml(supportCategoryLabel(request.category))}</span><span class="support-request-updated">Updated ${escapeHtml(formatSupportDate(request.updated_at))}</span></span><span><strong class="support-request-status support-request-status--${request.status === SUPPORT_RESOLVED_STATUS ? "resolved" : "open"}">${supportStatusLabel(request.status)}</strong>${unread > 0 ? '<span class="support-request-new">New reply</span>' : ""}</span></button><button class="account-text-button support-request-row__delete" type="button" data-delete-support-request="${escapeHtml(request.id)}" aria-label="Delete support request: ${escapeHtml(request.subject)}">Delete</button>`;
+      item.innerHTML = `<button class="support-request-row__main" type="button" data-support-request-id="${escapeHtml(request.id)}"><span class="support-request-row__content"><strong>${escapeHtml(request.subject)}</strong><span>${escapeHtml(supportCategoryLabel(request.category))}</span><span class="support-request-row__meta"><span>Created ${escapeHtml(formatSupportDate(request.created_at))}</span><span>Updated ${escapeHtml(formatSupportDate(request.updated_at))}</span></span></span><span class="support-request-row__status"><strong class="support-request-status support-request-status--${request.status === SUPPORT_RESOLVED_STATUS ? "resolved" : "open"}">${supportStatusLabel(request.status)}</strong>${unread > 0 ? '<span class="support-request-new">New reply</span>' : ""}</span></button><button class="account-text-button support-request-row__delete" type="button" data-delete-support-request="${escapeHtml(request.id)}" aria-label="Delete support request: ${escapeHtml(request.subject)}">Delete</button>`;
       supportRequestsList.append(item);
     });
     renderSupportPagination();
@@ -1054,7 +1054,6 @@
         (item) => item.id === deleteButton.dataset.deleteSupportRequest,
       );
       if (!request) return;
-      supportDeleteRequestTitle.textContent = request.subject;
       supportDeleteDialog.dataset.requestId = request.id;
       supportDeleteDialog.hidden = false;
       document.body.classList.add("account-delete-modal-open");
