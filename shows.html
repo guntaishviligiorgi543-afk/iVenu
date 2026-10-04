@@ -1,16 +1,22 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="en">
   <head>
     <link rel="icon" type="image/png" href="images/facicon.png" />
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Shows &amp; Events | iVenue</title>
-    <meta name="description" content="Explore upcoming shows and events on iVenue, including concerts, sports, festivals, theatre, comedy and more." />
+    <meta
+      name="description"
+      content="Explore upcoming shows and events on iVenue, including concerts, sports, festivals, theatre, comedy and more."
+    />
     <link rel="canonical" href="https://ivenue.site/shows.html" />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="iVenue" />
     <meta property="og:title" content="Shows &amp; Events | iVenue" />
-    <meta property="og:description" content="Explore upcoming shows and events on iVenue, including concerts, sports, festivals, theatre, comedy and more." />
+    <meta
+      property="og:description"
+      content="Explore upcoming shows and events on iVenue, including concerts, sports, festivals, theatre, comedy and more."
+    />
     <meta property="og:url" content="https://ivenue.site/shows.html" />
     <link rel="stylesheet" href="main.css" />
     <script src="loading-state.js"></script>
@@ -23,6 +29,7 @@
       display: flex;
       flex-direction: column;
     }
+
     .calendarCont {
       display: flex;
       flex-direction: column;
@@ -33,10 +40,12 @@
       max-width: 100%;
       box-sizing: border-box;
     }
+
     .calendar {
       display: flex;
       align-self: flex-start;
     }
+
     .calendar-title {
       position: relative;
       display: flex;
@@ -80,6 +89,7 @@
       height: 65px;
       background: repeating-linear-gradient(65deg, #000 0 2px, #ff9475 2px 4px);
     }
+
     .calendar-title::after {
       content: "";
       position: absolute;
@@ -89,6 +99,7 @@
       height: 9px;
       background: #fff;
     }
+
     .eventCards {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -99,7 +110,10 @@
 
     .eventFilters {
       display: grid;
-      grid-template-columns: minmax(0, 2.2fr) minmax(180px, 1fr) minmax(180px, 1fr);
+      grid-template-columns: minmax(0, 2.2fr) minmax(180px, 1fr) minmax(
+          180px,
+          1fr
+        );
       gap: 12px;
       width: min(100%, 900px);
       margin: 34px auto 0;
@@ -244,6 +258,7 @@
       color: #ff9475;
       line-height: 38px;
     }
+
     .vntCrd {
       position: relative;
       height: 55vh;
@@ -256,7 +271,6 @@
     .cardContent {
       width: 100%;
       height: 100%;
-
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -264,18 +278,21 @@
       justify-content: space-between;
       transition: 0.3s ease;
     }
+
     .eventCardImage {
       width: 100%;
       height: 50%;
       position: relative;
       overflow: hidden;
     }
+
     .eventCardImage img {
       width: 100%;
       height: 100%;
       object-fit: cover;
       transition: transform 0.5s ease;
     }
+
     .vntCrd.is-ended .eventCardImage::after {
       content: "";
       position: absolute;
@@ -284,6 +301,7 @@
       background: rgba(0, 0, 0, 0.62);
       pointer-events: none;
     }
+
     .eventCardEndedOverlay {
       position: absolute;
       inset: 0;
@@ -300,6 +318,7 @@
       text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
       pointer-events: none;
     }
+
     .vntCrd.is-sold-out .eventCardImage::after {
       content: "";
       position: absolute;
@@ -308,6 +327,7 @@
       background: rgba(0, 0, 0, 0.62);
       pointer-events: none;
     }
+
     .eventCardSoldOutOverlay {
       position: absolute;
       inset: 0;
@@ -324,6 +344,7 @@
       text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
       pointer-events: none;
     }
+
     .getTicketBtn.is-ended,
     .getTicketBtn:disabled {
       cursor: not-allowed;
@@ -333,6 +354,7 @@
     .vntCrd:hover img {
       transform: scale(1.1);
     }
+
     .eventCardShareButton {
       position: absolute;
       right: 14px;
@@ -355,17 +377,20 @@
         color 0.22s ease,
         background 0.22s ease;
     }
+
     .eventCardShareButton:hover,
     .eventCardShareButton:focus-visible {
       color: #ff9475;
       background: rgba(0, 0, 0, 0.76);
       outline: none;
     }
+
     .vntCrd:hover .eventCardShareButton,
     .eventCardShareButton:focus-visible {
       opacity: 1;
       transform: translateY(0);
     }
+
     .eventCardCartButton {
       position: absolute;
       bottom: 14px;
@@ -388,6 +413,7 @@
         color 0.22s ease,
         background 0.22s ease;
     }
+
     .eventCardCartButton:hover,
     .eventCardCartButton:focus-visible,
     .eventCardCartButton.is-in-cart {
@@ -395,18 +421,22 @@
       background: rgba(0, 0, 0, 0.76);
       outline: none;
     }
+
     .vntCrd:hover .eventCardCartButton,
     .eventCardCartButton:focus-visible {
       opacity: 1;
       transform: translateY(0);
     }
+
     .eventCardCartButton:disabled {
       cursor: wait;
       opacity: 0.72;
     }
+
     .eventCardCartButton.is-pending svg {
       animation: event-card-cart-pending 0.75s linear infinite;
     }
+
     .showsCartMessage {
       position: fixed;
       right: 24px;
@@ -419,9 +449,11 @@
       background: rgba(18, 18, 18, 0.96);
       box-shadow: 0 10px 28px rgba(0, 0, 0, 0.28);
     }
+
     .showsCartMessage.error {
       border-color: rgba(255, 107, 107, 0.8);
     }
+
     .eventCardCartFeedback {
       position: absolute;
       inset: 0;
@@ -450,19 +482,23 @@
       pointer-events: none;
       transition: opacity 0.24s ease;
     }
+
     .eventCardCartFeedback.is-visible {
       opacity: 1;
     }
+
     @media (prefers-reduced-motion: reduce) {
       .eventCardCartFeedback {
         transition: none;
       }
     }
+
     @keyframes event-card-cart-pending {
       to {
         transform: rotate(360deg);
       }
     }
+
     @media (hover: none), (pointer: coarse) {
       .eventCardShareButton,
       .eventCardCartButton {
@@ -470,47 +506,48 @@
         transform: translateY(0);
       }
     }
+
     .moreInfoBtn {
       color: #fff;
       text-decoration: underline;
       text-transform: capitalize;
       font-size: 17px;
     }
+
     .cardContent:hover img {
       filter: brightness(1);
     }
+
     .bandNam {
       font-size: 2rem;
       text-align: center;
       font-family: Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
     }
+
     .concertDate {
       text-align: center;
       font-size: 15px;
       font-family: Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
     }
+
     .getTicketBtn {
       text-transform: uppercase;
     }
+
     .infoCont {
       position: absolute;
       inset: 0;
       padding: 14px;
-
       display: flex;
       flex-direction: column;
       justify-content: space-between;
       gap: 10px;
-
       font-family: "Courier New", Courier, monospace;
-
       opacity: 0;
       visibility: hidden;
       transform: translateY(20px);
       transition: 0.3s ease;
-
       background-color: rgb(0, 0, 0);
-
       overflow: hidden;
     }
 
@@ -518,11 +555,9 @@
       flex: 1;
       min-height: 0;
       overflow-y: auto;
-
       display: flex;
       flex-direction: column;
       gap: 15px;
-
       padding-right: 5px;
     }
 
@@ -602,12 +637,10 @@
         grid-template-columns: 1fr;
         margin-top: 24px;
       }
-
       .eventCards {
         grid-template-columns: 1fr;
         padding-top: 30px;
       }
-
       .pagination {
         gap: 5px;
       }
@@ -619,8 +652,8 @@
       <nav>
         <a href="index.html"><span>home</span></a>
         <a href="shows.html"><span>shows</span></a>
-        <a href="venue.html"> <span>venue</span></a
-        ><a href="contact.html"> <span>contact</span></a>
+        <a href="venue.html"> <span>venue</span></a>
+        <a href="contact.html"> <span>contact</span></a>
       </nav>
       <button
         class="mobileMenuToggle"
@@ -757,11 +790,19 @@
                 aria-expanded="false"
               >
                 <span class="eventFilterDropdown__label">All categories</span>
-                <svg class="eventFilterDropdown__chevron" viewBox="0 0 12 8" aria-hidden="true">
+                <svg
+                  class="eventFilterDropdown__chevron"
+                  viewBox="0 0 12 8"
+                  aria-hidden="true"
+                >
                   <path d="m1 1 5 5 5-5" />
                 </svg>
               </button>
-              <div class="eventFilterDropdown__menu" role="listbox" tabindex="-1"></div>
+              <div
+                class="eventFilterDropdown__menu"
+                role="listbox"
+                tabindex="-1"
+              ></div>
             </div>
             <div
               class="eventFilterDropdown"
@@ -778,13 +819,37 @@
                 aria-expanded="false"
               >
                 <span class="eventFilterDropdown__label">Nearest first</span>
-                <svg class="eventFilterDropdown__chevron" viewBox="0 0 12 8" aria-hidden="true">
+                <svg
+                  class="eventFilterDropdown__chevron"
+                  viewBox="0 0 12 8"
+                  aria-hidden="true"
+                >
                   <path d="m1 1 5 5 5-5" />
                 </svg>
               </button>
-              <div class="eventFilterDropdown__menu" role="listbox" tabindex="-1">
-                <button class="eventFilterDropdown__option is-selected" type="button" role="option" aria-selected="true" data-value="nearest">Nearest first</button>
-                <button class="eventFilterDropdown__option" type="button" role="option" aria-selected="false" data-value="latest">Latest first</button>
+              <div
+                class="eventFilterDropdown__menu"
+                role="listbox"
+                tabindex="-1"
+              >
+                <button
+                  class="eventFilterDropdown__option is-selected"
+                  type="button"
+                  role="option"
+                  aria-selected="true"
+                  data-value="nearest"
+                >
+                  Nearest first
+                </button>
+                <button
+                  class="eventFilterDropdown__option"
+                  type="button"
+                  role="option"
+                  aria-selected="false"
+                  data-value="latest"
+                >
+                  Latest first
+                </button>
               </div>
             </div>
           </div>
@@ -821,7 +886,11 @@
 
                 <button type="submit">Subscribe</button>
               </div>
-              <p class="newsletter-message" role="status" aria-live="polite"></p>
+              <p
+                class="newsletter-message"
+                role="status"
+                aria-live="polite"
+              ></p>
             </form>
           </div>
         </div>
@@ -848,547 +917,564 @@
     <script src="event-cart.js"></script>
     <script src="auth-ui.js"></script>
     <script>
-      const eventCards = document.querySelector(".eventCards");
-      const pagination = document.querySelector(".pagination");
-      const eventSearch = document.querySelector("#eventSearch");
-      const eventCategory = document.querySelector("#eventCategory");
-      const eventSort = document.querySelector("#eventSort");
-      const showsCartMessage = document.querySelector("#showsCartMessage");
-      const releaseShowsInitialLoad = window.pageLoading?.lock(
-        "shows-first-section",
-      );
-      const EVENTS_PER_PAGE = window.iVenueEventListing.pageSize;
-      let loadedEvents = [];
-      let filteredEvents = [];
-      let currentPage = 1;
-      let cartEventIds = new Set();
-      const pendingCartEventIds = new Set();
-      const compactPaginationBreakpoint = window.matchMedia("(max-width: 768px)");
-      let cartMessageTimeout;
-      let selectedCategory = "";
-      let selectedSort = "nearest";
+                      const eventCards = document.querySelector(".eventCards");
+                      const pagination = document.querySelector(".pagination");
+                      const eventSearch = document.querySelector("#eventSearch");
+                      const eventCategory = document.querySelector("#eventCategory");
+                      const eventSort = document.querySelector("#eventSort");
+                      const showsCartMessage = document.querySelector("#showsCartMessage");
+                      const releaseShowsInitialLoad = window.pageLoading ?.lock(
+                          "shows-first-section",
+                      );
+                      const EVENTS_PER_PAGE = window.iVenueEventListing.pageSize;
+                      let loadedEvents = [];
+                      let filteredEvents = [];
+                      let currentPage = 1;
+                      let cartEventIds = new Set();
+                      const pendingCartEventIds = new Set();
+                      const compactPaginationBreakpoint = window.matchMedia("(max-width: 768px)");
+                      let cartMessageTimeout;
+                      let selectedCategory = "";
+                      let selectedSort = "nearest";
 
-      function closeFilterDropdown(dropdown) {
-        dropdown.classList.remove("is-open");
-        dropdown
-          .querySelector(".eventFilterDropdown__toggle")
-          .setAttribute("aria-expanded", "false");
-      }
+                      function closeFilterDropdown(dropdown) {
+                          dropdown.classList.remove("is-open");
+                          dropdown
+                              .querySelector(".eventFilterDropdown__toggle")
+                              .setAttribute("aria-expanded", "false");
+                      }
 
-      function openFilterDropdown(dropdown) {
-        document
-          .querySelectorAll("[data-filter-dropdown].is-open")
-          .forEach((item) => {
-            if (item !== dropdown) closeFilterDropdown(item);
-          });
-        dropdown.classList.add("is-open");
-        dropdown
-          .querySelector(".eventFilterDropdown__toggle")
-          .setAttribute("aria-expanded", "true");
-      }
+                      function openFilterDropdown(dropdown) {
+                          document
+                              .querySelectorAll("[data-filter-dropdown].is-open")
+                              .forEach((item) => {
+                                  if (item !== dropdown) closeFilterDropdown(item);
+                              });
+                          dropdown.classList.add("is-open");
+                          dropdown
+                              .querySelector(".eventFilterDropdown__toggle")
+                              .setAttribute("aria-expanded", "true");
+                      }
 
-      function setFilterDropdownValue(dropdown, value, label, notify = true) {
-        dropdown.dataset.value = value;
-        dropdown.dataset.label = label;
-        dropdown.querySelector(".eventFilterDropdown__label").textContent = label;
-        dropdown.querySelectorAll(".eventFilterDropdown__option").forEach((option) => {
-          const selected = option.dataset.value === value;
-          option.classList.toggle("is-selected", selected);
-          option.setAttribute("aria-selected", String(selected));
-        });
-        closeFilterDropdown(dropdown);
-        if (notify) applyEventFilters();
-      }
+                      function setFilterDropdownValue(dropdown, value, label, notify = true) {
+                          dropdown.dataset.value = value;
+                          dropdown.dataset.label = label;
+                          dropdown.querySelector(".eventFilterDropdown__label").textContent = label;
+                          dropdown.querySelectorAll(".eventFilterDropdown__option").forEach((option) => {
+                              const selected = option.dataset.value === value;
+                              option.classList.toggle("is-selected", selected);
+                              option.setAttribute("aria-selected", String(selected));
+                          });
+                          closeFilterDropdown(dropdown);
+                          if (notify) applyEventFilters();
+                      }
 
-      function configureFilterDropdown(dropdown, options) {
-        const menu = dropdown.querySelector(".eventFilterDropdown__menu");
-        menu.innerHTML = options
-          .map(
-            ({ value, label }) =>
-              `<button class="eventFilterDropdown__option" type="button" role="option" aria-selected="false" data-value="${value}">${label}</button>`,
-          )
-          .join("");
-        setFilterDropdownValue(
-          dropdown,
-          dropdown.dataset.value || options[0].value,
-          options.find(({ value }) => value === (dropdown.dataset.value || options[0].value))?.label ||
-            options[0].label,
-          false,
-        );
-      }
+                      function configureFilterDropdown(dropdown, options) {
+                          const menu = dropdown.querySelector(".eventFilterDropdown__menu");
+                          menu.innerHTML = options
+                              .map(
+                                  ({
+                                      value,
+                                      label
+                                  }) =>
+                                  `<button class="eventFilterDropdown__option" type="button" role="option" aria-selected="false" data-value="${value}">${label}</button>`,
+                              )
+                              .join("");
+                          setFilterDropdownValue(
+                              dropdown,
+                              dropdown.dataset.value || options[0].value,
+                              options.find(({
+                                  value
+                              }) => value === (dropdown.dataset.value || options[0].value)) ?.label ||
+                              options[0].label,
+                              false,
+                          );
+                      }
 
-      document.querySelectorAll("[data-filter-dropdown]").forEach((dropdown) => {
-        const toggle = dropdown.querySelector(".eventFilterDropdown__toggle");
-        const menu = dropdown.querySelector(".eventFilterDropdown__menu");
-        toggle.addEventListener("click", () => {
-          if (dropdown.classList.contains("is-open")) closeFilterDropdown(dropdown);
-          else openFilterDropdown(dropdown);
-        });
-        toggle.addEventListener("keydown", (event) => {
-          if (event.key === "ArrowDown" || event.key === "ArrowUp") {
-            event.preventDefault();
-            openFilterDropdown(dropdown);
-            const options = [...menu.querySelectorAll("[role='option']")];
-            options[event.key === "ArrowDown" ? 0 : options.length - 1]?.focus();
-          } else if (event.key === "Enter" || event.key === " ") {
-            event.preventDefault();
-            if (dropdown.classList.contains("is-open")) closeFilterDropdown(dropdown);
-            else openFilterDropdown(dropdown);
-          } else if (event.key === "Escape") {
-            event.preventDefault();
-            closeFilterDropdown(dropdown);
-          }
-        });
-        menu.addEventListener("click", (event) => {
-          const option = event.target.closest("[role='option']");
-          if (!option) return;
-          if (dropdown === eventCategory) selectedCategory = option.dataset.value;
-          if (dropdown === eventSort) selectedSort = option.dataset.value;
-          setFilterDropdownValue(dropdown, option.dataset.value, option.textContent);
-          dropdown.querySelector(".eventFilterDropdown__toggle").focus();
-        });
-        menu.addEventListener("keydown", (event) => {
-          const options = [...menu.querySelectorAll("[role='option']")];
-          const current = options.indexOf(document.activeElement);
-          if (event.key === "ArrowDown" || event.key === "ArrowUp") {
-            event.preventDefault();
-            options[(current + (event.key === "ArrowDown" ? 1 : -1) + options.length) % options.length]?.focus();
-          } else if (event.key === "Enter" || event.key === " ") {
-            event.preventDefault();
-            document.activeElement?.click();
-          } else if (event.key === "Escape") {
-            event.preventDefault();
-            closeFilterDropdown(dropdown);
-            toggle.focus();
-          }
-        });
-      });
+                      document.querySelectorAll("[data-filter-dropdown]").forEach((dropdown) => {
+                          const toggle = dropdown.querySelector(".eventFilterDropdown__toggle");
+                          const menu = dropdown.querySelector(".eventFilterDropdown__menu");
+                          toggle.addEventListener("click", () => {
+                              if (dropdown.classList.contains("is-open")) closeFilterDropdown(dropdown);
+                              else openFilterDropdown(dropdown);
+                          });
+                          toggle.addEventListener("keydown", (event) => {
+                              if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+                                  event.preventDefault();
+                                  openFilterDropdown(dropdown);
+                                  const options = [...menu.querySelectorAll("[role='option']")];
+                                  options[event.key === "ArrowDown" ? 0 : options.length - 1] ?.focus();
+                              } else if (event.key === "Enter" || event.key === " ") {
+                                  event.preventDefault();
+                                  if (dropdown.classList.contains("is-open")) closeFilterDropdown(dropdown);
+                                  else openFilterDropdown(dropdown);
+                              } else if (event.key === "Escape") {
+                                  event.preventDefault();
+                                  closeFilterDropdown(dropdown);
+                              }
+                          });
+                          menu.addEventListener("click", (event) => {
+                              const option = event.target.closest("[role='option']");
+                              if (!option) return;
+                              if (dropdown === eventCategory) selectedCategory = option.dataset.value;
+                              if (dropdown === eventSort) selectedSort = option.dataset.value;
+                              setFilterDropdownValue(dropdown, option.dataset.value, option.textContent);
+                              dropdown.querySelector(".eventFilterDropdown__toggle").focus();
+                          });
+                          menu.addEventListener("keydown", (event) => {
+                              const options = [...menu.querySelectorAll("[role='option']")];
+                              const current = options.indexOf(document.activeElement);
+                              if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+                                  event.preventDefault();
+                                  options[(current + (event.key === "ArrowDown" ? 1 : -1) + options.length) % options.length] ?.focus();
+                              } else if (event.key === "Enter" || event.key === " ") {
+                                  event.preventDefault();
+                                  document.activeElement ?.click();
+                              } else if (event.key === "Escape") {
+                                  event.preventDefault();
+                                  closeFilterDropdown(dropdown);
+                                  toggle.focus();
+                              }
+                          });
+                      });
 
-      document.addEventListener("click", (event) => {
-        if (!event.target.closest("[data-filter-dropdown]"))
-          document
-            .querySelectorAll("[data-filter-dropdown].is-open")
-            .forEach(closeFilterDropdown);
-      });
+                      document.addEventListener("click", (event) => {
+                          if (!event.target.closest("[data-filter-dropdown]"))
+                              document
+                              .querySelectorAll("[data-filter-dropdown].is-open")
+                              .forEach(closeFilterDropdown);
+                      });
 
-      function showCartMessage(message, isError = false) {
-        window.clearTimeout(cartMessageTimeout);
-        showsCartMessage.textContent = message;
-        showsCartMessage.classList.toggle("error", isError);
-        showsCartMessage.hidden = false;
-        cartMessageTimeout = window.setTimeout(() => {
-          showsCartMessage.hidden = true;
-        }, 2000);
-      }
+                      function showCartMessage(message, isError = false) {
+                          window.clearTimeout(cartMessageTimeout);
+                          showsCartMessage.textContent = message;
+                          showsCartMessage.classList.toggle("error", isError);
+                          showsCartMessage.hidden = false;
+                          cartMessageTimeout = window.setTimeout(() => {
+                              showsCartMessage.hidden = true;
+                          }, 2000);
+                      }
 
-      function showCardCartFeedback(button, message) {
-        const imageWrapper = button.closest(".eventCardImage");
-        if (!imageWrapper) return;
-        imageWrapper.querySelector(".eventCardCartFeedback")?.remove();
+                      function showCardCartFeedback(button, message) {
+                          const imageWrapper = button.closest(".eventCardImage");
+                          if (!imageWrapper) return;
+                          imageWrapper.querySelector(".eventCardCartFeedback") ?.remove();
 
-        const feedback = document.createElement("p");
-        feedback.className = "eventCardCartFeedback";
-        feedback.textContent = message;
-        feedback.setAttribute("role", "status");
-        feedback.setAttribute("aria-live", "polite");
-        imageWrapper.append(feedback);
+                          const feedback = document.createElement("p");
+                          feedback.className = "eventCardCartFeedback";
+                          feedback.textContent = message;
+                          feedback.setAttribute("role", "status");
+                          feedback.setAttribute("aria-live", "polite");
+                          imageWrapper.append(feedback);
 
-        window.requestAnimationFrame(() =>
-          feedback.classList.add("is-visible"),
-        );
-        window.setTimeout(() => {
-          feedback.classList.remove("is-visible");
-          window.setTimeout(() => feedback.remove(), 220);
-        }, 2000);
-      }
+                          window.requestAnimationFrame(() =>
+                              feedback.classList.add("is-visible"),
+                          );
+                          window.setTimeout(() => {
+                              feedback.classList.remove("is-visible");
+                              window.setTimeout(() => feedback.remove(), 220);
+                          }, 2000);
+                      }
 
-      function updateCartButton(button) {
-        const eventId = String(button.dataset.showCartEvent);
-        const isInCart = cartEventIds.has(eventId);
-        const isPending = pendingCartEventIds.has(eventId);
-        const event = loadedEvents.find((item) => String(item.id) === eventId);
-        const label = event?.title || event?.performer || "event";
-        button.classList.toggle("is-in-cart", isInCart);
-        button.classList.toggle("is-pending", isPending);
-        button.disabled = isPending;
-        button.setAttribute("aria-busy", String(isPending));
-        button.setAttribute("aria-pressed", String(isInCart));
-        button.setAttribute(
-          "aria-label",
-          `${isInCart ? "Remove" : "Add"} ${label} ${isInCart ? "from" : "to"} cart`,
-        );
-      }
+                      function updateCartButton(button) {
+                          const eventId = String(button.dataset.showCartEvent);
+                          const isInCart = cartEventIds.has(eventId);
+                          const isPending = pendingCartEventIds.has(eventId);
+                          const event = loadedEvents.find((item) => String(item.id) === eventId);
+                          const label = event ?.title || event ?.performer || "event";
+                          button.classList.toggle("is-in-cart", isInCart);
+                          button.classList.toggle("is-pending", isPending);
+                          button.disabled = isPending;
+                          button.setAttribute("aria-busy", String(isPending));
+                          button.setAttribute("aria-pressed", String(isInCart));
+                          button.setAttribute(
+                              "aria-label",
+                              `${isInCart ? "Remove" : "Add"} ${label} ${isInCart ? "from" : "to"} cart`,
+                          );
+                      }
 
-      function syncVisibleCartButtons() {
-        eventCards
-          .querySelectorAll("[data-show-cart-event]")
-          .forEach(updateCartButton);
-      }
+                      function syncVisibleCartButtons() {
+                          eventCards
+                              .querySelectorAll("[data-show-cart-event]")
+                              .forEach(updateCartButton);
+                      }
 
-      async function refreshCartState() {
-        if (!window.eventCart?.getEventIds) return;
-        try {
-          cartEventIds = new Set(await window.eventCart.getEventIds());
-          syncVisibleCartButtons();
-        } catch (error) {
-          console.error("Could not refresh Shows cart state:", error);
-        }
-      }
+                      async function refreshCartState() {
+                          if (!window.eventCart ?.getEventIds) return;
+                          try {
+                              cartEventIds = new Set(await window.eventCart.getEventIds());
+                              syncVisibleCartButtons();
+                          } catch (error) {
+                              console.error("Could not refresh Shows cart state:", error);
+                          }
+                      }
 
-      function showEventsMessage(message, isError = false) {
-        eventCards.innerHTML = `<p class="eventsMessage${isError ? " error" : ""}">${message}</p>`;
-      }
+                      function showEventsMessage(message, isError = false) {
+                          eventCards.innerHTML = `<p class="eventsMessage${isError ? " error" : ""}">${message}</p>`;
+                      }
 
-      function showEventSkeletons() {
-        eventCards.innerHTML = "";
-        pagination.innerHTML = "";
-        for (let index = 0; index < EVENTS_PER_PAGE; index += 1) {
-          const skeleton = document.createElement("div");
-          skeleton.className = "vntCrd event-card-skeleton";
-          skeleton.setAttribute("aria-hidden", "true");
-          skeleton.innerHTML = `<div class="cardContent"><div class="skeletonBlock event-card-skeleton__media"></div><div class="event-card-skeleton__text"><span class="skeletonBlock skeletonTextLine skeletonTextLine--wide"></span><span class="skeletonBlock skeletonTextLine"></span></div><span class="skeletonBlock event-card-skeleton__button"></span></div>`;
-          eventCards.append(skeleton);
-        }
-      }
+                      function showEventSkeletons() {
+                          eventCards.innerHTML = "";
+                          pagination.innerHTML = "";
+                          for (let index = 0; index < EVENTS_PER_PAGE; index += 1) {
+                              const skeleton = document.createElement("div");
+                              skeleton.className = "vntCrd event-card-skeleton";
+                              skeleton.setAttribute("aria-hidden", "true");
+                              skeleton.innerHTML = `<div class="cardContent"><div class="skeletonBlock event-card-skeleton__media"></div><div class="event-card-skeleton__text"><span class="skeletonBlock skeletonTextLine skeletonTextLine--wide"></span><span class="skeletonBlock skeletonTextLine"></span></div><span class="skeletonBlock event-card-skeleton__button"></span></div>`;
+                              eventCards.append(skeleton);
+                          }
+                      }
 
-      function formatEventTime(value) {
-        return value ? value.slice(0, 5) : "Time TBA";
-      }
+                      function formatEventTime(value) {
+                          return value ? value.slice(0, 5) : "Time TBA";
+                      }
 
-      function renderEventCard(event) {
-        const band = event.bands || {};
-        const performer = event.performer || band.name || event.title;
-        const location = window.supabaseData.getEventLocation(event);
-        const card = document.createElement("div");
-        const ended = window.iVenueEventTime.isEventEnded(event);
-        const soldOut = !ended && event.inventory?.has_inventory && Number(event.inventory.available_count) <= 0;
-        const ticketsUnavailable = !ended && !event.inventory?.has_inventory;
+                      function renderEventCard(event) {
+                          const band = event.bands || {};
+                          const performer = event.performer || band.name || event.title;
+                          const location = window.supabaseData.getEventLocation(event);
+                          const card = document.createElement("div");
+                          const ended = window.iVenueEventTime.isEventEnded(event);
+                          const soldOut = !ended && event.inventory ?.has_inventory && Number(event.inventory.available_count) <= 0;
+                          const ticketsUnavailable = !ended && !event.inventory ?.has_inventory;
 
-        card.classList.add("vntCrd");
-        card.classList.toggle("is-ended", ended);
-        card.classList.toggle("is-sold-out", soldOut);
-        card.classList.toggle("is-tickets-unavailable", ticketsUnavailable);
+                          card.classList.add("vntCrd");
+                          card.classList.toggle("is-ended", ended);
+                          card.classList.toggle("is-sold-out", soldOut);
+                          card.classList.toggle("is-tickets-unavailable", ticketsUnavailable);
 
-        card.innerHTML = `
-    <div class="cardContent">
+                          card.innerHTML = `
+          <div class="cardContent">
 
-      <div class="eventCardImage">
-        <img src="${event.image_url || band.image_url || ""}" alt="${performer}" />
-        ${ended ? '<span class="eventCardEndedOverlay">EVENT ENDED</span>' : soldOut ? '<span class="eventCardSoldOutOverlay">SOLD OUT</span>' : ticketsUnavailable ? '<span class="eventCardSoldOutOverlay">TICKETS UNAVAILABLE</span>' : ""}
-        <button class="eventCardShareButton" type="button" data-show-share-event="${event.id}" aria-label="Share this event">
-          <svg xmlns="http://www.w3.org/2000/svg" width="1.69em" height="1.5em" viewBox="0 0 1792 1600" aria-hidden="true">
-            <path d="M0 0h1792v1600H0z" fill="none" />
-            <path fill="currentColor" d="M1792 576q0 26-19 45l-512 512q-19 19-45 19t-45-19t-19-45V832H928q-98 0-175.5 6t-154 21.5t-133 42.5T360 971.5t-80 101t-48.5 138.5t-17.5 181q0 55 5 123q0 6 2.5 23.5t2.5 26.5q0 15-8.5 25t-23.5 10q-16 0-28-17q-7-9-13-22t-13.5-30t-10.5-24Q0 1222 0 1056q0-199 53-333q162-403 875-403h224V64q0-26 19-45t45-19t45 19l512 512q19 19 19 45" />
-          </svg>
-        </button>
-        <button class="eventCardCartButton" type="button" data-show-cart-event="${event.id}" aria-label="Add ${performer} to cart" aria-pressed="false">
-          <svg xmlns="http://www.w3.org/2000/svg" width="1.45em" height="1.45em" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M0 0h24v24H0z" fill="none" />
-            <g fill="none" stroke="currentColor" stroke-linejoin="round" stroke-width="2">
-              <path d="M5 7h13.79a2 2 0 0 1 1.99 2.199l-.6 6A2 2 0 0 1 18.19 17H8.64a2 2 0 0 1-1.962-1.608z" />
-              <path stroke-linecap="round" d="m5 7l-.81-3.243A1 1 0 0 0 3.22 3H2m6 18h2m6 0h2" />
-            </g>
-          </svg>
-        </button>
+            <div class="eventCardImage">
+              <img src="${event.image_url || band.image_url || ""}" alt="${performer}" />
+              ${ended ? '<span class="eventCardEndedOverlay">EVENT ENDED</span>' : soldOut ? '<span class="eventCardSoldOutOverlay">SOLD OUT</span>' : ticketsUnavailable ? '<span class="eventCardSoldOutOverlay">TICKETS UNAVAILABLE</span>' : ""}
+              <button class="eventCardShareButton" type="button" data-show-share-event="${event.id}" aria-label="Share this event">
+                <svg xmlns="http://www.w3.org/2000/svg" width="1.69em" height="1.5em" viewBox="0 0 1792 1600" aria-hidden="true">
+                  <path d="M0 0h1792v1600H0z" fill="none" />
+                  <path fill="currentColor" d="M1792 576q0 26-19 45l-512 512q-19 19-45 19t-45-19t-19-45V832H928q-98 0-175.5 6t-154 21.5t-133 42.5T360 971.5t-80 101t-48.5 138.5t-17.5 181q0 55 5 123q0 6 2.5 23.5t2.5 26.5q0 15-8.5 25t-23.5 10q-16 0-28-17q-7-9-13-22t-13.5-30t-10.5-24Q0 1222 0 1056q0-199 53-333q162-403 875-403h224V64q0-26 19-45t45-19t45 19l512 512q19 19 19 45" />
+                </svg>
+              </button>
+              <button class="eventCardCartButton" type="button" data-show-cart-event="${event.id}" aria-label="Add ${performer} to cart" aria-pressed="false">
+                <svg xmlns="http://www.w3.org/2000/svg" width="1.45em" height="1.45em" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M0 0h24v24H0z" fill="none" />
+                  <g fill="none" stroke="currentColor" stroke-linejoin="round" stroke-width="2">
+                    <path d="M5 7h13.79a2 2 0 0 1 1.99 2.199l-.6 6A2 2 0 0 1 18.19 17H8.64a2 2 0 0 1-1.962-1.608z" />
+                    <path stroke-linecap="round" d="m5 7l-.81-3.243A1 1 0 0 0 3.22 3H2m6 18h2m6 0h2" />
+                  </g>
+                </svg>
+              </button>
+            </div>
+
+            <div>
+              <p class="bandNam">${performer}</p>
+              <p class="concertDate">${event.event_date}</p>
+            </div>
+
+            <button class="moreInfoBtn">more info</button>
+       <button class="getTicketBtn" data-id="${event.id}">
+        ${ended ? "Event Ended" : soldOut ? "Sold Out" : ticketsUnavailable ? "Tickets Unavailable" : "get tickets"}
+      </button>
+          </div>
+
+       <div class="infoCont">
+
+        <span class="closeInf">X</span>
+
+        <div class="infoScroll">
+
+          <div>
+            <h2>${event.title}</h2>
+            <p>${event.event_date} — ${formatEventTime(event.event_time)}</p>
+          </div>
+
+          <p>${event.description || "Event details coming soon."}</p>
+
+          <p>
+            Doors open: ${formatEventTime(event.doors_open)}
+          </p>
+
+          <p>
+            ${location.venue}<br>
+            ${location.details}
+          </p>
+
+       <button class="getTicketBtn" data-id="${event.id}">
+        ${ended ? "Event Ended" : soldOut ? "Sold Out" : ticketsUnavailable ? "Tickets Unavailable" : "get tickets"}
+      </button>
+
       </div>
+         `;
 
-      <div>
-        <p class="bandNam">${performer}</p>
-        <p class="concertDate">${event.event_date}</p>
-      </div>
+                          eventCards.appendChild(card);
+                      }
 
-      <button class="moreInfoBtn">more info</button>
- <button class="getTicketBtn" data-id="${event.id}">
-  ${ended ? "Event Ended" : soldOut ? "Sold Out" : ticketsUnavailable ? "Tickets Unavailable" : "get tickets"}
-</button>
-    </div>
+                      function renderPagination() {
+                          if (!pagination) return;
+                          const pageCount = Math.ceil(filteredEvents.length / EVENTS_PER_PAGE);
+                          pagination.innerHTML = "";
+                          if (pageCount <= 1) return;
 
- <div class="infoCont">
+                          const previous = document.createElement("button");
+                          previous.type = "button";
+                          previous.textContent = "←";
+                          previous.setAttribute("aria-label", "Previous page");
+                          previous.disabled = currentPage === 1;
+                          previous.addEventListener("click", () => {
+                              currentPage -= 1;
+                              renderPage();
+                          });
+                          pagination.appendChild(previous);
 
-  <span class="closeInf">X</span>
+                          const pages = compactPaginationBreakpoint.matches ?
+                              compactPaginationPages(currentPage, pageCount) :
+                              Array.from({
+                                  length: pageCount
+                              }, (_, index) => index + 1);
+                          pages.forEach((page) => {
+                              if (page === "ellipsis") {
+                                  const ellipsis = document.createElement("span");
+                                  ellipsis.className = "pagination-ellipsis";
+                                  ellipsis.setAttribute("aria-hidden", "true");
+                                  ellipsis.textContent = "…";
+                                  pagination.appendChild(ellipsis);
+                                  return;
+                              }
+                              const button = document.createElement("button");
+                              button.type = "button";
+                              button.textContent = page;
+                              button.classList.toggle("active", page === currentPage);
+                              button.setAttribute("aria-label", `Page ${page}`);
+                              button.addEventListener("click", () => {
+                                  currentPage = page;
+                                  renderPage();
+                              });
+                              pagination.appendChild(button);
+                          });
 
-  <div class="infoScroll">
+                          const next = document.createElement("button");
+                          next.type = "button";
+                          next.textContent = "→";
+                          next.setAttribute("aria-label", "Next page");
+                          next.disabled = currentPage === pageCount;
+                          next.addEventListener("click", () => {
+                              currentPage += 1;
+                              renderPage();
+                          });
+                          pagination.appendChild(next);
+                      }
 
-    <div>
-      <h2>${event.title}</h2>
-      <p>${event.event_date} — ${formatEventTime(event.event_time)}</p>
-    </div>
+                      function compactPaginationPages(current, total) {
+                          if (total <= 5) return Array.from({
+                              length: total
+                          }, (_, index) => index + 1);
+                          if (current <= 3) return [1, 2, 3, "ellipsis", total];
+                          if (current >= total - 2)
+                              return [1, "ellipsis", total - 2, total - 1, total];
+                          return [1, "ellipsis", current - 1, current, current + 1, "ellipsis", total];
+                      }
 
-    <p>${event.description || "Event details coming soon."}</p>
+                      compactPaginationBreakpoint.addEventListener("change", renderPagination);
 
-    <p>
-      Doors open: ${formatEventTime(event.doors_open)}
-    </p>
+                      function renderPage() {
+                          const pageCount = Math.max(
+                              1,
+                              Math.ceil(filteredEvents.length / EVENTS_PER_PAGE),
+                          );
+                          currentPage = Math.min(currentPage, pageCount);
+                          const start = (currentPage - 1) * EVENTS_PER_PAGE;
+                          eventCards.innerHTML = "";
+                          if (!filteredEvents.length) {
+                              showEventsMessage("No results found");
+                              renderPagination();
+                              return;
+                          }
+                          filteredEvents
+                              .slice(start, start + EVENTS_PER_PAGE)
+                              .forEach(renderEventCard);
+                          syncVisibleCartButtons();
+                          bindEventCardInteractions();
+                          renderPagination();
+                          window.scrollTo({
+                              top: 0,
+                              behavior: "smooth"
+                          });
+                      }
 
-    <p>
-      ${location.venue}<br>
-      ${location.details}
-    </p>
+                      function getEventCategory(event) {
+                          return event.categories ?.name || "Uncategorized";
+                      }
 
- <button class="getTicketBtn" data-id="${event.id}">
-  ${ended ? "Event Ended" : soldOut ? "Sold Out" : ticketsUnavailable ? "Tickets Unavailable" : "get tickets"}
-</button>
- 
-</div>
-   `;
+                      function getEventDateValue(event) {
+                          const cutoff = window.iVenueEventTime ?.getEventCutoff ?.(event);
+                          if (cutoff) return cutoff.getTime();
+                          const value = Date.parse(
+                              `${event.event_date || ""}T${event.event_time || "00:00:00"}`,
+                          );
+                          return Number.isNaN(value) ? Number.POSITIVE_INFINITY : value;
+                      }
 
-        eventCards.appendChild(card);
-      }
+                      function fillCategoryFilter() {
+                          const categories = [
+                              ...new Set(loadedEvents.map(getEventCategory).filter(Boolean)),
+                          ].sort((first, second) => first.localeCompare(second));
+                          configureFilterDropdown(eventCategory, [{
+                                  value: "",
+                                  label: "All categories"
+                              },
+                              ...categories.map((category) => ({
+                                  value: category,
+                                  label: category
+                              })),
+                          ]);
+                      }
 
-      function renderPagination() {
-        if (!pagination) return;
-        const pageCount = Math.ceil(filteredEvents.length / EVENTS_PER_PAGE);
-        pagination.innerHTML = "";
-        if (pageCount <= 1) return;
+                      function applyEventFilters() {
+                          const searchTerm = eventSearch.value.trim().toLowerCase();
+                          filteredEvents = loadedEvents.filter((event) => {
+                              const name =
+                                  `${event.title || ""} ${event.performer || ""} ${event.bands?.name || ""}`.toLowerCase();
+                              return (
+                                  (!searchTerm || name.includes(searchTerm)) &&
+                                  (!selectedCategory || getEventCategory(event) === selectedCategory)
+                              );
+                          });
+                          const direction = selectedSort === "latest" ? -1 : 1;
+                          filteredEvents.sort(
+                              (first, second) =>
+                              direction *
+                              (getEventDateValue(first) - getEventDateValue(second)),
+                          );
+                          currentPage = 1;
+                          renderPage();
+                      }
 
-        const previous = document.createElement("button");
-        previous.type = "button";
-        previous.textContent = "←";
-        previous.setAttribute("aria-label", "Previous page");
-        previous.disabled = currentPage === 1;
-        previous.addEventListener("click", () => {
-          currentPage -= 1;
-          renderPage();
-        });
-        pagination.appendChild(previous);
+                      eventSearch.addEventListener("input", applyEventFilters);
+                      eventCards.addEventListener("click", (clickEvent) => {
+                          const cartButton = clickEvent.target.closest("[data-show-cart-event]");
+                          if (cartButton) {
+                              clickEvent.preventDefault();
+                              clickEvent.stopPropagation();
+                              const eventId = String(cartButton.dataset.showCartEvent);
+                              if (pendingCartEventIds.has(eventId)) return;
+                              const wasInCart = cartEventIds.has(eventId);
+                              pendingCartEventIds.add(eventId);
+                              updateCartButton(cartButton);
+                              (async() => {
+                                  try {
+                                      if (wasInCart) {
+                                          await window.eventCart.removeEvent(eventId);
+                                          showCardCartFeedback(cartButton, "Event removed from cart");
+                                      } else {
+                                          await window.eventCart.addEvent(eventId);
+                                          showCardCartFeedback(cartButton, "Event added to cart");
+                                      }
+                                      await refreshCartState();
+                                  } catch (error) {
+                                      console.error("Shows cart toggle failed:", error);
+                                      if (
+                                          error.message ===
+                                          "Please sign in before adding an event to your cart."
+                                      ) {
+                                          showCardCartFeedback(cartButton, error.message);
+                                      } else {
+                                          showCartMessage(
+                                              error.message || "Cart could not be updated.",
+                                              true,
+                                          );
+                                      }
+                                  } finally {
+                                      pendingCartEventIds.delete(eventId);
+                                      syncVisibleCartButtons();
+                                  }
+                              })();
+                              return;
+                          }
+                          const shareButton = clickEvent.target.closest(
+                              "[data-show-share-event]",
+                          );
+                          if (!shareButton) return;
+                          clickEvent.preventDefault();
+                          clickEvent.stopPropagation();
+                          const event = loadedEvents.find(
+                              (item) => item.id === shareButton.dataset.showShareEvent,
+                          );
+                          window.iVenueEventShare ?.open(event, shareButton);
+                      });
 
-        const pages = compactPaginationBreakpoint.matches
-          ? compactPaginationPages(currentPage, pageCount)
-          : Array.from({ length: pageCount }, (_, index) => index + 1);
-        pages.forEach((page) => {
-          if (page === "ellipsis") {
-            const ellipsis = document.createElement("span");
-            ellipsis.className = "pagination-ellipsis";
-            ellipsis.setAttribute("aria-hidden", "true");
-            ellipsis.textContent = "…";
-            pagination.appendChild(ellipsis);
-            return;
-          }
-          const button = document.createElement("button");
-          button.type = "button";
-          button.textContent = page;
-          button.classList.toggle("active", page === currentPage);
-          button.setAttribute("aria-label", `Page ${page}`);
-          button.addEventListener("click", () => {
-            currentPage = page;
-            renderPage();
-          });
-          pagination.appendChild(button);
-        });
+                      async function loadEvents() {
+                          showEventSkeletons();
 
-        const next = document.createElement("button");
-        next.type = "button";
-        next.textContent = "→";
-        next.setAttribute("aria-label", "Next page");
-        next.disabled = currentPage === pageCount;
-        next.addEventListener("click", () => {
-          currentPage += 1;
-          renderPage();
-        });
-        pagination.appendChild(next);
-      }
+                          try {
+                              const events = await window.supabaseData.getEvents();
 
-      function compactPaginationPages(current, total) {
-        if (total <= 5) return Array.from({ length: total }, (_, index) => index + 1);
-        if (current <= 3) return [1, 2, 3, "ellipsis", total];
-        if (current >= total - 2)
-          return [1, "ellipsis", total - 2, total - 1, total];
-        return [1, "ellipsis", current - 1, current, current + 1, "ellipsis", total];
-      }
+                              if (!events.length) {
+                                  showEventsMessage("No events are available right now.");
+                                  return;
+                              }
 
-      compactPaginationBreakpoint.addEventListener("change", renderPagination);
+                              loadedEvents = events;
+                              fillCategoryFilter();
+                              filteredEvents = loadedEvents;
+                              currentPage = 1;
+                              renderPage();
+                              await refreshCartState();
+                          } catch (error) {
+                              console.error(error);
+                              showEventsMessage("Events are temporarily unavailable.", true);
+                          } finally {
+                              releaseShowsInitialLoad ?.();
+                          }
+                      }
 
-      function renderPage() {
-        const pageCount = Math.max(
-          1,
-          Math.ceil(filteredEvents.length / EVENTS_PER_PAGE),
-        );
-        currentPage = Math.min(currentPage, pageCount);
-        const start = (currentPage - 1) * EVENTS_PER_PAGE;
-        eventCards.innerHTML = "";
-        if (!filteredEvents.length) {
-          showEventsMessage("No results found");
-          renderPagination();
-          return;
-        }
-        filteredEvents
-          .slice(start, start + EVENTS_PER_PAGE)
-          .forEach(renderEventCard);
-        syncVisibleCartButtons();
-        bindEventCardInteractions();
-        renderPagination();
-        window.scrollTo({ top: 0, behavior: "smooth" });
-      }
-
-      function getEventCategory(event) {
-        return event.categories?.name || "Uncategorized";
-      }
-
-      function getEventDateValue(event) {
-        const cutoff = window.iVenueEventTime?.getEventCutoff?.(event);
-        if (cutoff) return cutoff.getTime();
-        const value = Date.parse(
-          `${event.event_date || ""}T${event.event_time || "00:00:00"}`,
-        );
-        return Number.isNaN(value) ? Number.POSITIVE_INFINITY : value;
-      }
-
-      function fillCategoryFilter() {
-        const categories = [
-          ...new Set(loadedEvents.map(getEventCategory).filter(Boolean)),
-        ].sort((first, second) => first.localeCompare(second));
-        configureFilterDropdown(eventCategory, [
-          { value: "", label: "All categories" },
-          ...categories.map((category) => ({ value: category, label: category })),
-        ]);
-      }
-
-      function applyEventFilters() {
-        const searchTerm = eventSearch.value.trim().toLowerCase();
-        filteredEvents = loadedEvents.filter((event) => {
-          const name =
-            `${event.title || ""} ${event.performer || ""} ${event.bands?.name || ""}`.toLowerCase();
-          return (
-            (!searchTerm || name.includes(searchTerm)) &&
-            (!selectedCategory || getEventCategory(event) === selectedCategory)
-          );
-        });
-        const direction = selectedSort === "latest" ? -1 : 1;
-        filteredEvents.sort(
-          (first, second) =>
-            direction *
-            (getEventDateValue(first) - getEventDateValue(second)),
-        );
-        currentPage = 1;
-        renderPage();
-      }
-
-      eventSearch.addEventListener("input", applyEventFilters);
-      eventCards.addEventListener("click", (clickEvent) => {
-        const cartButton = clickEvent.target.closest("[data-show-cart-event]");
-        if (cartButton) {
-          clickEvent.preventDefault();
-          clickEvent.stopPropagation();
-          const eventId = String(cartButton.dataset.showCartEvent);
-          if (pendingCartEventIds.has(eventId)) return;
-          const wasInCart = cartEventIds.has(eventId);
-          pendingCartEventIds.add(eventId);
-          updateCartButton(cartButton);
-          (async () => {
-            try {
-              if (wasInCart) {
-                await window.eventCart.removeEvent(eventId);
-                showCardCartFeedback(cartButton, "Event removed from cart");
-              } else {
-                await window.eventCart.addEvent(eventId);
-                showCardCartFeedback(cartButton, "Event added to cart");
-              }
-              await refreshCartState();
-            } catch (error) {
-              console.error("Shows cart toggle failed:", error);
-              if (
-                error.message ===
-                "Please sign in before adding an event to your cart."
-              ) {
-                showCardCartFeedback(cartButton, error.message);
-              } else {
-                showCartMessage(
-                  error.message || "Cart could not be updated.",
-                  true,
-                );
-              }
-            } finally {
-              pendingCartEventIds.delete(eventId);
-              syncVisibleCartButtons();
-            }
-          })();
-          return;
-        }
-        const shareButton = clickEvent.target.closest(
-          "[data-show-share-event]",
-        );
-        if (!shareButton) return;
-        clickEvent.preventDefault();
-        clickEvent.stopPropagation();
-        const event = loadedEvents.find(
-          (item) => item.id === shareButton.dataset.showShareEvent,
-        );
-        window.iVenueEventShare?.open(event, shareButton);
-      });
-
-      async function loadEvents() {
-        showEventSkeletons();
-
-        try {
-          const events = await window.supabaseData.getEvents();
-
-          if (!events.length) {
-            showEventsMessage("No events are available right now.");
-            return;
-          }
-
-          loadedEvents = events;
-          fillCategoryFilter();
-          filteredEvents = loadedEvents;
-          currentPage = 1;
-          renderPage();
-          await refreshCartState();
-        } catch (error) {
-          console.error(error);
-          showEventsMessage("Events are temporarily unavailable.", true);
-        } finally {
-          releaseShowsInitialLoad?.();
-        }
-      }
-
-      window.addEventListener("eventCartChanged", (event) => {
-        cartEventIds = new Set(event.detail?.eventIds || []);
-        syncVisibleCartButtons();
-      });
+                      window.addEventListener("eventCartChanged", (event) => {
+                          cartEventIds = new Set(event.detail ?.eventIds || []);
+                          syncVisibleCartButtons();
+                      });
     </script>
 
     <script>
       function bindEventCardInteractions() {
-        document.querySelectorAll(".moreInfoBtn").forEach((btn) => {
-          btn.addEventListener("click", (e) => {
-            e.stopPropagation();
+          document.querySelectorAll(".moreInfoBtn").forEach((btn) => {
+              btn.addEventListener("click", (e) => {
+                  e.stopPropagation();
 
-            const card = btn.closest(".vntCrd");
+                  const card = btn.closest(".vntCrd");
 
-            card.classList.add("showInfo");
+                  card.classList.add("showInfo");
+              });
           });
-        });
 
-        document.querySelectorAll(".closeInf").forEach((closeBtn) => {
-          closeBtn.addEventListener("click", (e) => {
-            e.stopPropagation();
+          document.querySelectorAll(".closeInf").forEach((closeBtn) => {
+              closeBtn.addEventListener("click", (e) => {
+                  e.stopPropagation();
 
-            const card = closeBtn.closest(".vntCrd");
+                  const card = closeBtn.closest(".vntCrd");
 
-            card.classList.remove("showInfo");
+                  card.classList.remove("showInfo");
+              });
           });
-        });
 
-        document.querySelectorAll(".getTicketBtn").forEach((button) => {
-          if (button.closest(".vntCrd")?.matches(".is-ended, .is-sold-out, .is-tickets-unavailable")) {
-            button.disabled = true;
-            button.classList.add("is-ended");
-            return;
-          }
-          button.addEventListener("click", () => {
-            window.location.href = `getTickets.html?id=${button.dataset.id}`;
+          document.querySelectorAll(".getTicketBtn").forEach((button) => {
+              if (button.closest(".vntCrd") ?.matches(".is-ended, .is-sold-out, .is-tickets-unavailable")) {
+                  button.disabled = true;
+                  button.classList.add("is-ended");
+                  return;
+              }
+              button.addEventListener("click", () => {
+                  window.location.href = `getTickets.html?id=${button.dataset.id}`;
+              });
           });
-        });
       }
 
       document.addEventListener("click", (e) => {
-        const openCard = document.querySelector(".vntCrd.showInfo");
-        if (!openCard) return;
+          const openCard = document.querySelector(".vntCrd.showInfo");
+          if (!openCard) return;
 
-        const infoCont = openCard.querySelector(".infoCont");
-        if (!infoCont.contains(e.target)) {
-          openCard.classList.remove("showInfo");
-        }
+          const infoCont = openCard.querySelector(".infoCont");
+          if (!infoCont.contains(e.target)) {
+              openCard.classList.remove("showInfo");
+          }
       });
 
       loadEvents();
