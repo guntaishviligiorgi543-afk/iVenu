@@ -1027,6 +1027,17 @@
           >
             Campaigns
           </button>
+          <button
+            id="newsletterDraftsTab"
+            type="button"
+            data-newsletter-view="drafts"
+            role="tab"
+            aria-selected="false"
+            aria-controls="newsletterDraftsPanel"
+            tabindex="-1"
+          >
+            Drafts
+          </button>
         </nav>
 
         <section
@@ -1062,6 +1073,32 @@
             id="newsletterOverviewSummary"
             aria-live="polite"
           ></div>
+        </section>
+
+        <section
+          class="admin-content-block newsletter-view"
+          id="newsletterDraftsPanel"
+          data-newsletter-view-panel="drafts"
+          role="tabpanel"
+          aria-labelledby="newsletterDraftsTab"
+          hidden
+        >
+          <div class="admin-content-block__heading newsletter-view-heading">
+            <div>
+              <h3>Drafts</h3>
+              <p>Continue unfinished newsletters or remove drafts you no longer need.</p>
+            </div>
+            <button class="auth-submit" type="button" data-open-newsletter-composer>
+              Create Newsletter
+            </button>
+          </div>
+          <p class="newsletter-table-status" id="newsletterDraftStatus" role="status" aria-live="polite"></p>
+          <div class="newsletter-table-wrap newsletter-campaign-table-wrap">
+            <table class="newsletter-table">
+              <thead><tr><th>Subject</th><th>Recipient mode</th><th>Last updated</th><th>Status</th><th>Actions</th></tr></thead>
+              <tbody id="newsletterDraftList"></tbody>
+            </table>
+          </div>
         </section>
 
         <section
@@ -1415,6 +1452,9 @@
                     class="newsletter-action-group newsletter-action-group--production"
                   >
                     <p>Production</p>
+                    <p id="newsletterTestStatus" class="newsletter-test-status" role="status" aria-live="polite">
+                      Test email required
+                    </p>
                     <div>
                       <button
                         class="admin-danger-button"
@@ -1426,6 +1466,17 @@
                     </div>
                   </div>
                 </section>
+
+                <dialog class="admin-delete-dialog" id="newsletterResultDialog" aria-labelledby="newsletterResultDialogTitle">
+                  <form class="admin-delete-dialog__panel" method="dialog">
+                    <p class="admin-eyebrow">Newsletter delivery</p>
+                    <h2 id="newsletterResultDialogTitle"></h2>
+                    <p id="newsletterResultDialogDescription"></p>
+                    <div class="admin-delete-dialog__actions">
+                      <button class="auth-submit" id="closeNewsletterResult" type="button">Close</button>
+                    </div>
+                  </form>
+                </dialog>
               </form>
             </div>
           </div>

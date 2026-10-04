@@ -64,6 +64,11 @@
         selected: new Set(),
         requestId: 0,
       },
+      test: {
+        signature: null,
+        sending: false,
+        sent: false,
+      },
       recipients: {
         mode: "all_active",
         subscribers: [],
@@ -240,6 +245,13 @@
   const newsletterCampaignStatus = document.querySelector(
     "#newsletterCampaignStatus",
   );
+  const newsletterDraftList = document.querySelector("#newsletterDraftList");
+  const newsletterDraftStatus = document.querySelector("#newsletterDraftStatus");
+  const newsletterTestStatus = document.querySelector("#newsletterTestStatus");
+  const newsletterResultDialog = document.querySelector("#newsletterResultDialog");
+  const newsletterResultDialogTitle = document.querySelector("#newsletterResultDialogTitle");
+  const newsletterResultDialogDescription = document.querySelector("#newsletterResultDialogDescription");
+  const closeNewsletterResult = document.querySelector("#closeNewsletterResult");
   const newsletterCampaignPagination = document.querySelector(
     "#newsletterCampaignPagination",
   );
@@ -912,9 +924,10 @@
   }
 
   function invalidateNewsletterDraft() {
-    newsletterCampaignId = null;
-    newsletterCampaignSignature = null;
-    newsletterCampaignTarget = null;
+    state.newsletter.test.signature = null;
+    state.newsletter.test.sent = false;
+    newsletterTestStatus.textContent = "Test email required";
+    sendNewsletterButton.disabled = true;
   }
 
   function renderRecipientSelection() {
@@ -943,7 +956,9 @@
           .closest(".newsletter-recipient-mode")
           .classList.toggle("is-active", input.checked);
       });
-    sendNewsletterButton.disabled = isSelectedMode && selectedCount === 0;
+    sendNewsletterButton.disabled =
+      !state.newsletter.test.sent ||
+      (isSelectedMode && selectedCount === 0);
   }
 
   function renderRecipientPagination() {
@@ -1182,7 +1197,7 @@
   }
 
   function activateNewsletterView(view) {
-    const validViews = new Set(["overview", "subscribers", "campaigns"]);
+    const validViews = new Set(["overview", "subscribers", "campaigns", "drafts"]);
     const targetView = validViews.has(view) ? view : "campaigns";
     state.newsletter.activeView = targetView;
     document
@@ -1200,7 +1215,7 @@
         panel.hidden = !active;
         panel.classList.toggle("is-active", active);
       });
-    if (targetView === "campaigns")
+    if (targetView === "campaigns" || targetView === "drafts")
       loadNewsletterCampaigns().catch(() =>
         setMessage("Campaign history could not be loaded.", "error"),
       );
@@ -1298,6 +1313,15 @@
       .join("");
     renderCampaignSelection();
     renderCampaignPagination();
+    const drafts = campaigns.items.filter((campaign) => String(campaign.status).toLowerCase() === "draft");
+    newsletterDraftStatus.textContent = drafts.length
+      ? `${drafts.length} draft${drafts.length === 1 ? "" : "s"} saved.`
+      : "No saved drafts.";
+    newsletterDraftList.innerHTML = drafts.map((campaign) => {
+      const id = String(campaign.id || "");
+      const mode = campaign.recipient_mode === "selected" ? "Selected" : "All Active";
+      return `<tr><td data-label="Subject"><strong>${escapeHtml(campaign.subject)}</strong></td><td data-label="Recipient mode">${mode}</td><td data-label="Last updated">${escapeHtml(formatSubscriberDate(campaign.updated_at || campaign.created_at))}</td><td data-label="Status"><span class="newsletter-status newsletter-status--draft">Draft</span></td><td data-label="Actions"><button class="admin-outline newsletter-action" type="button" data-edit-draft="${escapeHtml(id)}">Edit / Continue</button><button class="newsletter-delete-button" type="button" data-delete-campaign="${escapeHtml(id)}">Delete</button></td></tr>`;
+    }).join("");
   }
 
   async function loadNewsletterCampaigns() {
@@ -1340,16 +1364,14 @@
       setMessage("Subject and newsletter content are required.", "error");
       return null;
     }
-    const recipientMode = forTest
-      ? "all_active"
-      : state.newsletter.recipients.mode;
+    const recipientMode = state.newsletter.recipients.mode;
     const selectedEmails =
       recipientMode === "selected" ? selectedRecipientEmails() : [];
     const recipientCount =
       recipientMode === "selected"
         ? selectedEmails.length
         : activeSubscriberCount();
-    if (!forTest && recipientMode === "selected" && !selectedEmails.length) {
+    if (recipientMode === "selected" && !selectedEmails.length) {
       setMessage("Select at least one recipient.", "error");
       return null;
     }
@@ -1378,8 +1400,9 @@
     )
       return newsletterCampaignId;
     const { data, error } = await client.rpc(
-      "admin_create_newsletter_campaign",
+      "admin_upsert_newsletter_campaign",
       {
+        p_campaign_id: newsletterCampaignId,
         p_subject: values.subject,
         p_content: values.content,
         p_recipient_mode: values.recipientMode,
@@ -1395,6 +1418,10 @@
         count: values.recipientCount,
       };
     }
+    state.newsletter.test.signature = null;
+    state.newsletter.test.sent = false;
+    newsletterTestStatus.textContent = "Test email required";
+    sendNewsletterButton.disabled = true;
     loadNewsletterCampaigns().catch((historyError) =>
       console.warn(
         "Newsletter draft was created but history could not refresh",
@@ -3518,7 +3545,7 @@
 
   function enterNewsletterEditor() {
     if (!document.body.classList.contains("newsletter-editor-mode")) {
-      const availableViews = new Set(["overview", "subscribers", "campaigns"]);
+      const availableViews = new Set(["overview", "subscribers", "campaigns", "drafts"]);
       state.newsletter.previousView = availableViews.has(
         state.newsletter.activeView,
       )
@@ -3531,8 +3558,67 @@
     newsletterEditorShell.scrollTop = 0;
   }
 
+  function startNewNewsletter() {
+    newsletterCampaignId = null;
+    newsletterCampaignSignature = null;
+    newsletterCampaignTarget = null;
+    newsletterCampaignForm.reset();
+    state.newsletter.recipients.mode = "all_active";
+    state.newsletter.recipients.selected = new Set();
+    invalidateNewsletterDraft();
+    renderRecipientList();
+    renderRecipientSelection();
+    resetNewsletterComposerDirty();
+    enterNewsletterEditor();
+  }
+
+  async function editNewsletterDraft(campaignId) {
+    const { data, error } = await client.rpc("get_admin_newsletter_campaign", {
+      p_campaign_id: campaignId,
+    });
+    if (error) throw error;
+    newsletterCampaignId = data.id;
+    newsletterCampaignSignature = null;
+    newsletterCampaignTarget = {
+      mode: data.recipient_mode,
+      count: Number(data.recipient_count || 0),
+    };
+    newsletterCampaignForm.elements.subject.value = data.subject || "";
+    newsletterEditor.value = String(data.content || "").replaceAll("<br>", "\n").replace(/<[^>]*>/g, "");
+    state.newsletter.recipients.mode = data.recipient_mode || "all_active";
+    state.newsletter.recipients.selected = new Set(data.selected_emails || []);
+    document.querySelectorAll('input[name="recipientMode"]').forEach((input) => {
+      input.checked = input.value === state.newsletter.recipients.mode;
+    });
+    invalidateNewsletterDraft();
+    renderRecipientList();
+    renderRecipientSelection();
+    resetNewsletterComposerDirty();
+    enterNewsletterEditor();
+  }
+
+  function openNewsletterResult(title, description) {
+    newsletterResultDialogTitle.textContent = title;
+    newsletterResultDialogDescription.textContent = description;
+    newsletterResultDialog.showModal();
+    closeNewsletterResult.focus();
+  }
+
+  async function newsletterErrorMessage(error, fallback) {
+    const response = error?.context;
+    if (response?.clone) {
+      try {
+        const payload = await response.clone().json();
+        return payload.providerErrorMessage || payload.error || fallback;
+      } catch {
+        // The SDK response may not contain JSON.
+      }
+    }
+    return error?.message || fallback;
+  }
+
   function leaveNewsletterEditor() {
-    const availableViews = new Set(["overview", "subscribers", "campaigns"]);
+    const availableViews = new Set(["overview", "subscribers", "campaigns", "drafts"]);
     document.body.classList.remove("newsletter-editor-mode");
     setActiveDashboardPanel("newsletter");
     activateNewsletterView(
@@ -4064,17 +4150,24 @@
         return;
       }
       if (pending.campaign) {
-        const { data, error } = await client.functions.invoke(
-          "newsletter-campaign",
-          { body: { action: "send", campaignId: newsletterCampaignId } },
-        );
+        confirmNewsletterStatus.textContent = "Sending...";
+        cancelNewsletterStatus.disabled = true;
+        const { data, error } = await client.functions.invoke("newsletter-campaign", {
+          body: { action: "send", campaignId: newsletterCampaignId },
+        });
         if (error || data?.error) throw error || new Error(data.error);
         newsletterStatusDialog.close();
         state.newsletter.pendingStatusChange = null;
         resetNewsletterComposerDirty();
-        setMessage(
-          `Newsletter complete. Sent: ${Number(data.successful || 0)}. Failed: ${Number(data.failed || 0)}.`,
-          "success",
+        const sent = Number(data.successful || 0);
+        const failed = Number(data.failed || 0);
+        const skipped = Number(data.skipped || 0);
+        const providerEvidence = data.providerMessageIds?.length
+          ? ` Provider message IDs recorded: ${data.providerMessageIds.length}.`
+          : "";
+        openNewsletterResult(
+          failed ? "Newsletter partially sent" : "Newsletter sent successfully",
+          `Sent: ${sent} · Failed: ${failed} · Skipped: ${skipped}.${providerEvidence} Provider acceptance is confirmed for reported sent messages; inbox delivery may still be affected by recipient filtering or provider delivery rules.`,
         );
         await loadNewsletterCampaigns();
         return;
@@ -4098,6 +4191,16 @@
       await loadNewsletterData();
     } catch (error) {
       console.error("Newsletter status could not be updated", error);
+      if (state.newsletter.pendingStatusChange?.campaign) {
+        newsletterStatusDialog.close();
+        openNewsletterResult(
+          "Newsletter could not be sent",
+          await newsletterErrorMessage(
+            error,
+            "The provider rejected the newsletter or the campaign could not be completed.",
+          ),
+        );
+      }
       setMessage(
         pending.campaignDeletionIds
           ? "Campaigns could not be deleted. Please try again."
@@ -4107,6 +4210,7 @@
     } finally {
       confirmNewsletterStatus.disabled = false;
       confirmNewsletterStatus.classList.remove("is-loading");
+      cancelNewsletterStatus.disabled = false;
     }
   });
   document
@@ -4119,8 +4223,9 @@
   document
     .querySelectorAll("[data-open-newsletter-composer]")
     .forEach((button) =>
-      button.addEventListener("click", enterNewsletterEditor),
+      button.addEventListener("click", startNewNewsletter),
     );
+  closeNewsletterResult.addEventListener("click", () => newsletterResultDialog.close());
   newsletterCreateBack.addEventListener("click", () => {
     if (state.newsletter.composerDirty) openDiscardNewsletterDialog();
     else leaveNewsletterComposer();
@@ -4142,6 +4247,20 @@
     const button = event.target.closest("[data-delete-campaign]");
     if (!button || button.disabled) return;
     openCampaignDeletionDialog([button.dataset.deleteCampaign]);
+  });
+  newsletterDraftList.addEventListener("click", async (event) => {
+    const editButton = event.target.closest("[data-edit-draft]");
+    if (editButton) {
+      try {
+        await editNewsletterDraft(editButton.dataset.editDraft);
+      } catch (error) {
+        console.error("Newsletter draft could not be opened", error);
+        setMessage("Newsletter draft could not be opened. Please try again.", "error");
+      }
+      return;
+    }
+    const deleteButton = event.target.closest("[data-delete-campaign]");
+    if (deleteButton) openCampaignDeletionDialog([deleteButton.dataset.deleteCampaign]);
   });
   newsletterCampaignSelectAll.addEventListener("change", () => {
     const campaigns = state.newsletter.campaigns;
@@ -4193,9 +4312,15 @@
   );
   newsletterCampaignForm.elements.subject.addEventListener(
     "input",
-    updateNewsletterComposerDirty,
+    () => {
+      invalidateNewsletterDraft();
+      updateNewsletterComposerDirty();
+    },
   );
-  newsletterEditor.addEventListener("input", updateNewsletterComposerDirty);
+  newsletterEditor.addEventListener("input", () => {
+    invalidateNewsletterDraft();
+    updateNewsletterComposerDirty();
+  });
   document.querySelectorAll('input[name="recipientMode"]').forEach((input) =>
     input.addEventListener("change", () => {
       if (!input.checked) return;
@@ -4309,7 +4434,7 @@
       testButton.textContent = "Sending test...";
       try {
         const campaignId = await ensureNewsletterDraft(values, {
-          setCurrent: false,
+          setCurrent: true,
         });
         const { data: sessionData, error: sessionError } =
           await client.auth.getSession();
@@ -4329,9 +4454,12 @@
           throw new Error(
             "The test email was not accepted by the email provider.",
           );
-        resetNewsletterComposerDirty();
+        state.newsletter.test.signature = values.signature;
+        state.newsletter.test.sent = true;
+        newsletterTestStatus.textContent = "Test email sent successfully";
+        renderRecipientSelection();
         setMessage(
-          "Test email sent to your signed-in admin address.",
+          `Test email accepted by the provider for ${data.providerMessageId ? "delivery" : "sending"}.`,
           "success",
         );
       } catch (error) {
@@ -4341,7 +4469,10 @@
           status: response?.status || null,
         });
         setMessage(
-          error?.message || "Test email could not be sent. Please try again.",
+          await newsletterErrorMessage(
+            error,
+            "Test email could not be sent. Please try again.",
+          ),
           "error",
         );
       } finally {
@@ -4354,6 +4485,13 @@
     .addEventListener("click", async () => {
       if (!newsletterCampaignId) {
         setMessage("Create the newsletter draft before sending it.", "error");
+        return;
+      }
+      const values = newsletterDraftValues();
+      if (!values) return;
+      if (!state.newsletter.test.sent || state.newsletter.test.signature !== values.signature) {
+        newsletterTestStatus.textContent = "Test email required";
+        setMessage("Send a successful test email for the current newsletter before sending.", "error");
         return;
       }
       if (
@@ -4372,7 +4510,7 @@
           ? `${target.count} selected subscriber${target.count === 1 ? "" : "s"}`
           : `all ${target.count} active subscriber${target.count === 1 ? "" : "s"}`;
       newsletterStatusDialogTitle.textContent = "Send newsletter?";
-      newsletterStatusDialogDescription.textContent = `Send this newsletter to ${recipientDescription}? Subscribers who unsubscribe before delivery will be skipped.`;
+      newsletterStatusDialogDescription.textContent = `Subject: ${values.subject}. Recipient mode: ${target.mode === "selected" ? "Selected" : "All Active"}. Actual recipient count: ${target.count}. This will send the real newsletter. Subscribers who unsubscribe before delivery will be skipped.`;
       confirmNewsletterStatus.textContent = "Send Newsletter";
       cancelNewsletterStatus.textContent = "Cancel";
       state.newsletter.pendingStatusChange = { campaign: true };
