@@ -309,20 +309,29 @@
 
     $("#supportDetailMeta").textContent = `Created ${formatDate(
       request.created_at,
-    )} · Last activity ${formatDate(request.updated_at)}`;
+    )}`;
 
     const status = $("#supportDetailStatus");
 
     status.replaceChildren(statusBadge(request.status));
+    if (request.status === "waiting_for_user") {
+      status.firstElementChild.textContent = "Waiting for customer";
+    }
 
-    status.className = "";
+    status.className = "support-status";
 
     const metadata = $("#supportRequestMeta");
+    const customer = metaItem("Customer", request.customer_name);
+    if (request.customer_email) {
+      const email = document.createElement("a");
+      email.className = "support-request-meta__email";
+      email.href = `mailto:${request.customer_email}`;
+      email.textContent = request.customer_email;
+      customer.querySelector("dd").append(email);
+    }
 
     metadata.replaceChildren(
-      metaItem("Customer", request.customer_name),
-
-      metaItem("Email", request.customer_email),
+      customer,
 
       metaItem(
         "Assignment",
@@ -333,19 +342,19 @@
             : "Unassigned",
       ),
 
-      metaItem("Created", formatDate(request.created_at)),
-
       metaItem("Last activity", formatDate(request.updated_at)),
-
-      metaItem(
-        "Resolution",
-        request.status === "resolved"
-          ? `Resolved by ${
-              request.resolved_by_name || "Support"
-            } on ${formatDate(request.resolved_at)}`
-          : "Not resolved",
-      ),
     );
+    if (request.status === "resolved" &&
+        (request.resolved_at || request.resolved_by_name)) {
+      const resolution = metaItem(
+        "Resolution",
+        `Resolved${request.resolved_by_name ? ` by ${request.resolved_by_name}` : ""}${
+          request.resolved_at ? ` on ${formatDate(request.resolved_at)}` : ""
+        }`,
+      );
+      resolution.className = "support-request-meta__resolution";
+      metadata.append(resolution);
+    }
 
     const canClaim =
       request.status !== "resolved" && !request.assigned_support_user_id;
