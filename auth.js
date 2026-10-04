@@ -535,7 +535,13 @@
       throw new Error("Login security returned an invalid verification state.");
     }
     if (!redirect) return false;
-    const returnTo = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+    const isLoginPage = /(?:^|\/)login\.html$/.test(window.location.pathname);
+    const returnTo = isLoginPage
+      ? getSafeLoginSecurityReturnTo(
+          new URLSearchParams(window.location.search).get("returnTo"),
+          "index.html",
+        )
+      : `${window.location.pathname}${window.location.search}${window.location.hash}`;
     const url = new URL(LOGIN_SECURITY_PAGE, window.location.href);
     url.searchParams.set("returnTo", returnTo || "index.html");
     window.location.replace(url.href);
@@ -568,6 +574,21 @@
 
   const clearLoginSecurityPending = () => {
     document.querySelector("[data-login-security-pending]")?.remove();
+  };
+
+  const getSafeLoginSecurityReturnTo = (requested, fallback) => {
+    if (!requested || /[\\\u0000-\u001f\u007f]/.test(requested)) return fallback;
+    try {
+      const target = new URL(requested, window.location.origin);
+      if (
+        target.origin !== window.location.origin ||
+        !target.pathname.startsWith("/")
+      )
+        return fallback;
+      return `${target.pathname}${target.search}${target.hash}`;
+    } catch {
+      return fallback;
+    }
   };
 
   async function requestLoginSecurityOtp() {
