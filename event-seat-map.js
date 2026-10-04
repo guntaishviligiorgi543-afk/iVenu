@@ -1037,7 +1037,8 @@
     }
     seatState.selectedIds.add(row.event_seat_id);
     row.status = "reserved";
-    row.reserved_until = data?.[0]?.reserved_until || null;
+    row.reserved_until =
+      data?.data?.[0]?.reserved_until || data?.[0]?.reserved_until || null;
     basketTickets.push({
       eventSeatId: row.event_seat_id,
       section: row.section_id,
