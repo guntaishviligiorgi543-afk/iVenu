@@ -302,7 +302,33 @@
       pointer-events: none;
     }
 
+    .vntCrd.is-cancelled .eventCardImage::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      background: rgba(0, 0, 0, 0.62);
+      pointer-events: none;
+    }
+
     .eventCardEndedOverlay {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      display: grid;
+      place-items: center;
+      color: #fff;
+      font-family: "Cabin", sans-serif;
+      font-size: clamp(1.5rem, 3.4vw, 2.6rem);
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      line-height: 1;
+      text-align: center;
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+      pointer-events: none;
+    }
+
+    .eventCardCancelledOverlay {
       position: absolute;
       inset: 0;
       z-index: 2;
@@ -1134,12 +1160,14 @@
                           const performer = event.performer || band.name || event.title;
                           const location = window.supabaseData.getEventLocation(event);
                           const card = document.createElement("div");
-                          const ended = window.iVenueEventTime.isEventEnded(event);
-                          const soldOut = !ended && event.inventory ?.has_inventory && Number(event.inventory.available_count) <= 0;
-                          const ticketsUnavailable = !ended && !event.inventory ?.has_inventory;
+                          const cancelled = window.iVenueEventTime.isEventCancelled(event);
+                          const ended = !cancelled && window.iVenueEventTime.isEventEnded(event);
+                          const soldOut = !cancelled && !ended && event.inventory ?.has_inventory && Number(event.inventory.available_count) <= 0;
+                          const ticketsUnavailable = !cancelled && !ended && !event.inventory ?.has_inventory;
 
                           card.classList.add("vntCrd");
                           card.classList.toggle("is-ended", ended);
+                          card.classList.toggle("is-cancelled", cancelled);
                           card.classList.toggle("is-sold-out", soldOut);
                           card.classList.toggle("is-tickets-unavailable", ticketsUnavailable);
 
@@ -1148,7 +1176,7 @@
 
             <div class="eventCardImage">
               <img src="${event.image_url || band.image_url || ""}" alt="${performer}" />
-              ${ended ? '<span class="eventCardEndedOverlay">EVENT ENDED</span>' : soldOut ? '<span class="eventCardSoldOutOverlay">SOLD OUT</span>' : ticketsUnavailable ? '<span class="eventCardSoldOutOverlay">TICKETS UNAVAILABLE</span>' : ""}
+              ${cancelled ? '<span class="eventCardCancelledOverlay">EVENT CANCELLED</span>' : ended ? '<span class="eventCardEndedOverlay">EVENT ENDED</span>' : soldOut ? '<span class="eventCardSoldOutOverlay">SOLD OUT</span>' : ticketsUnavailable ? '<span class="eventCardSoldOutOverlay">TICKETS UNAVAILABLE</span>' : ""}
               <button class="eventCardShareButton" type="button" data-show-share-event="${event.id}" aria-label="Share this event">
                 <svg xmlns="http://www.w3.org/2000/svg" width="1.69em" height="1.5em" viewBox="0 0 1792 1600" aria-hidden="true">
                   <path d="M0 0h1792v1600H0z" fill="none" />
@@ -1173,7 +1201,7 @@
 
             <button class="moreInfoBtn">more info</button>
        <button class="getTicketBtn" data-id="${event.id}">
-        ${ended ? "Event Ended" : soldOut ? "Sold Out" : ticketsUnavailable ? "Tickets Unavailable" : "get tickets"}
+        ${cancelled ? "Cancelled" : ended ? "Event Ended" : soldOut ? "Sold Out" : ticketsUnavailable ? "Tickets Unavailable" : "get tickets"}
       </button>
           </div>
 
@@ -1200,7 +1228,7 @@
           </p>
 
        <button class="getTicketBtn" data-id="${event.id}">
-        ${ended ? "Event Ended" : soldOut ? "Sold Out" : ticketsUnavailable ? "Tickets Unavailable" : "get tickets"}
+        ${cancelled ? "Cancelled" : ended ? "Event Ended" : soldOut ? "Sold Out" : ticketsUnavailable ? "Tickets Unavailable" : "get tickets"}
       </button>
 
       </div>
@@ -1456,7 +1484,7 @@
           });
 
           document.querySelectorAll(".getTicketBtn").forEach((button) => {
-              if (button.closest(".vntCrd") ?.matches(".is-ended, .is-sold-out, .is-tickets-unavailable")) {
+              if (button.closest(".vntCrd") ?.matches(".is-ended, .is-cancelled, .is-sold-out, .is-tickets-unavailable")) {
                   button.disabled = true;
                   button.classList.add("is-ended");
                   return;

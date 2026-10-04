@@ -47,9 +47,14 @@
     return Boolean(cutoff && cutoff.getTime() <= now.getTime());
   }
 
+  function isEventCancelled(event) {
+    return event?.status === "cancelled";
+  }
+
   window.iVenueEventTime = Object.freeze({
     getEventCutoff,
     isEventEnded,
+    isEventCancelled,
     timeZone: EVENT_TIME_ZONE,
   });
 })();

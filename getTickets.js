@@ -74,6 +74,14 @@ async function loadSelectedEvent() {
       setTicketHeroState("Event unavailable", true);
       return;
     }
+    if (window.iVenueEventTime.isEventCancelled(event)) {
+      window.__ticketEventCancelled = true;
+      document.querySelector("#cancelledEventState").hidden = false;
+      document.querySelector(".ticketHero")?.remove();
+      document.querySelector(".sec2")?.remove();
+      document.querySelector(".selectTktContainer")?.remove();
+      return;
+    }
     if (window.iVenueEventTime.isEventEnded(event)) {
       window.__ticketEventEnded = true;
       document.querySelector("#endedEventState").hidden = false;
