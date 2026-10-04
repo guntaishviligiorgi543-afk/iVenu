@@ -562,17 +562,30 @@
     document.body.append(overlay);
   };
 
+  let loginSecurityPendingTimer = null;
   const showLoginSecurityPending = () => {
-    if (document.querySelector("[data-login-security-pending]")) return;
-    const overlay = document.createElement("div");
-    overlay.dataset.loginSecurityPending = "true";
-    overlay.style.cssText =
-      "position:fixed;inset:0;z-index:2147483646;display:grid;place-items:center;background:#171717;color:#fff;padding:2rem;text-align:center";
-    overlay.innerHTML = "<p>Checking sign-in security...</p>";
-    document.body.append(overlay);
+    if (
+      loginSecurityPendingTimer ||
+      document.querySelector("[data-login-security-pending]")
+    )
+      return;
+    loginSecurityPendingTimer = window.setTimeout(() => {
+      loginSecurityPendingTimer = null;
+      if (document.querySelector("[data-login-security-pending]")) return;
+      const overlay = document.createElement("div");
+      overlay.dataset.loginSecurityPending = "true";
+      overlay.style.cssText =
+        "position:fixed;inset:0;z-index:2147483646;display:grid;place-items:center;background:#171717;color:#fff;padding:2rem;text-align:center";
+      overlay.innerHTML = "<p>Checking sign-in security...</p>";
+      document.body.append(overlay);
+    }, 200);
   };
 
   const clearLoginSecurityPending = () => {
+    if (loginSecurityPendingTimer) {
+      window.clearTimeout(loginSecurityPendingTimer);
+      loginSecurityPendingTimer = null;
+    }
     document.querySelector("[data-login-security-pending]")?.remove();
   };
 
