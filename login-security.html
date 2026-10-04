@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Verify sign-in | iVenue</title>
+    <link rel="stylesheet" href="main.css" />
+    <link rel="stylesheet" href="auth.css" />
+  </head>
+  <body class="auth-login-page">
+    <main class="auth-page">
+      <section class="auth-shell" aria-labelledby="login-security-title">
+        <h1 id="login-security-title">verify sign-in</h1>
+        <p class="auth-intro">
+          Enter the verification code sent to your account. This device will
+          be trusted for 24 hours after successful verification.
+        </p>
+        <form class="auth-form" id="loginSecurityForm">
+          <label>
+            Verification code
+            <input
+              type="text"
+              name="otp"
+              inputmode="numeric"
+              autocomplete="one-time-code"
+              maxlength="8"
+              pattern="[0-9]{8}"
+              required
+            />
+          </label>
+          <button class="auth-submit" type="submit">Verify</button>
+        </form>
+        <p class="auth-message" id="loginSecurityMessage" role="status"></p>
+        <button class="auth-link" id="resendLoginSecurity" type="button">
+          Resend code
+        </button>
+        <button class="auth-link" id="logoutLoginSecurity" type="button">
+          Log out
+        </button>
+      </section>
+    </main>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <script src="auth.js"></script>
+    <script src="login-security.js"></script>
+  </body>
+</html>

@@ -320,7 +320,7 @@
 
     if (eventSeatId) {
       // Exact-seat rows must release their reservation, not be deleted directly.
-      const { error } = await client.rpc("release_event_seat", {
+      const { error } = await window.authApi.callProtectedReservation("release", {
         p_event_seat_id: eventSeatId,
       });
       if (error) throw error;
@@ -1417,8 +1417,9 @@
     deleteDialogMessage.textContent = "Verifying password...";
 
     try {
+      const loginSecurity = await window.authApi.requireLoginSecurityProof();
       const { data, error } = await client.functions.invoke("delete-account", {
-        body: { currentPassword },
+        body: { currentPassword, loginSecurityProof: loginSecurity.raw },
       });
       if (error) {
         let responseError = null;
@@ -1426,6 +1427,9 @@
           responseError = await error.context?.json();
         } catch {
           responseError = null;
+        }
+        if (responseError?.code?.startsWith("LOGIN_SECURITY_")) {
+          await window.authApi.recoverLoginSecurity(responseError.code);
         }
         throw new Error(responseError?.error || error.message);
       }

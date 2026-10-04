@@ -1,8 +1,9 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { requireLoginSecurityProof } from "../_shared/login-security.ts";
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Origin": "https://ivenue.site",
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
@@ -67,12 +68,27 @@ Deno.serve(async (request) => {
     });
   }
 
-  let body: { currentPassword?: string };
+  let body: { currentPassword?: string; loginSecurityProof?: string };
   try {
     body = await request.json();
   } catch {
     return new Response(JSON.stringify({ error: "Invalid request" }), {
       status: 400,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
+  const loginSecurity = await requireLoginSecurityProof(
+    adminClient,
+    user.id,
+    body.loginSecurityProof,
+  );
+  if (!loginSecurity.ok) {
+    return new Response(JSON.stringify({
+      error: "Login security verification is required.",
+      code: loginSecurity.code,
+    }), {
+      status: 403,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }

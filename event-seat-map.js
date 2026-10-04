@@ -385,7 +385,7 @@
       const remainingReservations = [...basketTickets];
       const releases = await Promise.all(
         remainingReservations.map((ticket) =>
-          client.rpc("release_event_seat", {
+          window.authApi.callProtectedReservation("release", {
             p_event_seat_id: ticket.eventSeatId,
           }),
         ),
@@ -1009,7 +1009,7 @@
       console.error("Unable to check existing reservations", error);
     }
     seatState.pendingIds.add(row.event_seat_id);
-    const { data, error } = await client.rpc("reserve_event_seat", {
+    const { data, error } = await window.authApi.callProtectedReservation("reserve", {
       p_event_seat_id: row.event_seat_id,
     });
     seatState.pendingIds.delete(row.event_seat_id);
@@ -1070,7 +1070,7 @@
           candidate.seat === Number(ticket.seat),
       );
     if (!item?.eventSeatId) return;
-    const { error } = await client.rpc("release_event_seat", {
+    const { error } = await window.authApi.callProtectedReservation("release", {
       p_event_seat_id: item.eventSeatId,
     });
     if (error) {

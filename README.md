@@ -170,7 +170,7 @@ The migration history documents that some initial layouts were generated from ti
 
 1. A user opens an event through `shows.html` or `getTickets.html`.
 2. The ticket page loads the event's ticket legend and, where applicable, canonical event seats.
-3. Selecting an exact seat calls `reserve_event_seat`; the reservation has an expiry timestamp.
+3. Selecting an exact seat calls `reserve_event_seat`; the reservation has an expiry timestamp. Reservation, release, and checkout mutations additionally require a server-issued login-security proof whose validity is tied to the current trusted device window.
 4. Reserved seats are represented in cart rows and synchronized across the ticket, cart, dashboard, and checkout UI.
 5. Removing a seat or allowing the reservation to expire calls the corresponding release logic.
 6. `checkout.html` validates that the current reservation is still valid and loads the reserved event data.
@@ -392,6 +392,8 @@ The repository includes:
 The active migration directory contains the current migration history and the archive contains older migrations. Because the active migrations extend foundational tables that are not all created in this repository, a clean local database may require the project's existing baseline schema or a linked Supabase project before the migrations can be replayed successfully.
 
 When using the Supabase CLI, link to the intended project and review migration history before applying changes. Deploy Edge Functions and configure their secrets through Supabase tooling or the Supabase dashboard; never commit those secrets.
+
+Login-security deployment is phased. Apply `20261005000000_login_security_trusted_devices.sql` and `20261005010000_login_security_backend_enforcement.sql` as additive migrations before deploying the protected Edge Functions and frontend. Apply `20261005020000_login_security_legacy_rpc_cutover.sql` only after those deployments and live verification; it removes the legacy customer reservation RPC path.
 
 ## Deployment
 

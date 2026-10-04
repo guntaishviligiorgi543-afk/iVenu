@@ -121,10 +121,11 @@
     } = await window.supabaseClient.auth.getSession();
     if (!session?.access_token)
       throw new Error("Authentication required. Please sign in again.");
+    const loginSecurity = await window.authApi.requireLoginSecurityProof();
     const { data, error } = await window.supabaseClient.functions.invoke(
       "email-change",
       {
-        body,
+        body: { ...body, loginSecurityProof: loginSecurity.raw },
         headers: { Authorization: `Bearer ${session.access_token}` },
       },
     );
@@ -145,6 +146,9 @@
         });
       } catch {
         serverError = null;
+      }
+      if (serverError?.code?.startsWith("LOGIN_SECURITY_")) {
+        await window.authApi.recoverLoginSecurity(serverError.code);
       }
       if (serverError?.error) throw new Error(serverError.error);
       throw error;

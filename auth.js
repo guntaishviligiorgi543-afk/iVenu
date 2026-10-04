@@ -182,6 +182,12 @@
   }
 
   async function signOut({ redirectTo = null } = {}) {
+    try {
+      await loginSecurityInvoke({ action: "revoke" });
+    } catch (error) {
+      console.warn("Unable to revoke login security proof during logout", error);
+    }
+    window.localStorage.removeItem(LOGIN_SECURITY_PROOF_KEY);
     const { error } = await client.auth.signOut();
     if (error) throw error;
 
@@ -390,6 +396,188 @@
     return data.session;
   }
 
+  const LOGIN_SECURITY_DEVICE_KEY = "ivenue.loginSecurityDevice";
+  const LOGIN_SECURITY_PROOF_KEY = "ivenue.loginSecurityProof";
+  const LOGIN_SECURITY_PAGE = "login-security.html";
+  const LOGIN_SECURITY_WINDOW_MS = 24 * 60 * 60 * 1000;
+
+  const isLoginSecurityPage = () =>
+    /(?:^|\/)login-security\.html$/.test(window.location.pathname);
+
+  const isAdminLoginPage = () =>
+    /(?:^|\/)admin-login\.html$/.test(window.location.pathname);
+
+  const encodeBase64Url = (bytes) => {
+    let binary = "";
+    bytes.forEach((byte) => {
+      binary += String.fromCharCode(byte);
+    });
+    return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  };
+
+  const getLoginSecurityDeviceToken = () => {
+    try {
+      let token = window.localStorage.getItem(LOGIN_SECURITY_DEVICE_KEY);
+      if (!token) {
+        const bytes = new Uint8Array(32);
+        crypto.getRandomValues(bytes);
+        token = encodeBase64Url(bytes);
+        window.localStorage.setItem(LOGIN_SECURITY_DEVICE_KEY, token);
+      }
+      if (!/^[A-Za-z0-9_-]{40,}$/.test(token)) {
+        throw new Error("The login security device identifier is invalid.");
+      }
+      return token;
+    } catch (error) {
+      throw new Error(
+        `Login security device storage is unavailable: ${error.message}`,
+      );
+    }
+  };
+
+  const loginSecurityInvoke = async (body) => {
+    const { data, error } = await client.functions.invoke("login-security", {
+      body: {
+        ...body,
+        deviceToken: getLoginSecurityDeviceToken(),
+      },
+    });
+    if (error) throw error;
+    if (!data?.success) {
+      throw new Error(data?.error || "Login security verification failed.");
+    }
+    if (data.proof) {
+      window.localStorage.setItem(LOGIN_SECURITY_PROOF_KEY, data.proof);
+    }
+    return data;
+  };
+
+  const getLoginSecurityProof = () => {
+    try {
+      return window.localStorage.getItem(LOGIN_SECURITY_PROOF_KEY) || "";
+    } catch (error) {
+      throw new Error(`Login security proof storage is unavailable: ${error.message}`);
+    }
+  };
+
+  async function requireLoginSecurityProof() {
+    const session = await getSession();
+    if (!session?.user) throw new Error("Authentication required.");
+    let proof = getLoginSecurityProof();
+    if (!proof) {
+      const verified = await loginSecurityInvoke({ action: "check" });
+      if (verified.status !== "VERIFIED") {
+        await ensureLoginSecurity(session);
+        throw new Error("LOGIN_SECURITY_REQUIRED");
+      }
+      proof = getLoginSecurityProof();
+    }
+    return { raw: proof };
+  }
+
+  async function recoverLoginSecurity(code = "LOGIN_SECURITY_REQUIRED") {
+    window.localStorage.removeItem(LOGIN_SECURITY_PROOF_KEY);
+    const session = await getSession();
+    if (session?.user) await ensureLoginSecurity(session);
+    throw new Error(code);
+  }
+
+  async function callProtectedReservation(action, params = {}) {
+    const proof = await requireLoginSecurityProof();
+    const { data, error } = await client.functions.invoke("reservation-security", {
+      body: {
+        action,
+        ...params,
+        loginSecurityProof: proof.raw,
+      },
+    });
+    if (error) {
+      let code = "";
+      try {
+        const response = error.context;
+        const payload = response?.clone
+          ? await response.clone().json()
+          : null;
+        code = payload?.code || "";
+      } catch {
+        code = "";
+      }
+      code ||= data?.code || "";
+      if (/LOGIN_SECURITY_(REQUIRED|EXPIRED|INVALID)/.test(`${code} ${error.message || ""}`)) {
+        window.localStorage.removeItem(LOGIN_SECURITY_PROOF_KEY);
+        await recoverLoginSecurity(
+          code || error.message.match(/LOGIN_SECURITY_[A-Z]+/)?.[0],
+        );
+      }
+      throw error;
+    }
+    return { data, error: null };
+  }
+
+  async function ensureLoginSecurity(
+    session,
+    { redirect = true, force = false } = {},
+  ) {
+    if (
+      !session?.user ||
+      isLoginSecurityPage() ||
+      isAdminLoginPage() ||
+      (!force && isPolicyPage())
+    )
+      return true;
+    showLoginSecurityPending();
+    const result = await loginSecurityInvoke({ action: "check" });
+    if (result.status === "VERIFIED") {
+      clearLoginSecurityPending();
+      return true;
+    }
+    if (result.status !== "OTP_REQUIRED") {
+      throw new Error("Login security returned an invalid verification state.");
+    }
+    if (!redirect) return false;
+    const returnTo = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+    const url = new URL(LOGIN_SECURITY_PAGE, window.location.href);
+    url.searchParams.set("returnTo", returnTo || "index.html");
+    window.location.replace(url.href);
+    return false;
+  }
+
+  const showLoginSecurityFailure = () => {
+    if (document.querySelector("[data-login-security-failure]")) return;
+    const overlay = document.createElement("div");
+    overlay.dataset.loginSecurityFailure = "true";
+    overlay.style.cssText =
+      "position:fixed;inset:0;z-index:2147483647;display:grid;place-items:center;background:#171717;color:#fff;padding:2rem;text-align:center";
+    overlay.innerHTML =
+      "<div><h1>Verification unavailable</h1><p>We could not verify this sign-in. Please retry after checking your connection.</p><button type=\"button\">Retry</button></div>";
+    overlay.querySelector("button").addEventListener("click", () => {
+      window.location.reload();
+    });
+    document.body.append(overlay);
+  };
+
+  const showLoginSecurityPending = () => {
+    if (document.querySelector("[data-login-security-pending]")) return;
+    const overlay = document.createElement("div");
+    overlay.dataset.loginSecurityPending = "true";
+    overlay.style.cssText =
+      "position:fixed;inset:0;z-index:2147483646;display:grid;place-items:center;background:#171717;color:#fff;padding:2rem;text-align:center";
+    overlay.innerHTML = "<p>Checking sign-in security...</p>";
+    document.body.append(overlay);
+  };
+
+  const clearLoginSecurityPending = () => {
+    document.querySelector("[data-login-security-pending]")?.remove();
+  };
+
+  async function requestLoginSecurityOtp() {
+    return loginSecurityInvoke({ action: "request" });
+  }
+
+  async function verifyLoginSecurityOtp(otp) {
+    return loginSecurityInvoke({ action: "verify", otp });
+  }
+
   function subscribeToAuthChanges(callback) {
     return client.auth.onAuthStateChange(callback);
   }
@@ -520,6 +708,13 @@
     refreshSession,
     requestPasswordRecoveryOtp,
     verifyPasswordRecoveryOtp,
+    ensureLoginSecurity,
+    requestLoginSecurityOtp,
+    verifyLoginSecurityOtp,
+    getLoginSecurityProof,
+    requireLoginSecurityProof,
+    callProtectedReservation,
+    recoverLoginSecurity,
     normalizeEmail,
     validatePassword,
     subscribeToAuthChanges,
@@ -705,16 +900,34 @@
   getSession()
     .then(async (session) => {
       if (await enforceGooglePasswordSetup(session)) return;
+      if (!(await ensureLoginSecurity(session))) return;
       completeInitialPasswordSetupGuard();
       if ((await enforcePolicyAcceptance(session)) && !isPolicyPage())
         await remindIncompleteProfile(session);
     })
     .catch((error) => {
+      clearLoginSecurityPending();
       completeInitialPasswordSetupGuard();
       logSupabaseError(
         "Unable to complete the initial authentication check",
         error,
       );
+      getSession()
+        .then((session) => {
+          if (
+            session?.user &&
+            !isPolicyPage() &&
+            !isLoginSecurityPage() &&
+            !isAdminLoginPage()
+          )
+            showLoginSecurityFailure();
+        })
+        .catch((sessionError) =>
+          logSupabaseError(
+            "Unable to determine session after login security failure",
+            sessionError,
+          ),
+        );
     });
   subscribeToAuthChanges((event, session) => {
     if (event === "SIGNED_OUT") {

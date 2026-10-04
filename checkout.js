@@ -108,7 +108,7 @@
   }
 
   async function releaseExpiredReservations() {
-    await Promise.all(checkoutItems.map((item) => client.rpc("release_event_seat", { p_event_seat_id: item.event_seat_id })));
+    await Promise.all(checkoutItems.map((item) => window.authApi.callProtectedReservation("release", { p_event_seat_id: item.event_seat_id })));
   }
 
   function beginReservationCountdown(items) {

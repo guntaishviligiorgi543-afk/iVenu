@@ -115,10 +115,15 @@
 
         try {
           const formData = new FormData(form);
-          await window.authApi.signIn(
+          const result = await window.authApi.signIn(
             formData.get("email").trim(),
             formData.get("password"),
           );
+          if (
+            result?.session &&
+            !(await window.authApi.ensureLoginSecurity(result.session, { force: true }))
+          )
+            return;
           window.location.href = "index.html";
         } catch (error) {
           message.className = "auth-message error";
