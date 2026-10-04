@@ -334,7 +334,7 @@
     page: 1, pageSize: 10, listVersion: 0, detailVersion: 0, metricsVersion: 0,
     selectedId: null, messageCount: 0, messagesLoaded: 0, messagePageSize: 50,
   };
-  const SUPPORT_REQUEST_COLUMNS = "id,customer_name,customer_email,subject,category,status,assigned_support_user_id,created_at,updated_at,resolved_at,resolved_by_name,resolved_by_email";
+  const SUPPORT_REQUEST_COLUMNS = "id,customer_name,customer_email,subject,category,status,assigned_support_user_id,created_at,updated_at,resolved_at,resolved_by_name,resolved_by_email,customer_deleted_at";
   const supportActiveStatus = document.querySelector("#supportActiveStatus");
   const supportActiveList = document.querySelector("#supportActiveList");
   const supportActiveMobileList = document.querySelector(
@@ -3107,9 +3107,9 @@
     try {
       await assertSupportOversightAccess();
       const results = await Promise.all([
-        client.from("support_requests").select("id", { count: "exact", head: true }).in("status", ["open", "waiting_for_user"]),
-        client.from("support_requests").select("id", { count: "exact", head: true }).eq("status", "resolved"),
-        client.from("support_requests").select("id", { count: "exact", head: true }).is("assigned_support_user_id", null).in("status", ["open", "waiting_for_user"]),
+        client.from("support_requests").select("id", { count: "exact", head: true }).is("customer_deleted_at", null).in("status", ["open", "waiting_for_user"]),
+        client.from("support_requests").select("id", { count: "exact", head: true }).is("customer_deleted_at", null).eq("status", "resolved"),
+        client.from("support_requests").select("id", { count: "exact", head: true }).is("customer_deleted_at", null).is("assigned_support_user_id", null).in("status", ["open", "waiting_for_user"]),
         client.from("support_users").select("id", { count: "exact", head: true }).is("revoked_at", null),
       ]);
       if (version !== supportOversight.metricsVersion) return;
@@ -3131,7 +3131,7 @@
       await assertSupportOversightAccess();
       let query = client.from("support_requests").select(SUPPORT_REQUEST_COLUMNS, { count: "exact" });
       const statusFilter = supportRequestStatusFilter.value;
-      if (statusFilter === "open") query = query.in("status", ["open", "waiting_for_user"]);
+      if (statusFilter === "open") query = query.is("customer_deleted_at", null).in("status", ["open", "waiting_for_user"]);
       else if (statusFilter !== "all") query = query.eq("status", statusFilter);
       if (supportRequestCategoryFilter.value !== "all") query = query.eq("category", supportRequestCategoryFilter.value);
       if (supportRequestAssignmentFilter.value === "unassigned") query = query.is("assigned_support_user_id", null);
@@ -3155,7 +3155,7 @@
       const items = data || [];
       supportRequestListStatus.textContent = total ? `${start + 1}–${start + items.length} of ${total} requests` : "No Support requests match these filters.";
       const action = (request) => `<button class="admin-outline" type="button" data-support-view-request="${escapeHtml(request.id)}">View Details</button>`;
-      const status = (request) => `<span class="support-audit-status${request.status === "resolved" ? " is-resolved" : ""}">${escapeHtml(supportRequestLabel(request.status))}</span>`;
+      const status = (request) => `<span class="support-audit-status${request.status === "resolved" ? " is-resolved" : ""}">${escapeHtml(request.customer_deleted_at ? "Deleted by customer" : supportRequestLabel(request.status))}</span>`;
       supportRequestRows.innerHTML = items.map((request) => `<tr>
         <td><strong>${escapeHtml(request.customer_name)}</strong><small>${escapeHtml(request.customer_email)}</small></td>
         <td><strong>${escapeHtml(request.subject)}</strong><small>${escapeHtml(supportRequestLabel(request.category))}</small></td>
@@ -3235,7 +3235,7 @@
       const details = [
         ["Customer", request.customer_name], ["Email", request.customer_email],
         ["Subject", request.subject], ["Category", supportRequestLabel(request.category)],
-        ["Status", supportRequestLabel(request.status)], ["Assigned Support", supportAssigneeLabel(request.assigned_support_user_id)],
+        ["Status", request.customer_deleted_at ? "Deleted by customer" : supportRequestLabel(request.status)], ["Assigned Support", supportAssigneeLabel(request.assigned_support_user_id)],
         ["Created", formatUserDate(request.created_at)], ["Last activity", formatUserDate(request.updated_at)],
       ];
       if (request.resolved_at) details.push(["Resolved", formatUserDate(request.resolved_at)], ["Resolved by", request.resolved_by_name || "Unavailable"], ["Resolver email", request.resolved_by_email || "Unavailable"]);

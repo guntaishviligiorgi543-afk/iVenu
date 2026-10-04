@@ -5,7 +5,7 @@
   if (!client || !authApi) return;
 
   const REQUEST_COLUMNS =
-    "id, customer_user_id, customer_name, customer_email, subject, category, status, assigned_support_user_id, created_at, updated_at, resolved_at, resolved_by_name, resolved_by_email";
+    "id, customer_user_id, customer_name, customer_email, subject, category, status, assigned_support_user_id, created_at, updated_at, resolved_at, resolved_by_name, resolved_by_email, customer_deleted_at";
 
   const MESSAGE_COLUMNS =
     "id, support_request_id, sender_type, sender_name, sender_email, body, created_at";
@@ -127,12 +127,12 @@
      STATUS
      ========================================================= */
 
-  function statusBadge(status) {
+  function statusBadge(status, deleted) {
     const badge = document.createElement("span");
 
     badge.className = `support-status support-status--${status}`;
 
-    badge.textContent = titleCase(status);
+    badge.textContent = deleted ? "Deleted by customer" : titleCase(status);
 
     return badge;
   }
@@ -246,7 +246,7 @@
 
       subject.textContent = request.subject;
 
-      top.append(subject, statusBadge(request.status));
+      top.append(subject, statusBadge(request.status, request.customer_deleted_at));
 
       const unreadCount = state.unread.get(request.id) || 0;
       if (unreadCount > 0) {
@@ -357,13 +357,17 @@
     }
 
     const canClaim =
-      request.status !== "resolved" && !request.assigned_support_user_id;
+      !request.customer_deleted_at &&
+      request.status !== "resolved" &&
+      !request.assigned_support_user_id;
 
     claimRow.hidden = !canClaim;
 
-    replyForm.hidden = false;
+    replyForm.hidden =
+      request.status === "resolved" || Boolean(request.customer_deleted_at);
 
-    resolveButton.hidden = request.status === "resolved";
+    resolveButton.hidden =
+      request.status === "resolved" || Boolean(request.customer_deleted_at);
   }
 
   /* =========================================================
@@ -559,6 +563,7 @@
       const { data, error } = await client
         .from("support_requests")
         .select(REQUEST_COLUMNS)
+        .is("customer_deleted_at", null)
         .order("updated_at", { ascending: false });
 
       if (error) throw error;

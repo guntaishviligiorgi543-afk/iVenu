@@ -14,6 +14,7 @@
     assigned_support_user_id: index % 2 ? id(3) : null,
     created_at: stamp, updated_at: stamp, resolved_at: index === 2 ? stamp : null,
     resolved_by_name: index === 2 ? "Agent" : null, resolved_by_email: index === 2 ? "agent@example.test" : null,
+    customer_deleted_at: null,
   }));
   const memberships = [{ id: id(90), user_id: id(3), user_name: "Support Agent", user_email: "agent@example.test", created_at: stamp, revoked_at: null, granted_by_name: "Admin", granted_by_email: "admin@example.test" }];
   window.fixture.requests = requests;

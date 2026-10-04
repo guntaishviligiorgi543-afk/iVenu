@@ -723,6 +723,18 @@
                     Loading Support requests...
                   </div>
                 </div>
+                <div class="account-delete-dialog" id="supportDeleteDialog" hidden>
+                  <div class="account-delete-dialog__panel" role="dialog" aria-modal="true" aria-labelledby="supportDeleteDialogHeading">
+                    <p class="account-eyebrow">Support history</p>
+                    <h3 id="supportDeleteDialogHeading">Delete support request?</h3>
+                    <p id="supportDeleteRequestTitle"></p>
+                    <p class="account-delete-dialog__warning">This conversation will be removed from your Support Requests history. This action cannot be undone from your dashboard.</p>
+                    <div class="account-delete-dialog__actions">
+                      <button class="account-text-button" id="cancelSupportDelete" type="button">Cancel</button>
+                      <button class="auth-danger" id="confirmSupportDelete" type="button">Delete</button>
+                    </div>
+                  </div>
+                </div>
                 <div class="empty-state" id="supportRequestsEmpty" hidden>
                   <strong>No Support requests yet</strong>
                   <span

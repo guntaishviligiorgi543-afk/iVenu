@@ -84,6 +84,12 @@
   const supportCustomerReplySubmit = document.querySelector(
     "#supportCustomerReplySubmit",
   );
+  const supportDeleteDialog = document.querySelector("#supportDeleteDialog");
+  const supportDeleteRequestTitle = document.querySelector(
+    "#supportDeleteRequestTitle",
+  );
+  const cancelSupportDelete = document.querySelector("#cancelSupportDelete");
+  const confirmSupportDelete = document.querySelector("#confirmSupportDelete");
   const supportUnreadNavBadge = document.querySelector(
     "#supportUnreadNavBadge",
   );
@@ -104,6 +110,8 @@
     unread: new Map(),
     unreadTotal: 0,
   };
+  const SUPPORT_RESOLVED_STATUS = "resolved";
+  const SUPPORT_ACTIVE_STATUSES = ["open", "waiting_for_user"];
   const isSupportMobile = () =>
     window.matchMedia("(max-width: 760px)").matches;
   let avatarPreviewUrl = "";
@@ -580,7 +588,7 @@
       .replaceAll("_", " ")
       .replace(/\b\w/g, (letter) => letter.toUpperCase());
   const supportStatusLabel = (status) =>
-    status === "resolved" ? "Resolved" : "Open";
+    status === SUPPORT_RESOLVED_STATUS ? "Resolved" : "Open";
 
   function renderSupportPagination() {
     const pageCount = Math.max(
@@ -617,12 +625,10 @@
     }
     supportRequestsEmpty.hidden = true;
     requests.forEach((request) => {
-      const item = document.createElement("button");
-      item.type = "button";
+      const item = document.createElement("div");
       item.className = `dashboard-row support-request-row${request.id === supportState.selectedId ? " is-selected" : ""}`;
-      item.dataset.supportRequestId = request.id;
       const unread = supportState.unread.get(request.id) || 0;
-      item.innerHTML = `<div><strong>${escapeHtml(request.subject)}</strong><span>${escapeHtml(supportCategoryLabel(request.category))}</span><span class="support-request-updated">Updated ${escapeHtml(formatSupportDate(request.updated_at))}</span></div><div><strong class="support-request-status support-request-status--${request.status === "resolved" ? "resolved" : "open"}">${supportStatusLabel(request.status)}</strong>${unread > 0 ? '<span class="support-request-new">New reply</span>' : ""}</div>`;
+      item.innerHTML = `<button class="support-request-row__main" type="button" data-support-request-id="${escapeHtml(request.id)}"><span><strong>${escapeHtml(request.subject)}</strong><span>${escapeHtml(supportCategoryLabel(request.category))}</span><span class="support-request-updated">Updated ${escapeHtml(formatSupportDate(request.updated_at))}</span></span><span><strong class="support-request-status support-request-status--${request.status === SUPPORT_RESOLVED_STATUS ? "resolved" : "open"}">${supportStatusLabel(request.status)}</strong>${unread > 0 ? '<span class="support-request-new">New reply</span>' : ""}</span></button><button class="account-text-button support-request-row__delete" type="button" data-delete-support-request="${escapeHtml(request.id)}" aria-label="Delete support request: ${escapeHtml(request.subject)}">Delete</button>`;
       supportRequestsList.append(item);
     });
     renderSupportPagination();
@@ -680,9 +686,10 @@
     try {
       const { data: request, error: requestError } = await client
           .from("support_requests")
-          .select("id,subject,category,status,created_at,updated_at")
+          .select("id,subject,category,status,created_at,updated_at,customer_deleted_at")
           .eq("id", requestId)
           .eq("customer_user_id", customerId)
+          .is("customer_deleted_at", null)
           .maybeSingle();
       if (version !== supportState.conversationVersion || customerId !== supportState.customerId) return;
       if (requestError || !request) throw requestError || new Error("Support request unavailable.");
@@ -703,9 +710,9 @@
       supportConversationStatus.textContent = supportStatusLabel(
         request.status,
       );
-      supportConversationStatus.className = `support-request-status support-request-status--${request.status === "resolved" ? "resolved" : "open"}`;
+      supportConversationStatus.className = `support-request-status support-request-status--${request.status === SUPPORT_RESOLVED_STATUS ? "resolved" : "open"}`;
       renderSupportMessages(messages || []);
-      const resolved = request.status === "resolved";
+      const resolved = request.status === SUPPORT_RESOLVED_STATUS;
       supportCustomerReplyForm.hidden = resolved;
       supportResolvedMessage.hidden = !resolved;
       await markCustomerRequestRead(requestId);
@@ -733,10 +740,11 @@
       '<div class="dashboard-loading">Loading Support requests...</div>';
     let query = client
       .from("support_requests")
-      .select("id,subject,category,status,created_at,updated_at", {
+      .select("id,subject,category,status,created_at,updated_at,customer_deleted_at", {
         count: "exact",
       })
       .eq("customer_user_id", customerId)
+      .is("customer_deleted_at", null)
       .order("updated_at", { ascending: false })
       .order("id", { ascending: false })
       .range(
@@ -744,9 +752,9 @@
         supportState.page * supportState.pageSize - 1,
       );
     if (supportState.filter === "resolved")
-      query = query.eq("status", "resolved");
+      query = query.eq("status", SUPPORT_RESOLVED_STATUS);
     if (supportState.filter === "open")
-      query = query.in("status", ["open", "waiting_for_user"]);
+      query = query.in("status", SUPPORT_ACTIVE_STATUSES);
     const { data, error, count } = await query;
     if (version !== supportState.requestVersion || customerId !== supportState.customerId) return;
     if (error) throw error;
@@ -827,7 +835,7 @@
 
   async function submitSupportCustomerReply(event) {
     event.preventDefault();
-    if (!supportState.customerId || !["open", "waiting_for_user"].includes(supportState.selectedStatus)) return;
+    if (!supportState.customerId || !SUPPORT_ACTIVE_STATUSES.includes(supportState.selectedStatus)) return;
     const body = supportCustomerReply.value.trim();
     if (!supportState.selectedId || !body || supportState.sending) return;
     supportState.sending = true;
@@ -1039,8 +1047,50 @@
     });
   });
   supportRequestsList.addEventListener("click", (event) => {
+    const deleteButton = event.target.closest("[data-delete-support-request]");
+    if (deleteButton) {
+      event.stopPropagation();
+      const request = supportState.requests.find(
+        (item) => item.id === deleteButton.dataset.deleteSupportRequest,
+      );
+      if (!request) return;
+      supportDeleteRequestTitle.textContent = request.subject;
+      supportDeleteDialog.dataset.requestId = request.id;
+      supportDeleteDialog.hidden = false;
+      document.body.classList.add("account-delete-modal-open");
+      return;
+    }
     const item = event.target.closest("[data-support-request-id]");
     if (item) openSupportRequest(item.dataset.supportRequestId);
+  });
+  const closeSupportDeleteDialog = () => {
+    supportDeleteDialog.hidden = true;
+    delete supportDeleteDialog.dataset.requestId;
+    document.body.classList.remove("account-delete-modal-open");
+  };
+  cancelSupportDelete.addEventListener("click", closeSupportDeleteDialog);
+  supportDeleteDialog.addEventListener("click", (event) => {
+    if (event.target === supportDeleteDialog) closeSupportDeleteDialog();
+  });
+  confirmSupportDelete.addEventListener("click", async () => {
+    const requestId = supportDeleteDialog.dataset.requestId;
+    if (!requestId || confirmSupportDelete.disabled) return;
+    confirmSupportDelete.disabled = true;
+    try {
+      const { error } = await client.rpc("delete_customer_support_request", {
+        p_support_request_id: requestId,
+      });
+      if (error) throw error;
+      if (supportState.selectedId === requestId) showSupportRequestList();
+      closeSupportDeleteDialog();
+      await loadSupportRequests();
+    } catch (error) {
+      console.error("Unable to delete customer Support request", error);
+      supportDeleteRequestTitle.textContent =
+        "This request could not be removed. Please try again.";
+    } finally {
+      confirmSupportDelete.disabled = false;
+    }
   });
   supportRequestsPagination.addEventListener("click", (event) => {
     const button = event.target.closest("[data-support-page]");
