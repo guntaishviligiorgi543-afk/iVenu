@@ -14,7 +14,14 @@ const MAX_ATTEMPTS = 5;
 const TRUST_WINDOW_MS = 24 * 60 * 60 * 1000;
 
 type Body = {
-  action?: "check" | "request" | "verify" | "revoke";
+  action?:
+    | "check"
+    | "request"
+    | "verify"
+    | "revoke"
+    | "prepare_signup"
+    | "establish_signup";
+  email?: string;
   deviceToken?: string;
   otp?: string;
 };
@@ -92,33 +99,84 @@ Deno.serve(async (request) => {
   const authorization = request.headers.get("Authorization");
   if (!supabaseUrl || !anonKey || !serviceRoleKey || !resendApiKey || !emailFrom || !otpSecret)
     return json({ success: false, error: "Login security is not configured." }, 500);
-  if (!authorization) return json({ success: false, error: "Authentication required." }, 401);
-
-  const userClient = createClient(supabaseUrl, anonKey, {
-    global: { headers: { Authorization: authorization } },
-  });
   const adminClient = createClient(supabaseUrl, serviceRoleKey);
-  const { data: authData, error: authError } = await userClient.auth.getUser();
-  const user = authData.user;
-  if (authError || !user?.id || !user.email)
-    return json({ success: false, error: "Authentication required." }, 401);
-
   let body: Body;
   try {
     body = await request.json();
   } catch {
     return json({ success: false, error: "Invalid request." }, 400);
   }
-  if (!["check", "request", "verify", "revoke"].includes(body.action || ""))
+  if (
+    ![
+      "check",
+      "request",
+      "verify",
+      "revoke",
+      "prepare_signup",
+      "establish_signup",
+    ].includes(body.action || "")
+  )
     return json({ success: false, error: "Invalid request." }, 400);
   if (!body.deviceToken || !/^[A-Za-z0-9_-]{40,}$/.test(body.deviceToken))
     return json({ success: false, error: "Invalid device identifier." }, 400);
 
   const deviceHash = await hashValue(body.deviceToken, otpSecret);
-  const issueProof = async (lastVerifiedAt: string) => {
+
+  if (body.action === "prepare_signup") {
+    const email = String(body.email || "").trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+      return json({ success: false, error: "Invalid signup email." }, 400);
+    const emailHash = await hashValue(email, otpSecret);
+    const { error: invalidateError } = await adminClient
+      .from("login_signup_trust_intents")
+      .update({ consumed_at: new Date().toISOString() })
+      .eq("email_hash", emailHash)
+      .eq("device_token_hash", deviceHash)
+      .is("consumed_at", null);
+    if (invalidateError)
+      return json({ success: false, error: "Unable to prepare signup security." }, 500);
+    const { error: intentError } = await adminClient
+      .from("login_signup_trust_intents")
+      .insert({ email_hash: emailHash, device_token_hash: deviceHash });
+    if (intentError)
+      return json({ success: false, error: "Unable to prepare signup security." }, 500);
+    return json({ success: true, status: "SIGNUP_PREPARED" });
+  }
+
+  if (!authorization) return json({ success: false, error: "Authentication required." }, 401);
+
+  const userClient = createClient(supabaseUrl, anonKey, {
+    global: { headers: { Authorization: authorization } },
+  });
+  const { data: authData, error: authError } = await userClient.auth.getUser();
+  const user = authData.user;
+  if (authError || !user?.id || !user.email)
+    return json({ success: false, error: "Authentication required." }, 401);
+  const accessToken = authorization.replace(/^Bearer\s+/i, "");
+  const decodeJwtPayload = (token: string) => {
+    try {
+      const encoded = token.split(".")[1];
+      return JSON.parse(
+        new TextDecoder().decode(
+          Uint8Array.from(atob(encoded.replace(/-/g, "+").replace(/_/g, "/")), (char) =>
+            char.charCodeAt(0),
+          ),
+        ),
+      ) as { session_id?: string; iat?: number };
+    } catch {
+      return {};
+    }
+  };
+  const jwtPayload = decodeJwtPayload(accessToken);
+  const sessionId = jwtPayload.session_id || null;
+  const sessionStartedAt =
+    typeof jwtPayload.iat === "number"
+      ? new Date(jwtPayload.iat * 1000).toISOString()
+      : null;
+  const issueProof = async (lastSuccessfulSignInAt: string) => {
     const proof = createProof();
     const trustExpiresAt = new Date(
-      new Date(lastVerifiedAt).getTime() + TRUST_WINDOW_MS,
+      new Date(lastSuccessfulSignInAt).getTime() + TRUST_WINDOW_MS,
     );
     const expiresAt = new Date(
       Math.min(Date.now() + 30 * 60 * 1000, trustExpiresAt.getTime()),
@@ -135,6 +193,63 @@ Deno.serve(async (request) => {
     return proof;
   };
 
+  if (body.action === "establish_signup") {
+    if (!user.email_confirmed_at)
+      return json({ success: false, error: "Signup email verification is required." }, 403);
+    const emailHash = await hashValue(user.email.toLowerCase(), otpSecret);
+    const { data: intent, error: intentError } = await adminClient
+      .from("login_signup_trust_intents")
+      .select("id, created_at, expires_at")
+      .eq("email_hash", emailHash)
+      .eq("device_token_hash", deviceHash)
+      .is("consumed_at", null)
+      .gt("expires_at", new Date().toISOString())
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    const createdAt = new Date(user.created_at).getTime();
+    const intentCreatedAt = new Date(intent?.created_at || 0).getTime();
+    if (
+      intentError ||
+      !intent ||
+      !Number.isFinite(createdAt) ||
+      createdAt < intentCreatedAt - 5000
+    )
+      return json({ success: false, error: "Signup trust is not available." }, 403);
+    const now = new Date().toISOString();
+    const { data: consumedIntent, error: consumeError } = await adminClient
+      .from("login_signup_trust_intents")
+      .update({ consumed_at: now, user_id: user.id })
+      .eq("id", intent.id)
+      .is("consumed_at", null)
+      .select("id")
+      .maybeSingle();
+    if (consumeError || !consumedIntent)
+      return json({ success: false, error: "Signup trust has already been used." }, 409);
+    const { error: deviceError } = await adminClient
+      .from("login_trusted_devices")
+      .upsert(
+        {
+          user_id: user.id,
+          device_token_hash: deviceHash,
+          last_verified_at: now,
+          last_successful_sign_in_at: now,
+          last_successful_session_id: sessionId,
+          updated_at: now,
+          last_used_at: now,
+        },
+        { onConflict: "user_id,device_token_hash" },
+      );
+    if (deviceError)
+      return json({ success: false, error: "Unable to save signup security." }, 500);
+    try {
+      const proof = await issueProof(now);
+      return json({ success: true, status: "VERIFIED", proof });
+    } catch {
+      return json({ success: false, error: "Unable to issue login security proof." }, 500);
+    }
+  }
+
   if (body.action === "revoke") {
     const { error: revokeError } = await adminClient
       .from("login_security_proofs")
@@ -149,15 +264,33 @@ Deno.serve(async (request) => {
   if (body.action === "check") {
     const { data: device, error } = await adminClient
       .from("login_trusted_devices")
-      .select("last_verified_at")
+      .select("last_successful_sign_in_at, last_successful_session_id")
       .eq("user_id", user.id)
       .eq("device_token_hash", deviceHash)
       .maybeSingle();
     if (error) return json({ success: false, error: "Unable to check login security." }, 500);
+    let lastSuccessfulSignInAt = device?.last_successful_sign_in_at;
     const verified =
-      device?.last_verified_at &&
-      Date.now() - new Date(device.last_verified_at).getTime() < TRUST_WINDOW_MS;
+      device?.last_successful_sign_in_at &&
+      Date.now() - new Date(device.last_successful_sign_in_at).getTime() < TRUST_WINDOW_MS;
     if (verified) {
+      if (
+        sessionId &&
+        sessionStartedAt &&
+        device.last_successful_session_id !== sessionId
+      ) {
+        const { data: touched, error: touchError } = await adminClient.rpc(
+          "login_security_touch_successful_sign_in",
+          {
+            p_user_id: user.id,
+            p_device_token_hash: deviceHash,
+            p_session_id: sessionId,
+            p_session_started_at: sessionStartedAt,
+          },
+        );
+        if (touchError) return json({ success: false, error: "Unable to update login security." }, 500);
+        lastSuccessfulSignInAt = touched || lastSuccessfulSignInAt;
+      }
       await adminClient
         .from("login_trusted_devices")
         .update({ last_used_at: new Date().toISOString() })
@@ -166,7 +299,7 @@ Deno.serve(async (request) => {
     }
     if (!verified) return json({ success: true, status: "OTP_REQUIRED" });
     try {
-      const proof = await issueProof(device.last_verified_at);
+      const proof = await issueProof(lastSuccessfulSignInAt);
       return json({ success: true, status: "VERIFIED", proof });
     } catch {
       return json({ success: false, error: "Unable to issue login security proof." }, 500);
@@ -219,6 +352,8 @@ Deno.serve(async (request) => {
           user_id: user.id,
           device_token_hash: deviceHash,
           last_verified_at: now,
+          last_successful_sign_in_at: now,
+          last_successful_session_id: sessionId,
           updated_at: now,
           last_used_at: now,
         },

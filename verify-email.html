@@ -150,6 +150,7 @@
           if (!verifiedUser?.email_confirmed_at) {
             throw new Error("Email verification has not completed yet.");
           }
+          await window.authApi.establishSignupTrust();
           setMessage("Email verified. Redirecting...", "success");
           window.location.href = "index.html";
         } catch (error) {

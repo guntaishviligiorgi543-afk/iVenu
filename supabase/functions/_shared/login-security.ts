@@ -31,10 +31,10 @@ export const requireLoginSecurityProof = async (
 
   const { data: validDevice, error: deviceError } = await adminClient
     .from("login_trusted_devices")
-    .select("last_verified_at")
+    .select("last_successful_sign_in_at")
     .eq("user_id", userId)
     .eq("device_token_hash", data.device_token_hash)
-    .gt("last_verified_at", new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
+    .gt("last_successful_sign_in_at", new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
     .maybeSingle();
   if (deviceError || !validDevice) return { ok: false, code: "LOGIN_SECURITY_EXPIRED" };
   return { ok: true, code: null };

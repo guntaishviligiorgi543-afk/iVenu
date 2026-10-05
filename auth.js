@@ -1,8 +1,8 @@
 (() => {
   const client = window.supabaseClient;
   const CURRENT_POLICY_VERSIONS = Object.freeze({
-    terms_of_use: "2026-09-29",
-    privacy_policy: "2026-09-29",
+    terms_of_use: "2026-10-05",
+    privacy_policy: "2026-10-05",
   });
 
   if (!client) {
@@ -107,6 +107,10 @@
 
   async function signUp({ firstName, lastName, email, phone, password }) {
     const normalizedEmail = normalizeEmail(email);
+    await loginSecurityInvoke({
+      action: "prepare_signup",
+      email: normalizedEmail,
+    });
     const { data, error } = await client.auth.signUp({
       email: normalizedEmail,
       password,
@@ -583,6 +587,10 @@
     return loginSecurityInvoke({ action: "verify", otp });
   }
 
+  async function establishSignupTrust() {
+    return loginSecurityInvoke({ action: "establish_signup" });
+  }
+
   function subscribeToAuthChanges(callback) {
     return client.auth.onAuthStateChange(callback);
   }
@@ -716,6 +724,7 @@
     ensureLoginSecurity,
     requestLoginSecurityOtp,
     verifyLoginSecurityOtp,
+    establishSignupTrust,
     getLoginSecurityProof,
     requireLoginSecurityProof,
     callProtectedReservation,
