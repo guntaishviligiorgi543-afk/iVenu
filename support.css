@@ -776,7 +776,7 @@ body.support-page {
   margin: auto;
   padding: 0;
   border: 1px solid var(--support-border);
-  border-radius: 10px;
+  border-radius: 0;
   background: #111;
   color: var(--support-text);
 }
@@ -787,7 +787,7 @@ body.support-page {
 
 .support-confirm-dialog__panel {
   padding: 22px;
-  border-radius: 10px;
+  border-radius: 0;
 }
 
 .support-confirm-dialog__panel h2 {

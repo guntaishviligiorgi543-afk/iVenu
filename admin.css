@@ -247,7 +247,7 @@
   margin: auto;
   padding: 0;
   border: 1px solid rgba(255, 148, 117, 0.5);
-  border-radius: 10px;
+  border-radius: 0;
   color: #fff;
   background: #151515;
   box-shadow: 0 20px 65px rgba(0, 0, 0, 0.56);
@@ -260,7 +260,7 @@
 
 .admin-delete-dialog__panel {
   padding: clamp(20px, 5vw, 32px);
-  border-radius: 10px;
+  border-radius: 0;
 }
 
 .newsletter-result-dialog__panel {
@@ -1087,7 +1087,7 @@ body.newsletter-editor-mode .newsletter-composer {
   margin: auto;
   padding: 0;
   border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 10px;
+  border-radius: 0;
   color: #fff;
   background: #121212;
 }
@@ -1239,7 +1239,7 @@ body.newsletter-editor-mode .newsletter-composer {
   max-height: min(88vh, 900px);
   padding: 0;
   border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 10px;
+  border-radius: 0;
   color: #fff;
   background: #121212;
 }
