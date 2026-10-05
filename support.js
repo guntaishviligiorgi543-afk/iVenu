@@ -44,6 +44,8 @@
   const confirmResolve = $("#confirmResolve");
 
   const mobileBack = $("#supportMobileBack");
+  const requestDetailsToggle = $("#supportRequestDetailsToggle");
+  const requestDetails = $("#supportRequestMeta");
 
   const supportPage = document.body;
 
@@ -64,9 +66,24 @@
     supportPage.classList.remove("mobile-conversation-open");
   });
 
+  requestDetailsToggle?.addEventListener("click", () => {
+    const expanded = requestDetailsToggle.getAttribute("aria-expanded") === "true";
+    requestDetailsToggle.setAttribute("aria-expanded", String(!expanded));
+    requestDetailsToggle.classList.toggle("is-expanded", !expanded);
+    requestDetails.hidden = expanded;
+  });
+
   window.addEventListener("resize", () => {
-    if (window.matchMedia("(min-width: 761px)").matches) {
+    const isMobile = window.matchMedia("(max-width: 760px)").matches;
+
+    if (!isMobile) {
       supportPage.classList.remove("mobile-conversation-open");
+    }
+
+    if (requestDetails && requestDetailsToggle) {
+      requestDetails.hidden =
+        isMobile &&
+        requestDetailsToggle.getAttribute("aria-expanded") !== "true";
     }
   });
 
@@ -321,6 +338,10 @@
     status.className = "support-status";
 
     const metadata = $("#supportRequestMeta");
+    const isMobile = window.matchMedia("(max-width: 760px)").matches;
+    requestDetailsToggle?.setAttribute("aria-expanded", "false");
+    requestDetailsToggle?.classList.remove("is-expanded");
+    if (metadata) metadata.hidden = isMobile;
     const customer = metaItem("Customer", request.customer_name);
     if (request.customer_email) {
       const email = document.createElement("a");
@@ -376,6 +397,10 @@
 
   function renderMessages(messages) {
     const list = $("#supportMessageList");
+    const previousScrollTop = list.scrollTop;
+    const wasAtBottom =
+      list.scrollHeight - list.clientHeight - previousScrollTop <= 24;
+    const hadMessages = Boolean(list.querySelector(".support-message"));
 
     list.replaceChildren();
 
@@ -437,7 +462,11 @@
       list.append(card);
     }
 
-    list.scrollTop = list.scrollHeight;
+    if (wasAtBottom || !hadMessages) {
+      list.scrollTop = list.scrollHeight;
+    } else {
+      list.scrollTop = previousScrollTop;
+    }
   }
 
   /* =========================================================
