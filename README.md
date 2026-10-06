@@ -322,7 +322,7 @@ The checked-in functions are:
 | Function | Responsibility |
 | --- | --- |
 | `email-change` | Authenticated current-password verification, eight-digit OTP generation, hashed OTP persistence, expiry/attempt/cooldown controls, and Resend delivery |
-| `delete-account` | Password-confirmed authenticated deletion, cart cleanup, profile anonymization needed to preserve orders, and Auth-user deletion |
+| `delete-account` | Password-confirmed authenticated deletion, cart cleanup, Auth/profile deletion, and preservation of demo orders with their user link cleared; independent Support, newsletter, enforcement and uploaded-image records can remain |
 | `admin-delete-user` | Admin-only deletion of eligible non-admin users with reconciliation checks |
 | `admin-user-enforcement` | Admin-only Auth ban/unban actions plus enforcement audit and reconciliation records |
 | `newsletter-campaign` | Admin-only campaign test/send delivery through Resend, snapshots, unsubscribe tokens, sanitization, and campaign state changes |
