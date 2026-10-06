@@ -181,7 +181,7 @@
       supportNav.click();
       const requestId = params.get("request");
       if (requestId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(requestId)) {
-        await openSupportRequest(requestId);
+        await openSupportRequest(requestId, { selectStatusFilter: true });
       }
     }
   }
@@ -662,7 +662,7 @@
       supportCustomerMessageList.scrollHeight;
   }
 
-  async function openSupportRequest(requestId) {
+  async function openSupportRequest(requestId, { selectStatusFilter = false } = {}) {
     if (!supportState.customerId) return;
     const customerId = supportState.customerId;
     const version = ++supportState.conversationVersion;
@@ -693,6 +693,20 @@
           .maybeSingle();
       if (version !== supportState.conversationVersion || customerId !== supportState.customerId) return;
       if (requestError || !request) throw requestError || new Error("Support request unavailable.");
+      if (selectStatusFilter) {
+        supportState.filter = request.status === SUPPORT_RESOLVED_STATUS ? "resolved" : "all";
+        supportState.page = 1;
+        document.querySelectorAll("[data-support-filter]").forEach((button) => {
+          button.classList.toggle("is-active", button.dataset.supportFilter === supportState.filter);
+        });
+        await loadSupportRequests();
+        if (version !== supportState.conversationVersion || customerId !== supportState.customerId) return;
+        if (isSupportMobile()) {
+          supportRequestsList.hidden = true;
+          supportRequestsEmpty.hidden = true;
+          supportRequestsPagination.hidden = true;
+        }
+      }
       const { data: messages, error: messagesError } = await client
           .from("support_messages")
           .select("sender_type,body,created_at")
