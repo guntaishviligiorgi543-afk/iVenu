@@ -1,12 +1,12 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <link rel="icon" type="image/png" href="images/facicon.png" />
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>User Data Deletion | iVenue</title>
-    <meta name="description" content="How to delete an iVenue account and associated personal information." />
+    <meta name="description" content="User Data Deletion for iVenue's educational event, reservation and account services." />
     <link rel="canonical" href="https://ivenue.site/data-deletion.html" />
+    <link rel="icon" type="image/png" href="images/facicon.png" />
     <link rel="stylesheet" href="main.css" />
     <link rel="stylesheet" href="legal-pages.css" />
     <script defer src="public-header.js"></script>
@@ -23,42 +23,75 @@
         <img src="assets/ivenue-logo.png" alt="iVenue" />
       </a>
     </header>
-
     <main class="legal-main">
       <article class="legal-card">
         <p class="legal-eyebrow">iVenue information</p>
         <h1>User Data Deletion</h1>
-        <p class="legal-meta">Last updated: September 27, 2026</p>
+        <p class="legal-meta">Last updated: October 5, 2026</p>
 
-        <h2>Request deletion from your account</h2>
-        <p>iVenue currently provides a self-service account deletion request in the signed-in account dashboard. After signing in, open your profile, choose <strong>Delete account</strong>, then continue to the confirmation step. The request requires the current iVenue password before it can be completed.</p>
-        <p>This is the deletion method currently supported by the site. It is designed to confirm that the person making the request controls the account. Users who signed in only with an OAuth provider and do not have a current iVenue password cannot complete this password-confirmation flow at this time.</p>
+        <h2>1. Use the signed-in account deletion flow</h2>
+        <p>Sign in, open your <a href="profile.html">account dashboard</a>, choose <strong>Delete account</strong>, continue to the confirmation step, and enter your <strong>current iVenue password</strong> in that secure account form. The request also needs a valid signed-in session and any requested sign-in security verification. The server checks the password before deleting the Auth account.</p>
+        <p><strong>Never send your password, OTP, access token, refresh token, session token or other authentication credential to Support or in a message.</strong> Password confirmation is performed only inside the secure signed-in deletion flow. A Support message does not execute deletion or replace this requirement.</p>
+        <p>If you have forgotten your iVenue password, use the <a href="forgot-password.html">password recovery flow</a> before returning to the account dashboard. The current deletion endpoint rejects restricted accounts. If you cannot sign in or the account is restricted, the self-service flow may be unavailable and separate assistance is needed.</p>
 
-        <h2>What is deleted or retained</h2>
-        <p>When the request succeeds, iVenue deletes the authenticated account and removes cart information associated with it. If the account has orders, iVenue keeps the order records for operational or legal reasons while anonymizing the linked profile: the profile name is replaced, the email is replaced with a non-deliverable deletion address, and phone and avatar information are removed. Information may otherwise be retained where it is necessary for legal or operational reasons.</p>
+        <h2>2. Google and other OAuth accounts</h2>
+        <p>A Google password is not an iVenue password. Google sign-in alone cannot satisfy password-confirmed deletion. The current Google account flow directs users who do not have an iVenue password to <a href="oauth-password-setup.html">set one up</a> before continuing.</p>
+        <p>After configuring an iVenue password, a Google user can use the same signed-in deletion flow with that password. A Google user who already configured a password uses the current iVenue password. An OAuth-only account without an iVenue password cannot complete deletion until an iVenue password has been configured through a supported account flow. Deleting iVenue does not delete your Google account.</p>
 
-        <h2>Information to use for a request</h2>
-        <p>The self-service flow identifies the account from the active signed-in session. If iVenue asks you to follow up through an officially provided support channel, provide the email address on the account and the account name so the account can be located.</p>
-        <p><strong>Never send your password, OTP, access token, session token, or any other authentication credential.</strong> The deletion flow asks for a current password only inside the secured account dashboard; it should never be sent in a message.</p>
+        <h2>3. What is permanently deleted from the application</h2>
+        <p>When deletion succeeds, the active account is removed rather than merely disabled. The application deletes:</p>
+        <ul>
+          <li>The Supabase Auth user and its linked authentication identity/session records.</li>
+          <li>The profile record, including its first/last name, email, phone and avatar link.</li>
+          <li>Your cart entries and active reservation ownership. Reserved seats are released for reuse.</li>
+          <li>Your required-policy acceptance records.</li>
+          <li>Account-linked email-change verification records and sign-in security records, including remembered-device, code, proof and rate-limit records.</li>
+          <li>Your Support unread/read-state records and Admin membership, if applicable.</li>
+        </ul>
+        <p>Successful deletion is followed by sign-out in the account interface. This flow does not promise immediate erasure of provider logs or backups, or removal of information already copied outside the application.</p>
 
-        <h2>Need to review the policy?</h2>
-        <p>For more detail about the account, ticket and profile information iVenue handles, read the <a href="privacy-policy.html">Privacy Policy</a>.</p>
+        <h2>4. Demo orders and activity: retained without the account link</h2>
+        <p>Demo orders and order items are retained, including their timestamps, demo totals, statuses and ticket/seat details. The order's user reference is cleared when the profile is removed. The profile itself is deleted even when demo orders exist.</p>
+        <p>Event-view and cart-addition statistics also remain with their user link cleared. Public event, venue, ticket-type and seat records are not deleted merely because a user deletes an account. Historical sold-seat and order data remains demonstration inventory/history rather than a real financial transaction.</p>
+        <p>These changes are disassociation of the direct account link. They do not guarantee irreversible anonymisation of all remaining details or copies. No fixed automatic deletion period is currently implemented for these histories.</p>
 
+        <h2>5. Support requests, messages and employee records</h2>
+        <p>Your account references in Support requests and messages are cleared, but copied customer/sender names, emails and message text remain. Assignment and resolution information can also remain. Account deletion does not automatically hide, resolve or erase an open Support request.</p>
+        <p>Deleting a Support request from the dashboard is a separate soft-deletion action: it hides the request from the customer and stops its active workflow. A daily cleanup permanently removes requests that have been resolved or customer-deleted for at least 90 days, measured from the later resolution/deletion timestamp if both apply. Their messages and request read-state records are deleted with them.</p>
+        <p>Open requests that have not been customer-deleted have no fixed automatic cleanup period, including after account deletion. Support employee membership history retains copied names/emails and grant/revocation details with deleted account references cleared. Account deletion does not fully anonymise these records.</p>
+
+        <h2>6. Newsletter records: separate action needed</h2>
+        <p>Newsletter subscriptions, unsubscribe-link records, campaign recipient snapshots and sending history use email addresses rather than an account link. Account deletion does not automatically unsubscribe you or erase these records. Changing an account email likewise does not transfer the newsletter subscription.</p>
+        <p>Use the unsubscribe link in a newsletter to stop future newsletter sends to that address. Unsubscription marks it inactive; it does not erase the address or campaign history. A request to erase retained newsletter information requires separate review. No fixed automatic cleanup period is currently implemented for these records.</p>
+
+        <h2>7. Violations, bans and security/audit history</h2>
+        <p>Violation, ban/unban and enforcement-reconciliation records remain after deletion, with references to the deleted account cleared. Reasons, internal notes, severity/points and timestamps are not automatically erased and may still contain identifying information. Ending a ban, unbanning an account or a violation reaching its expiry also does not erase that history.</p>
+        <p>The application has no fixed automatic deletion period for enforcement history. Account-linked sign-in and email-change records are deleted as described above; separate service logs and provider-held records are not erased by that database cascade.</p>
+
+        <h2>8. Uploaded images and browser-stored information</h2>
+        <p>Deleting the profile removes its avatar link, but the current deletion flow does not delete uploaded image files from image storage. Such files may remain reachable through their existing public links. A request to remove an uploaded file requires separate review.</p>
+        <p>Sign-out clears the active authentication session and security proof, but remembered browser identifiers, local selections or interface preferences may remain. Clear iVenue site storage in the browser if you also want to remove those local items. Account deletion cannot clear storage on every device you have used.</p>
+
+        <h2>9. Further privacy and data requests</h2>
+        <p>For privacy questions or requests about account data or retained information, email <a href="mailto:privacy@ivenue.site">privacy@ivenue.site</a>. This contact is available even if you cannot sign in or have deleted your account. You can also use the <a href="contact.html">Contact form</a> while signed in. Identify the information concerned, but never send passwords, OTP codes, access tokens, refresh tokens, session tokens or other authentication credentials by email or through Support.</p>
+        <p>Emailing a request does not automatically delete an account or replace the current-password confirmation required by the secure self-service deletion flow. Requests needing separate assistance are reviewed, and appropriate identity verification may be needed without asking you to send authentication credentials. The <a href="privacy-policy.html">Privacy Policy</a> also explains automatic removal of accounts that remain unverified.</p>
+        <p>Deleting an account is not the same as erasing every personal detail held in independent records. Requests about remaining information are considered subject to applicable rights and retention grounds. Read the <a href="privacy-policy.html">Privacy Policy</a> and <a href="terms-of-use.html">Terms of Use</a> for related information.</p>
         <nav class="legal-actions" aria-label="Legal page navigation">
           <a href="profile.html">Open account dashboard</a>
           <a href="privacy-policy.html">Privacy Policy</a>
+          <a href="terms-of-use.html">Terms of Use</a>
           <a href="index.html">Back to iVenue</a>
         </nav>
       </article>
     </main>
     <footer class="legal-footer">
       <nav aria-label="Legal information">
-        <a href="/privacy-policy.html">Privacy Policy</a>
-        <a href="/data-deletion.html">Data Deletion</a>
+        <a href="privacy-policy.html">Privacy Policy</a>
+        <a href="terms-of-use.html">Terms of Use</a>
+        <a href="data-deletion.html">Data Deletion</a>
       </nav>
       &copy; iVenue
     </footer>
-
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-config.js"></script>
     <script src="auth.js"></script>

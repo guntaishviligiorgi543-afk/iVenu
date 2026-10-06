@@ -15,6 +15,11 @@
   const currentPageName =
     location.pathname.split("/").filter(Boolean).pop()?.toLowerCase() ||
     "index.html";
+  const isLegalInformationPage = new Set([
+    "privacy-policy.html",
+    "terms-of-use.html",
+    "data-deletion.html",
+  ]).has(currentPageName);
   const isSupportNavigationEligiblePage =
     !isDashboard &&
     !isAuthPage &&
@@ -120,7 +125,7 @@
   headerNav
     ?.querySelectorAll(".authNavLink, .supportWorkspaceLink")
     .forEach((link) => link.remove());
-  headerNav?.append(headerAuth, headerAccount);
+  if (!isLegalInformationPage) headerNav?.append(headerAuth, headerAccount);
 
   const normalizedPagePath = (pathname) => {
     const normalized = pathname.replace(/\/+$/, "") || "/";

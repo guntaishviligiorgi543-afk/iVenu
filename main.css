@@ -17,6 +17,11 @@
 
 .policy-consent__dialog {
   width: min(100%, 560px);
+  height: fit-content;
+  min-height: 0;
+  max-height: calc(100dvh - 48px);
+  overflow-y: auto;
+  align-self: center;
   padding: clamp(24px, 5vw, 42px);
   border: 1px solid rgba(255, 255, 255, 0.32);
   border-radius: 0;
@@ -121,6 +126,7 @@
     padding: 16px;
   }
   .policy-consent__dialog {
+    max-height: calc(100dvh - 32px);
     box-shadow: 6px 6px 0 rgba(255, 148, 117, 0.5);
   }
   .policy-consent__actions button {
