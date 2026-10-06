@@ -1,12 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { loginSecurityCorsHeaders } from "./cors.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "https://ivenue.site",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-};
 const OTP_LENGTH = 8;
 const OTP_TTL_MINUTES = 10;
 const RESEND_COOLDOWN_SECONDS = 60;
@@ -25,12 +20,6 @@ type Body = {
   deviceToken?: string;
   otp?: string;
 };
-
-const json = (body: Record<string, unknown>, status = 200) =>
-  new Response(JSON.stringify(body), {
-    status,
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
-  });
 
 const hashValue = async (value: string, secret: string) => {
   const bytes = await crypto.subtle.digest(
@@ -87,6 +76,12 @@ const sendEmail = async (
 };
 
 Deno.serve(async (request) => {
+  const corsHeaders = loginSecurityCorsHeaders(request.headers.get("Origin"));
+  const json = (body: Record<string, unknown>, status = 200) =>
+    new Response(JSON.stringify(body), {
+      status,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   if (request.method === "OPTIONS") return json({ success: true });
   if (request.method !== "POST") return json({ error: "Method not allowed" }, 405);
 
