@@ -64,25 +64,37 @@
   }
 
   async function signInWithGoogle() {
-    const { data, error } = await client.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: "https://ivenue.site/",
-      },
-    });
-    if (error) throw error;
-    return data;
+    window.sessionStorage.setItem(LOGIN_SECURITY_SIGN_IN_INTENT_KEY, "1");
+    try {
+      const { data, error } = await client.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: "https://ivenue.site/",
+        },
+      });
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      window.sessionStorage.removeItem(LOGIN_SECURITY_SIGN_IN_INTENT_KEY);
+      throw error;
+    }
   }
 
   async function signInWithFacebook() {
-    const { data, error } = await client.auth.signInWithOAuth({
-      provider: "facebook",
-      options: {
-        redirectTo: "https://ivenue.site/",
-      },
-    });
-    if (error) throw error;
-    return data;
+    window.sessionStorage.setItem(LOGIN_SECURITY_SIGN_IN_INTENT_KEY, "1");
+    try {
+      const { data, error } = await client.auth.signInWithOAuth({
+        provider: "facebook",
+        options: {
+          redirectTo: "https://ivenue.site/",
+        },
+      });
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      window.sessionStorage.removeItem(LOGIN_SECURITY_SIGN_IN_INTENT_KEY);
+      throw error;
+    }
   }
 
   async function verifyCurrentPassword(email, password) {
@@ -402,6 +414,7 @@
 
   const LOGIN_SECURITY_DEVICE_KEY = "ivenue.loginSecurityDevice";
   const LOGIN_SECURITY_PROOF_KEY = "ivenue.loginSecurityProof";
+  const LOGIN_SECURITY_SIGN_IN_INTENT_KEY = "ivenue.loginSecuritySignInIntent";
   const LOGIN_SECURITY_PAGE = "login-security.html";
   const LOGIN_SECURITY_WINDOW_MS = 24 * 60 * 60 * 1000;
 
@@ -410,6 +423,9 @@
 
   const isAdminLoginPage = () =>
     /(?:^|\/)admin-login\.html$/.test(window.location.pathname);
+
+  const isPrivateAccountPage = () =>
+    /(?:^|\/)(?:profile|admin-dashboard)\.html$/.test(window.location.pathname);
 
   const encodeBase64Url = (bytes) => {
     let binary = "";
@@ -914,7 +930,19 @@
   getSession()
     .then(async (session) => {
       if (await enforceGooglePasswordSetup(session)) return;
-      if (!(await ensureLoginSecurity(session))) return;
+      let signInWasInitiated = false;
+      try {
+        signInWasInitiated =
+          window.sessionStorage.getItem(LOGIN_SECURITY_SIGN_IN_INTENT_KEY) === "1";
+        window.sessionStorage.removeItem(LOGIN_SECURITY_SIGN_IN_INTENT_KEY);
+      } catch (error) {
+        console.warn("Unable to read the sign-in flow state", error);
+      }
+      if (
+        session?.user &&
+        (signInWasInitiated || isPrivateAccountPage()) &&
+        !(await ensureLoginSecurity(session))
+      ) return;
       completeInitialPasswordSetupGuard();
       if ((await enforcePolicyAcceptance(session)) && !isPolicyPage())
         await remindIncompleteProfile(session);
